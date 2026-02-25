@@ -34,3 +34,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# DDEV - local files
+.ddev/.dbimageBuild/
+.ddev/.webimageBuild/
+.ddev/.ddev-docker-compose-full.yaml
+.ddev/.global_commands/
+.ddev/.local_commands/
+.ddev/tmp/
+.ddev/.router-compose-full.yaml
+
+# DDEV local override files
+.ddev/docker-compose.override.yaml
+.ddev/config.local.yaml
