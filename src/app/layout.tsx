@@ -1,11 +1,11 @@
 import { AuthProvider } from "@/context/AuthContext";
-import { ReactNode } from 'react'
-import './globals.css'
+import { Toaster } from "sonner";
+import "./globals.css";
 
 export const metadata = {
-  title: 'Komšija',
-  description: 'Aplikacija za stambenu zajednicu',
-}
+  title: "Komšija",
+  description: "Aplikacija za stambenu zajednicu",
+};
 
 export default function RootLayout({
   children,
@@ -15,7 +15,12 @@ export default function RootLayout({
   return (
     <html lang="sr">
       <body className="h-screen bg-background">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+
+        {/* 🔥 OVO JE KLJUČNO */}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
