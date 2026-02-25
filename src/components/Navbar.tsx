@@ -76,11 +76,13 @@ export default function Navbar() {
         {!loading && user && (
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 cursor-pointer">
+
               <UserAvatar
                 name={user?.name}
-                picture={user?.picture} // ✅ mora biti "picture"
+                picture={user?.picture}
                 size={40}
               />
+
               <span className="text-gray-900 dark:text-white text-sm font-medium">
                 {user?.name}
               </span>

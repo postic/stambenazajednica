@@ -44,7 +44,7 @@ export async function GET() {
   const user = userData.data[0];
 
   // 3️⃣ Izvuci sliku iz include sekcije
-  let pictureUrl = "/avatar-placeholder.png";
+  let pictureUrl = null;
 
   if (userData.included) {
     const file = userData.included.find(
@@ -52,8 +52,7 @@ export async function GET() {
     );
 
     if (file?.attributes?.uri?.url) {
-      pictureUrl =
-        process.env.DRUPAL_BASE_URL + file.attributes.uri.url;
+      pictureUrl = process.env.DRUPAL_BASE_URL + file.attributes.uri.url;
     }
   }
 

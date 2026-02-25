@@ -1,34 +1,44 @@
-"use client";
-
-type UserAvatarProps = {
-  name?: string;
-  picture?: string;
+interface UserAvatarProps {
+  name: string;
+  picture?: string | null;
   size?: number;
-};
+}
 
 export default function UserAvatar({ name, picture, size = 40 }: UserAvatarProps) {
-  if (!picture) {
-    const initials = name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "?";
+  const initial = name?.charAt(0).toUpperCase() || "?";
+
+  if (picture) {
     return (
-      <div
-        style={{ width: size, height: size }}
-        className="flex items-center justify-center rounded-full bg-gray-500 text-white font-semibold text-sm"
-      >
-        {initials}
-      </div>
+      <img
+        src={picture}
+        alt={name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          objectFit: "cover",
+        }}
+      />
     );
   }
 
   return (
     <div
-      style={{ width: size, height: size }}
-      className="rounded-full overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        backgroundColor: "#ccc", // sivi krug
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: "bold",
+        color: "#fff",
+        fontSize: size / 2,
+        textTransform: "uppercase",
+      }}
     >
-      <img
-        src={picture}
-        alt={name ?? "Avatar"}
-        className="w-full h-full object-cover"
-      />
+      {initial}
     </div>
   );
 }
