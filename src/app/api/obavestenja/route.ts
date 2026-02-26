@@ -1,32 +1,47 @@
-import { NextResponse } from "next/server";
+// /app/api/obavestenja/route.ts
+interface Obavestenje {
+  id: string;
+  title: string;
+  body: string;
+  created: string;
+  image?: string | null;
+}
 
-export async function GET() {
+export async function GET(req: Request) {
+  const url = `${process.env.DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_image`;
+
   try {
-    const res = await fetch(
-      `${process.env.DRUPAL_BASE_URL}/jsonapi/node/obavestenje?sort=-created&include=field_image`,
-      { cache: "no-store" }
-    );
+    const response = await fetch(url);
 
-    const data = await res.json();
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Drupal API error:", response.status, text);
+      return new Response(
+        JSON.stringify({ error: "Greška pri dohvaćanju obaveštenja" }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    const news = data.data.map((item: any) => ({
+    const data = await response.json();
+
+    const obavestenja: Obavestenje[] = (data.data || []).map((item: any) => ({
       id: item.id,
       title: item.attributes.title,
-      body: item.attributes.body?.processed,
+      body: item.attributes.body?.value || "",
       created: item.attributes.created,
       image:
-        item.relationships?.field_image?.data
-          ? data.included.find(
-              (i: any) => i.id === item.relationships.field_image.data.id
-            )?.attributes?.uri?.url
-          : null,
+        item.relationships?.field_image?.data?.attributes?.uri?.url || null,
     }));
 
-    return NextResponse.json(news);
+    return new Response(JSON.stringify(obavestenja), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Greška pri učitavanju vesti" },
-      { status: 500 }
+    console.error("Server error fetching obavestenja:", error);
+    return new Response(
+      JSON.stringify({ error: "Interna greška servera" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }
