@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Menu, Users, Settings, FileText } from "lucide-react";
+import {
+  Menu,
+  Users,
+  Settings,
+  FileText,
+  Bell,
+  LayoutDashboard,
+} from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -15,12 +22,15 @@ export default function Sidebar() {
   // Fake API counters
   const [newUsersCount, setNewUsersCount] = useState(3);
   const [newPostsCount, setNewPostsCount] = useState(5);
+  const [newNewsCount, setNewNewsCount] = useState(2);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setNewUsersCount(Math.floor(Math.random() * 10));
       setNewPostsCount(Math.floor(Math.random() * 10));
+      setNewNewsCount(Math.floor(Math.random() * 5));
     }, 10000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -82,14 +92,14 @@ export default function Sidebar() {
         {/* NAVIGATION */}
         <nav className="flex-1 mt-4">
           <ul className="space-y-1">
-            {/* Dashboard */}
+            {/* DASHBOARD */}
             <li>
               <Link
                 href="/dashboard"
                 onClick={() => setMobileOpen(false)}
                 className={linkClass("/dashboard")}
               >
-                <Menu className="shrink-0" />
+                <LayoutDashboard className="shrink-0" />
                 {!collapsed && <span>Dashboard</span>}
               </Link>
             </li>
@@ -167,6 +177,27 @@ export default function Sidebar() {
                     {newPostsCount > 0 && (
                       <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
                         {newPostsCount}
+                      </span>
+                    )}
+                  </>
+                )}
+              </Link>
+            </li>
+
+            {/* OBAVESTENJA */}
+            <li>
+              <Link
+                href="/obavestenja"
+                onClick={() => setMobileOpen(false)}
+                className={linkClass("/obavestenja")}
+              >
+                <Bell className="shrink-0" />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1">Obaveštenja</span>
+                    {newNewsCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {newNewsCount}
                       </span>
                     )}
                   </>

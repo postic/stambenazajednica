@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import AlertBanner from "@/components/AlertBanner";
@@ -24,44 +24,48 @@ export default function ProfilePage() {
   if (loading || !authUser) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
 
-      <div className="flex-1 flex flex-col overflow-auto">
-        <Navbar />
-        <AlertBanner />
+      <div className="flex">
+        <Sidebar />
 
-        <div className="p-6 flex flex-col md:flex-row gap-6">
+        <main className="flex-1">
+          {/* ALERT full-width */}
+          <AlertBanner />
 
-          {/* PROFIL */}
-          <Card className="flex-1">
-            <CardHeader>
-              <CardTitle>Moj profil</CardTitle>
-            </CardHeader>
-            <div className="flex flex-col items-center text-center gap-4 p-6">
-              <UserAvatar
-                name={authUser.name}
-                picture={authUser.picture}
-                size={150}
-              />
-              <p className="text-lg font-semibold">{authUser.name}</p>
-              <p className="text-sm text-muted-foreground">{authUser.mail}</p>
-              <p className="text-sm text-muted-foreground">
-                Član od {authUser.created}
-              </p>
+          {/* Sadržaj sa padding-om */}
+          <div className="p-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* PROFIL */}
+              <Card className="flex-1">
+                <CardHeader>
+                  <CardTitle>Moj profil</CardTitle>
+                </CardHeader>
+                <div className="flex flex-col items-center text-center gap-4 p-6">
+                  <UserAvatar
+                    name={authUser.name}
+                    picture={authUser.picture}
+                    size={150}
+                  />
+                  <p className="text-lg font-semibold">{authUser.name}</p>
+                  <p className="text-sm text-muted-foreground">{authUser.mail}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Član od {authUser.created}
+                  </p>
+                </div>
+              </Card>
+
+              {/* AKTIVNOSTI */}
+              <Card className="flex-1">
+                <CardHeader>
+                  <CardTitle>Aktivnosti</CardTitle>
+                </CardHeader>
+                <ActivitiesList />
+              </Card>
             </div>
-          </Card>
-
-          {/* AKTIVNOSTI */}
-          <Card className="flex-1">
-            <CardHeader>
-              <CardTitle>Aktivnosti</CardTitle>
-            </CardHeader>
-            {/* Ovde ubacujemo modularnu komponentu */}
-            <ActivitiesList />
-          </Card>
-
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import AlertBanner from "@/components/AlertBanner";
@@ -21,25 +23,37 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-auto">
-        <Navbar />
-        <AlertBanner />
-        <main className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card title="Users" value={1200} description="Total users" />
-            <Card title="Posts" value={350} description="Published posts" />
-            <Card title="Revenue" value="$12,500" description="Monthly revenue" />
-          </div>
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ChartCard title="Monthly Users" data={chartData} />
-            <ChartCard title="Revenue Trend" data={chartData} />
-          </div>
+      <div className="flex h-screen">
+        {/* Sidebar sa pozadinom */}
+        <Sidebar />
 
-          <div>
-            <Table columns={tableColumns} data={tableData} />
+        {/* Glavni sadržaj */}
+        <main className="flex-1 overflow-auto">
+          {/* Alert full-width, van padding-a */}
+          <AlertBanner />
+
+          {/* Sadržaj sa padding-om */}
+          <div className="p-6 space-y-6">
+            {/* Kartice */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card title="Users" value={1200} description="Total users" />
+              <Card title="Posts" value={350} description="Published posts" />
+              <Card title="Revenue" value="$12,500" description="Monthly revenue" />
+            </div>
+
+            {/* Grafikoni */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ChartCard title="Monthly Users" data={chartData} />
+              <ChartCard title="Revenue Trend" data={chartData} />
+            </div>
+
+            {/* Tabela */}
+            <div className="overflow-auto">
+              <Table columns={tableColumns} data={tableData} />
+            </div>
           </div>
         </main>
       </div>
