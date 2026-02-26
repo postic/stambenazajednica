@@ -2,76 +2,66 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import UserAvatar from "@/components/UserAvatar";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import AlertBanner from "@/components/AlertBanner";
+import UserAvatar from "@/components/UserAvatar";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import ActivitiesList from "@/components/ActivitiesList";
 
 export default function ProfilePage() {
-  const { user, loading, logout } = useAuth();
+  const { user: authUser, loading } = useAuth();
   const router = useRouter();
 
   // Protected route
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !authUser) {
       router.push("/login");
     }
-  }, [user, loading]);
+  }, [authUser, loading, router]);
 
-  if (loading || !user) return <p>Loading...</p>;
+  if (loading || !authUser) return <p className="p-6">Loading...</p>;
 
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
+
       <div className="flex-1 flex flex-col overflow-auto">
         <Navbar />
         <AlertBanner />
-        <main className="p-6 space-y-6">
-          {/* Profilna kartica */}
-          <div className="bg-white shadow rounded p-6 flex flex-col md:flex-row items-center md:items-start mb-6 gap-6">
-  {/* Avatar */}
-  <UserAvatar
-    name={user?.name}
-    picture={user?.picture}
-    size={100}
-  />
 
-  {/* Info */}
-  <div className="flex-1 text-center md:text-left">
-    <h1 className="text-2xl font-bold">{user?.name}</h1>
-    <p className="text-gray-600">{user?.mail}</p>
-    <p className="text-gray-500 mt-1">UID: {user?.uid}</p>
-  </div>
+        <div className="p-6 flex flex-col md:flex-row gap-6">
 
-  {/* Logout dugme */}
-  <div className="mt-4 md:mt-0 md:ml-auto">
-    <button
-      onClick={logout}
-      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-    >
-      Logout
-    </button>
-  </div>
-</div>
+          {/* PROFIL */}
+          <Card className="flex-1">
+            <CardHeader>
+              <CardTitle>Moj profil</CardTitle>
+            </CardHeader>
+            <div className="flex flex-col items-center text-center gap-4 p-6">
+              <UserAvatar
+                name={authUser.name}
+                picture={authUser.picture}
+                size={150}
+              />
+              <p className="text-lg font-semibold">{authUser.name}</p>
+              <p className="text-sm text-muted-foreground">{authUser.mail}</p>
+              <p className="text-sm text-muted-foreground">
+                Član od {authUser.created}
+              </p>
+            </div>
+          </Card>
 
-          {/* Detalji korisnika */}
-          <div className="bg-white shadow rounded p-6">
-            <h2 className="text-xl font-semibold mb-4">Detalji korisnika</h2>
-            <ul className="space-y-2">
-              <li>
-                <strong>Ime:</strong> {user.name}
-              </li>
-              <li>
-                <strong>Email:</strong> {user.mail}
-              </li>
-              <li>
-                <strong>UID:</strong> {user.uid}
-              </li>
-              {/* Ostala polja iz Drupal user entiteta */}
-            </ul>
-          </div>
-        </main>
+          {/* AKTIVNOSTI */}
+          <Card className="flex-1">
+            <CardHeader>
+              <CardTitle>Aktivnosti</CardTitle>
+            </CardHeader>
+            {/* Ovde ubacujemo modularnu komponentu */}
+            <ActivitiesList />
+          </Card>
+
+        </div>
       </div>
     </div>
   );

@@ -70,7 +70,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.ok) {
-      toast.success("Uspešno ste prijavljeni 👋");
+      toast.success("Uspešno ste prijavljeni");
       await login();
       router.push("/dashboard");
     } else {

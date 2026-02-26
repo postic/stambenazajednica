@@ -1,10 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -16,38 +26,48 @@ export default function ForgotPasswordPage() {
     });
 
     const data = await res.json();
-    setMessage(data.message || data.error);
+
+    if (res.ok) {
+      toast.success(data.message || "Link za reset je poslat.");
+    } else {
+      toast.error(data.error || "Došlo je do greške.");
+    }
   }
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white shadow p-6 rounded">
-      <h1 className="text-xl font-semibold mb-4">
-        Reset lozinke
-      </h1>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">
+            Reset lozinke
+          </CardTitle>
+          <CardDescription className="text-center">
+            Unesite email adresu i poslaćemo vam link za reset.
+          </CardDescription>
+        </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Unesite email"
-          className="w-full border p-2 rounded mb-4"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <CardContent>
+          <form className="grid gap-4" onSubmit={handleSubmit}>
+            <div className="grid gap-2">
+              <Label htmlFor="email">
+                Email adresa
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="ime@primer.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded"
-        >
-          Pošalji link
-        </button>
-      </form>
-
-      {message && (
-        <p className="mt-4 text-sm text-gray-600">
-          {message}
-        </p>
-      )}
+            <Button type="submit" className="w-full">
+              Pošalji link
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
