@@ -1,4 +1,3 @@
-// /app/api/obavestenja/route.ts
 interface Obavestenje {
   id: string;
   title: string;
@@ -8,7 +7,8 @@ interface Obavestenje {
 }
 
 export async function GET(req: Request) {
-  const url = `${process.env.DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_image`;
+  const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
+  const url = `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_image`;
 
   try {
     const response = await fetch(url);
@@ -24,14 +24,26 @@ export async function GET(req: Request) {
 
     const data = await response.json();
 
-    const obavestenja: Obavestenje[] = (data.data || []).map((item: any) => ({
-      id: item.id,
-      title: item.attributes.title,
-      body: item.attributes.body?.value || "",
-      created: item.attributes.created,
-      image:
-        item.relationships?.field_image?.data?.attributes?.uri?.url || null,
-    }));
+    const obavestenja: Obavestenje[] = (data.data || []).map((item: any) => {
+      let imageUrl: string | null = null;
+
+      // Pronađi image relaciju u included
+      const imageRel = item.relationships?.field_image?.data;
+      if (imageRel) {
+        const fileObj = data.included?.find((i: any) => i.id === imageRel.id);
+        if (fileObj?.attributes?.uri?.url) {
+          imageUrl = `${DRUPAL_BASE_URL}${fileObj.attributes.uri.url}`;
+        }
+      }
+
+      return {
+        id: item.id,
+        title: item.attributes.title,
+        body: item.attributes.body?.value || "",
+        created: item.attributes.created,
+        image: imageUrl,
+      };
+    });
 
     return new Response(JSON.stringify(obavestenja), {
       status: 200,
