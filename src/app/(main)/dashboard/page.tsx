@@ -24,19 +24,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
-
-      <div className="flex h-screen">
-        {/* Sidebar sa pozadinom */}
-        <Sidebar />
-
-        {/* Glavni sadržaj */}
-        <main className="flex-1 overflow-auto">
-          {/* Alert full-width, van padding-a */}
-          <AlertBanner />
+      {/* Glavni sadržaj */}
+      <main className="flex-1 overflow-auto">
 
           {/* Sadržaj sa padding-om */}
-          <div className="p-6 space-y-6">
+          <div className="space-y-6">
             {/* Kartice */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card title="Users" value={1200} description="Total users" />
@@ -56,7 +48,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </main>
-      </div>
     </div>
   );
 }
