@@ -40,7 +40,7 @@ export default function Navbar() {
   return (
     <header className="h-16 bg-white dark:bg-gray-900 shadow flex items-center justify-between px-6">
       {/* Leva strana */}
-      <h1 className="font-bold text-xl text-gray-900 dark:text-white">
+      <h1 className="font-bold text-2xl text-gray-900 dark:text-white">
         Stambena zajednica
       </h1>
 

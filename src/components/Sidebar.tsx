@@ -1,33 +1,31 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   Menu,
   Users,
   Settings,
-  FileText,
-  Bell,
   LayoutDashboard,
+  Wrench,
+  Megaphone,
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
-
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(false);
 
-  // Fake API counters
   const [newUsersCount, setNewUsersCount] = useState(3);
-  const [newPostsCount, setNewPostsCount] = useState(5);
   const [newNewsCount, setNewNewsCount] = useState(2);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setNewUsersCount(Math.floor(Math.random() * 10));
-      setNewPostsCount(Math.floor(Math.random() * 10));
       setNewNewsCount(Math.floor(Math.random() * 5));
     }, 10000);
 
@@ -35,14 +33,14 @@ export default function Sidebar() {
   }, []);
 
   const itemBase =
-    "w-full flex items-center p-4 rounded transition-all duration-200 hover:bg-gray-700";
+    "w-full flex items-center p-4 rounded-lg transition-all duration-200 hover:bg-slate-700";
 
   const isActive = (path: string) => pathname === path;
 
   const linkClass = (path: string) =>
     `${itemBase} ${
       collapsed ? "justify-center" : "gap-3"
-    } ${isActive(path) ? "bg-gray-700" : ""}`;
+    } ${isActive(path) ? "bg-slate-700" : ""}`;
 
   return (
     <>
@@ -57,11 +55,10 @@ export default function Sidebar() {
       <aside
         className={`
           fixed md:static top-0 left-0 z-50 h-screen
-          bg-gray-800 text-white flex flex-col
+          bg-slate-800 text-white border-r border-slate-700/50
+          flex flex-col
           transition-[width,transform] duration-300 ease-in-out
-
           ${collapsed ? "md:w-20" : "md:w-64"}
-
           ${
             mobileOpen
               ? "w-64 translate-x-0"
@@ -77,13 +74,13 @@ export default function Sidebar() {
         >
           {!collapsed && (
             <span className="text-2xl font-bold tracking-wide">
-              Admin
+              {user?.name}
             </span>
           )}
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 hover:bg-gray-700 rounded transition"
+            className="p-2 hover:bg-slate-700 rounded-lg transition"
           >
             <Menu />
           </button>
@@ -91,7 +88,7 @@ export default function Sidebar() {
 
         {/* NAVIGATION */}
         <nav className="flex-1 mt-4">
-          <ul className="space-y-1">
+          <ul className="space-y-1 px-2">
             {/* DASHBOARD */}
             <li>
               <Link
@@ -114,7 +111,7 @@ export default function Sidebar() {
               >
                 <div className="flex items-center gap-3">
                   <Users className="shrink-0" />
-                  {!collapsed && <span>Users</span>}
+                  {!collapsed && <span>Stanari</span>}
                 </div>
 
                 {!collapsed && (
@@ -130,9 +127,9 @@ export default function Sidebar() {
                     <Link
                       href="/dashboard/users/list"
                       onClick={() => setMobileOpen(false)}
-                      className={`block flex-1 p-2 rounded hover:bg-gray-700 ${
+                      className={`block flex-1 p-2 rounded-lg hover:bg-slate-700 ${
                         isActive("/dashboard/users/list")
-                          ? "bg-gray-700"
+                          ? "bg-slate-700"
                           : ""
                       }`}
                     >
@@ -150,9 +147,9 @@ export default function Sidebar() {
                     <Link
                       href="/dashboard/users/add"
                       onClick={() => setMobileOpen(false)}
-                      className={`block p-2 rounded hover:bg-gray-700 ${
+                      className={`block p-2 rounded-lg hover:bg-slate-700 ${
                         isActive("/dashboard/users/add")
-                          ? "bg-gray-700"
+                          ? "bg-slate-700"
                           : ""
                       }`}
                     >
@@ -163,20 +160,20 @@ export default function Sidebar() {
               )}
             </li>
 
-            {/* REPORTS */}
+            {/* KVAROVI */}
             <li>
               <Link
-                href="/dashboard/reports"
+                href="/kvarovi"
                 onClick={() => setMobileOpen(false)}
-                className={linkClass("/dashboard/reports")}
+                className={linkClass("/kvarovi")}
               >
-                <FileText className="shrink-0" />
+                <Wrench className="shrink-0" />
                 {!collapsed && (
                   <>
-                    <span className="flex-1">Reports</span>
-                    {newPostsCount > 0 && (
+                    <span className="flex-1">Kvarovi</span>
+                    {newNewsCount > 0 && (
                       <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {newPostsCount}
+                        {newNewsCount}
                       </span>
                     )}
                   </>
@@ -191,7 +188,7 @@ export default function Sidebar() {
                 onClick={() => setMobileOpen(false)}
                 className={linkClass("/obavestenja")}
               >
-                <Bell className="shrink-0" />
+                <Megaphone className="shrink-0" />
                 {!collapsed && (
                   <>
                     <span className="flex-1">Obaveštenja</span>

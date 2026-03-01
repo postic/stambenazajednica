@@ -1,6 +1,6 @@
 "use client";
 
-export interface Obavestenja {
+export interface Kvarovi {
   id: string;
   title: string;
   body: string;
@@ -10,11 +10,11 @@ export interface Obavestenja {
 }
 
 export default function ObavestenjaList({
-  obavestenja = [],
+  kvarovi = [],
 }: {
-  obavestenja?: Obavestenja[];
+  kvarovi?: Kvarovi[];
 }) {
-  if (!Array.isArray(obavestenja) || obavestenja.length === 0) {
+  if (!Array.isArray(kvarovi) || kvarovi.length === 0) {
     return <p className="text-gray-500 text-center">Nema kvarova.</p>;
   }
 
@@ -22,7 +22,7 @@ export default function ObavestenjaList({
 
   return (
     <div className="max-w-6xl mx-auto space-y-4">
-      {obavestenja.map((o) => (
+      {kvarovi.map((o) => (
         <article
           key={o.id}
           className="flex bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden min-h-[120px]"

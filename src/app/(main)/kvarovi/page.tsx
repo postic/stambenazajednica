@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ObavestenjaList from "@/components/ObavestenjaList";
+import KvaroviList from "@/components/KvaroviList";
 
-export default function ObavestenjaPage() {
-  const [obavestenja, setObavestenja] = useState<any[]>([]);
+export default function KvaroviPage() {
+  const [kvarovi, setKvarovi] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetch(`/api/obavestenja?page=${page}&limit=3`)
+    fetch(`/api/kvarovi?page=${page}&limit=3`)
       .then((res) => res.json())
       .then((data) => {
-        setObavestenja(data.data);
+        setKvarovi(data.data);
         setTotalPages(data.totalPages);
       });
   }, [page]);
@@ -23,10 +23,10 @@ export default function ObavestenjaPage() {
   return (
     <div>
       <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Obaveštenja
+        Kvarovi
       </h1>
 
-      <ObavestenjaList obavestenja={obavestenja} />
+      <KvaroviList kvarovi={kvarovi} />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">

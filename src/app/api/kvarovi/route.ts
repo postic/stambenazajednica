@@ -1,4 +1,4 @@
-interface Obavestenje {
+interface Kvar {
   id: string;
   title: string;
   body: string;
@@ -18,30 +18,28 @@ export async function GET(req: Request) {
     const DRUPAL_BASE_URL =
       process.env.DRUPAL_BASE_URL || "http://localhost:8888";
 
-    // Fetch svih obaveštenja
-    const response = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_image`
-    );
+    // Fetch svih kvarova (bez count=true)
+    const response = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/kvar?include=field_image`);
 
     if (!response.ok) {
       const text = await response.text();
       console.error("Drupal API error:", response.status, text);
       return new Response(
-        JSON.stringify({ error: "Greška pri dohvaćanju obaveštenja" }),
+        JSON.stringify({ error: "Greška pri dohvaćanju kvarova" }),
         { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }
 
     const data = await response.json();
 
-    // ukupno obaveštenja
+    // ukupno kvarova
     const total = (data.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
     // uzmi samo tekuću stranu
     const currentPageData = (data.data || []).slice(offset, offset + limit);
 
-    const obavestenja: Obavestenje[] = currentPageData.map((item: any) => {
+    const kvarovi: Kvar[] = currentPageData.map((item: any) => {
       let imageUrl: string | null = null;
 
       const imageRel = item.relationships?.field_image?.data;
@@ -63,7 +61,7 @@ export async function GET(req: Request) {
 
     return new Response(
       JSON.stringify({
-        data: obavestenja,
+        data: kvarovi,
         total,
         page,
         totalPages,
@@ -74,7 +72,7 @@ export async function GET(req: Request) {
       }
     );
   } catch (error) {
-    console.error("Server error fetching obavestenja:", error);
+    console.error("Server error fetching kvarovi:", error);
     return new Response(
       JSON.stringify({ error: "Interna greška servera" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
