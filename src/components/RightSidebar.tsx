@@ -34,6 +34,13 @@ export default function RightSidebar() {
         </a>
 
         <a
+          href="tel:192"
+          className="w-full flex justify-start items-center text-sm"
+        >
+          Hitna pomoć — 192
+        </a>
+
+        <a
           href="tel:193"
           className="w-full flex justify-start items-center text-sm"
         >

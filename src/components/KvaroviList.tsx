@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 export interface Kvarovi {
   id: string;
   title: string;
@@ -11,7 +9,7 @@ export interface Kvarovi {
   image?: string | null;
 }
 
-export default function KvaroviList({
+export default function ObavestenjaList({
   kvarovi = [],
 }: {
   kvarovi?: Kvarovi[];
@@ -60,13 +58,9 @@ export default function KvaroviList({
                 : o.body}
             </p>
 
-            <Link
-              href={`/kvarovi/${o.id}`}
-              className="text-blue-600 font-medium text-sm mt-1 inline-block"
-            >
+            <span className="text-blue-600 font-medium cursor-pointer text-sm">
               Read more →
-            </Link>
-
+            </span>
           </div>
         </article>
       ))}
