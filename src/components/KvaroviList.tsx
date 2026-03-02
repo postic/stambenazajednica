@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export interface Kvarovi {
   id: string;
   title: string;
@@ -58,9 +60,13 @@ export default function ObavestenjaList({
                 : o.body}
             </p>
 
-            <span className="text-blue-600 font-medium cursor-pointer text-sm">
-              Read more →
-            </span>
+            <Link
+                href={`/obavestenja/${slug}`}
+                className="text-blue-600 font-medium text-sm hover:underline"
+              >
+                Read more →
+              </Link>
+
           </div>
         </article>
       ))}
