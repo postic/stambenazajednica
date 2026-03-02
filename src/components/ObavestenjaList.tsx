@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export interface Obavestenja {
   id: string;
   title: string;
@@ -58,9 +60,13 @@ export default function ObavestenjaList({
                 : o.body}
             </p>
 
-            <span className="text-blue-600 font-medium cursor-pointer text-sm">
+            <Link
+              href={`/obavestenja/${o.id}`}
+              className="text-blue-600 font-medium text-sm mt-1 inline-block"
+            >
               Read more →
-            </span>
+            </Link>
+
           </div>
         </article>
       ))}

@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+<<<<<<< HEAD
 import { htmlToPreview } from "@/lib/text";
+=======
+>>>>>>> parent of 09d8ebf (Revert "Single page")
 
 export interface Kvarovi {
   id: string;
@@ -12,7 +15,7 @@ export interface Kvarovi {
   image?: string | null;
 }
 
-export default function ObavestenjaList({
+export default function KvaroviList({
   kvarovi = [],
 }: {
   kvarovi?: Kvarovi[];
@@ -61,7 +64,11 @@ export default function ObavestenjaList({
 
             <Link
               href={`/kvarovi/${o.id}`}
+<<<<<<< HEAD
               className="text-blue-600 font-medium cursor-pointer text-sm"
+=======
+              className="text-blue-600 font-medium text-sm mt-1 inline-block"
+>>>>>>> parent of 09d8ebf (Revert "Single page")
             >
               Read more →
             </Link>
