@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { htmlToPreview } from "@/lib/text";
 
 export interface Kvarovi {
   id: string;
@@ -20,7 +21,7 @@ export default function ObavestenjaList({
     return <p className="text-gray-500 text-center">Nema kvarova.</p>;
   }
 
-  const MAX_BODY_CHARS = 80; // maksimalan broj karaktera za prikaz
+  const MAX_BODY_CHARS = 100; // maksimalan broj karaktera za prikaz
 
   return (
     <div className="max-w-6xl mx-auto space-y-4">
@@ -55,17 +56,15 @@ export default function ObavestenjaList({
             </time>
 
             <p className="text-slate-700 mb-1 text-sm whitespace-nowrap overflow-hidden text-ellipsis">
-              {o.body.length > MAX_BODY_CHARS
-                ? o.body.slice(0, MAX_BODY_CHARS) + "…"
-                : o.body}
+              {htmlToPreview(o.body, MAX_BODY_CHARS)}
             </p>
 
             <Link
-                href={`/obavestenja/${slug}`}
-                className="text-blue-600 font-medium text-sm hover:underline"
-              >
-                Read more →
-              </Link>
+              href={`/kvarovi/${o.id}`}
+              className="text-blue-600 font-medium cursor-pointer text-sm"
+            >
+              Read more →
+            </Link>
 
           </div>
         </article>
