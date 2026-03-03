@@ -1,23 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { htmlToPreview } from "@/lib/text";
 
-export interface Obavestenja {
+export interface Obavestenje {
   id: string;
   title: string;
   body: string;
   created: string;
-  slug: string;
   image?: string | null;
 }
 
 export default function ObavestenjaList({
   obavestenja = [],
 }: {
-  obavestenja?: Obavestenja[];
+  obavestenja?: Obavestenje[];
 }) {
   if (!Array.isArray(obavestenja) || obavestenja.length === 0) {
-    return <p className="text-gray-500 text-center">Nema kvarova.</p>;
+    return <p className="text-gray-500 text-center">Nema obavestenja.</p>;
   }
 
   const MAX_BODY_CHARS = 80; // maksimalan broj karaktera za prikaz
@@ -55,9 +55,7 @@ export default function ObavestenjaList({
             </time>
 
             <p className="text-slate-700 mb-1 text-sm whitespace-nowrap overflow-hidden text-ellipsis">
-              {o.body.length > MAX_BODY_CHARS
-                ? o.body.slice(0, MAX_BODY_CHARS) + "…"
-                : o.body}
+              {htmlToPreview(o.body, MAX_BODY_CHARS)}
             </p>
 
             <Link

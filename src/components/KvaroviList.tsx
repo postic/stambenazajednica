@@ -1,17 +1,13 @@
 "use client";
 
 import Link from "next/link";
-<<<<<<< HEAD
 import { htmlToPreview } from "@/lib/text";
-=======
->>>>>>> parent of 09d8ebf (Revert "Single page")
 
 export interface Kvarovi {
   id: string;
   title: string;
   body: string;
   created: string;
-  slug: string;
   image?: string | null;
 }
 
@@ -64,11 +60,7 @@ export default function KvaroviList({
 
             <Link
               href={`/kvarovi/${o.id}`}
-<<<<<<< HEAD
-              className="text-blue-600 font-medium cursor-pointer text-sm"
-=======
               className="text-blue-600 font-medium text-sm mt-1 inline-block"
->>>>>>> parent of 09d8ebf (Revert "Single page")
             >
               Read more →
             </Link>
