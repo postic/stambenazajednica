@@ -8,7 +8,7 @@ export interface Obavestenje {
   title: string;
   body: string;
   created: string;
-  image?: string | null;
+  image?: string[] | null;
 }
 
 export default function ObavestenjaList({

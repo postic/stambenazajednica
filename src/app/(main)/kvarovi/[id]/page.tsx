@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
+import { extractImages } from "@/lib/images";
 
 interface Kvar {
   id: string;
   title: string;
   body: string;
   created: string;
-  image?: string | null;
+  image?: string[] | null;
 }
 
 const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
@@ -29,7 +30,10 @@ async function getKvar(id: string): Promise<Kvar | null> {
     const item = data?.data;
     if (!item) return null;
 
-    let imageUrl: string | null = null;
+const images = extractImages(data.data, data.included);
+//console.error("Fotografije:", images);
+
+    /*let imageUrl: string | null = null;
       const imageRel = item.relationships?.field_image?.data?.[0]; // array field
       if (imageRel && data.included) {
         const fileObj = data.included.find((i: any) => i.type === "file--file" && i.id === imageRel.id);
@@ -37,16 +41,16 @@ async function getKvar(id: string): Promise<Kvar | null> {
         if (fileUriValue) {
           // konvertujemo public:// u pravi URL
           const filePath = fileUriValue.replace("public://", "/sites/default/files/");
-          imageUrl = `${DRUPAL_BASE_URL}${filePath}`;
+          imageUrl = `${process.env.DRUPAL_BASE_URL}${filePath}`;
         }
       }
-
+*/
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      image: imageUrl,
+      image: images,
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
@@ -79,13 +83,15 @@ export default async function KvarPage({ params }: PageProps) {
         })}
       </p>
 
-      {kvar.image && (
-        <img
-          src={kvar.image}
-          alt={kvar.title}
-          className="w-full rounded-xl mb-6"
-        />
-      )}
+      {kvar.image?.length ? (
+  <div className="grid grid-cols-2 gap-2">
+    {kvar.image.map((img, idx) => (
+      <img key={idx} src={img} alt={`${kvar.title} - ${idx + 1}`} className="w-full h-32 object-cover rounded"/>
+    ))}
+  </div>
+) : (
+  <span>Nema slika</span>
+)}
 
       <div
         className="prose max-w-none"
