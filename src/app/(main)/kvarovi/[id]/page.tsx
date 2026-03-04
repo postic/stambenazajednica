@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
-import ImageSlider from "@/components/ImageSlider";
+import ImageGridLightbox from "@/components/ImageGridLightbox";
+import StatusBadge from "@/components/StatusBadge";
 
 interface Kvar {
   id: string;
@@ -8,6 +9,7 @@ interface Kvar {
   body: string;
   created: string;
   image?: string[] | null;
+  statusName?: string; // naziv statusa iz taxonomy term
 }
 
 const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
@@ -15,7 +17,7 @@ const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
 async function getKvar(id: string): Promise<Kvar | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}?include=field_image`,
+      `${DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}?include=field_status,field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -33,12 +35,22 @@ async function getKvar(id: string): Promise<Kvar | null> {
 
     const images: string[] = extractImages(item, data.included) ?? [];
 
+    / === parsiranje statusa === /
+    const statusRel = item.relationships?.field_status?.data;
+    const statusIncluded =
+      statusRel &&
+      data.included?.find(
+        (i: any) => i.type === statusRel.type && i.id === statusRel.id
+      );
+    const statusName = statusIncluded?.attributes?.name || "Nepoznat";
+
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
       image: images,
+      statusName: statusName,
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
@@ -61,8 +73,9 @@ export default async function KvarPage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700">
+      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {kvar.title}
+        {kvar.statusName && <StatusBadge status={kvar.statusName} />}
       </h1>
 
       <p className="text-gray-500 text-sm mb-6">
@@ -76,7 +89,7 @@ export default async function KvarPage({ params }: PageProps) {
       {/* 🔥 Slider se prikazuje SAMO ako ima slika */}
       {images.length > 0 && (
         <div className="mb-6">
-          <ImageSlider images={images} />
+          <ImageGridLightbox images={images} />
         </div>
       )}
 

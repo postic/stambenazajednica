@@ -9,7 +9,7 @@ export default function KvaroviPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetch(`/api/kvarovi?page=${page}&limit=3`)
+    fetch(`/api/kvarovi?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
         setKvarovi(data.data);
