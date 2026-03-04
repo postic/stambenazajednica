@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
+import ImageSlider from "@/components/ImageSlider";
 
 interface Kvar {
   id: string;
@@ -30,21 +31,8 @@ async function getKvar(id: string): Promise<Kvar | null> {
     const item = data?.data;
     if (!item) return null;
 
-const images = extractImages(data.data, data.included);
-//console.error("Fotografije:", images);
+    const images: string[] = extractImages(item, data.included) ?? [];
 
-    /*let imageUrl: string | null = null;
-      const imageRel = item.relationships?.field_image?.data?.[0]; // array field
-      if (imageRel && data.included) {
-        const fileObj = data.included.find((i: any) => i.type === "file--file" && i.id === imageRel.id);
-        const fileUriValue = fileObj?.attributes?.uri?.value; // ovo je public:// putanja
-        if (fileUriValue) {
-          // konvertujemo public:// u pravi URL
-          const filePath = fileUriValue.replace("public://", "/sites/default/files/");
-          imageUrl = `${process.env.DRUPAL_BASE_URL}${filePath}`;
-        }
-      }
-*/
     return {
       id: item.id,
       title: item.attributes.title,
@@ -69,6 +57,8 @@ export default async function KvarPage({ params }: PageProps) {
 
   if (!kvar) notFound();
 
+  const images = kvar.image ?? [];
+
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700">
@@ -83,15 +73,13 @@ export default async function KvarPage({ params }: PageProps) {
         })}
       </p>
 
-      {kvar.image?.length ? (
-  <div className="grid grid-cols-2 gap-2">
-    {kvar.image.map((img, idx) => (
-      <img key={idx} src={img} alt={`${kvar.title} - ${idx + 1}`} className="w-full h-32 object-cover rounded"/>
-    ))}
-  </div>
-) : (
-  <span>Nema slika</span>
-)}
+      {/* 🔥 Slider se prikazuje SAMO ako ima slika */}
+      {images.length > 0 && (
+        <div className="mb-6">
+          <ImageSlider images={images} />
+        </div>
+      )}
+
 
       <div
         className="prose max-w-none"

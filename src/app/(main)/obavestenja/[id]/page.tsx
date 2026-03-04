@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
+import { extractImages } from "@/lib/images";
+import ImageSlider from "@/components/ImageSlider";
 
-interface Kvar {
+interface Obavestenje {
   id: string;
   title: string;
   body: string;
   created: string;
-  image?: string | null;
+  image?: string[] | null;
 }
 
 const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
@@ -29,24 +31,14 @@ async function getObavestenje(id: string): Promise<Obavestenje | null> {
     const item = data?.data;
     if (!item) return null;
 
-    let imageUrl: string | null = null;
-      const imageRel = item.relationships?.field_image?.data?.[0]; // array field
-      if (imageRel && data.included) {
-        const fileObj = data.included.find((i: any) => i.type === "file--file" && i.id === imageRel.id);
-        const fileUriValue = fileObj?.attributes?.uri?.value; // ovo je public:// putanja
-        if (fileUriValue) {
-          // konvertujemo public:// u pravi URL
-          const filePath = fileUriValue.replace("public://", "/sites/default/files/");
-          imageUrl = `${DRUPAL_BASE_URL}${filePath}`;
-        }
-      }
+    const images: string[] = extractImages(item, data.included) ?? [];
 
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      image: imageUrl,
+      image: images,
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
@@ -65,6 +57,8 @@ export default async function ObavestenjePage({ params }: PageProps) {
 
   if (!obavestenje) notFound();
 
+  const images = obavestenje.image ?? [];
+
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700">
@@ -79,13 +73,13 @@ export default async function ObavestenjePage({ params }: PageProps) {
         })}
       </p>
 
-      {obavestenje.image && (
-        <img
-          src={obavestenje.image}
-          alt={obavestenje.title}
-          className="w-full rounded-xl mb-6"
-        />
+      {/* 🔥 Slider se prikazuje SAMO ako ima slika */}
+      {images.length > 0 && (
+        <div className="mb-6">
+          <ImageSlider images={images} />
+        </div>
       )}
+
 
       <div
         className="prose max-w-none"
