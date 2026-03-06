@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
+import BackButton from "@/components/BackButton";
 
 interface Kvar {
   id: string;
@@ -73,6 +74,10 @@ export default async function KvarPage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
+
+      {/* 🔙 BACK BUTTON */}
+      <BackButton />
+
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {kvar.title}
         {kvar.statusName && <StatusBadge status={kvar.statusName} />}

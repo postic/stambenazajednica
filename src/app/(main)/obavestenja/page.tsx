@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ObavestenjaList from "@/components/ObavestenjaList";
+import ObavestenjaTable from "@/components/ObavestenjaTable";
 
 export default function ObavestenjaPage() {
   const [obavestenja, setObavestenja] = useState<any[]>([]);
@@ -9,7 +9,7 @@ export default function ObavestenjaPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetch(`/api/obavestenja?page=${page}&limit=3`)
+    fetch(`/api/obavestenja?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
         setObavestenja(data.data);
@@ -26,7 +26,7 @@ export default function ObavestenjaPage() {
         Obaveštenja
       </h1>
 
-      <ObavestenjaList obavestenja={obavestenja} />
+      <ObavestenjaTable obavestenja={obavestenja} />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">

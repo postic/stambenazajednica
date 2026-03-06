@@ -39,6 +39,7 @@ export async function GET(req: Request) {
     const currentPageData = (data.data || []).slice(offset, offset + limit);
 
     const kvarovi: Kvar[] = currentPageData.map((item: any) => {
+
     // Slika
     let imageUrl: string | null = null;
     const imageRel = item.relationships?.field_image?.data?.[0];

@@ -18,6 +18,29 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     case "zatvoren":
       colorClass = "bg-red-100 text-red-800";
       break;
+    case "info":
+      colorClass = "bg-orange-100 text-orange-800";
+      break;
+    case "alert":
+      colorClass = "bg-red-100 text-red-800";
+      break;
+    case "kvar":
+      colorClass = "bg-yellow-100 text-yellow-800";
+      break;
+    case "događaj":
+      colorClass = "bg-green-100 text-green-800";
+      break;
+
+    case "zakazana":
+      colorClass = "bg-yellow-100 text-red-800";
+      break;
+    case "održana":
+      colorClass = "bg-green-100 text-green-800";
+      break;
+    case "otkazana":
+      colorClass = "bg-red-100 text-red-800";
+      break;
+
   }
 
   return (

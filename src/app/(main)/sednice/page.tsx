@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import KvaroviList from "@/components/KvaroviTable";
+import SedniceTable from "@/components/SedniceTable";
 
-export default function KvaroviPage() {
-  const [kvarovi, setKvarovi] = useState<any[]>([]);
+export default function SednicePage() {
+  const [sednice, setSednice] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetch(`/api/kvarovi?page=${page}&limit=10`)
+    fetch(`/api/sednice?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
-        setKvarovi(data.data);
+        setSednice(data.data);
         setTotalPages(data.totalPages);
       });
   }, [page]);
@@ -23,10 +23,10 @@ export default function KvaroviPage() {
   return (
     <div>
       <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Kvarovi
+        Sednice
       </h1>
 
-      <KvaroviList kvarovi={kvarovi} />
+      <SedniceTable sednice={sednice} />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">

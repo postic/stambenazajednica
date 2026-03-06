@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 
 export interface Kvarovi {
@@ -9,7 +10,7 @@ export interface Kvarovi {
   body: string;
   created: string;
   image?: string | null;
-  statusName?: string; // naziv statusa iz taxonomy term
+  statusName?: string;
 }
 
 export default function KvaroviTable({ kvarovi = [] }: { kvarovi?: Kvarovi[] }) {
@@ -17,23 +18,24 @@ export default function KvaroviTable({ kvarovi = [] }: { kvarovi?: Kvarovi[] }) 
     return <p className="text-gray-500 text-center">Nema kvarova.</p>;
   }
 
-  const MAX_BODY_CHARS = 100;
-
   return (
     <div className="overflow-x-auto max-w-6xl mx-auto">
-      <table className="min-w-full border border-gray-200">
+      <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
             <th className="px-4 py-2 text-left">Naslov</th>
             <th className="px-4 py-2 text-left">Datum</th>
             <th className="px-4 py-2 text-left">Status</th>
-            <th className="px-4 py-2 text-left">Detalji</th>
+            <th className="px-4 py-2 text-center w-32">Akcije</th>
           </tr>
         </thead>
+
         <tbody>
           {kvarovi.map((o) => (
-            <tr key={o.id} className="border-t border-gray-200 hover:bg-gray-50">
-
+            <tr
+              key={o.id}
+              className="border-t border-gray-200 hover:bg-gray-50 transition"
+            >
               {/* NASLOV */}
               <td className="px-4 py-2 font-medium">{o.title}</td>
 
@@ -51,14 +53,38 @@ export default function KvaroviTable({ kvarovi = [] }: { kvarovi?: Kvarovi[] }) 
                 <StatusBadge status={o.statusName || "Nepoznat"} />
               </td>
 
-              {/* LINK */}
+              {/* AKCIJE */}
               <td className="px-4 py-2">
-                <Link
-                  href={`/kvarovi/${o.id}`}
-                  className="text-blue-600 font-medium text-sm hover:underline"
-                >
-                  Opširnije →
-                </Link>
+                <div className="flex justify-center items-center gap-3">
+
+                  {/* VIEW */}
+                  <Link
+                    href={`/kvarovi/${o.id}`}
+                    className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-blue-600"
+                    title="Pregled"
+                  >
+                    <Eye size={18} />
+                  </Link>
+
+                  {/* EDIT */}
+                  <Link
+                    href={`/kvarovi/${o.id}/edit`}
+                    className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-green-600"
+                    title="Izmeni"
+                  >
+                    <Pencil size={18} />
+                  </Link>
+
+                  {/* DELETE */}
+                  <button
+                    className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-red-600"
+                    title="Obriši"
+                    onClick={() => alert("Delete funkcija još nije implementirana")}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+
+                </div>
               </td>
             </tr>
           ))}
