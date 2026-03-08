@@ -73,7 +73,7 @@ export default async function SednicaPage({ params }: PageProps) {
       <BackButton />
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {sednica.title}
-        {sednica.typeName && <StatusBadge status={sednica.typeName} />}
+        {sednica.type && <StatusBadge status={sednica.type} />}
       </h1>
 
       <p className="text-gray-500 text-sm mb-6">
