@@ -10,23 +10,23 @@ type Activity = {
   type?: string;
 };
 
-interface ActivitiesListProps {
+type ActivitiesListProps = {
   userId?: string;
-}
+};
 
 export default function ActivitiesList({ userId }: ActivitiesListProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
 
   const limit = 5;
 
   useEffect(() => {
-    async function fetchActivities() {
-      setLoading(true);
-
+    const fetchActivities = async () => {
       try {
+        setLoading(true);
+
         const url = userId
           ? `/api/activities?userId=${userId}&page=${page}&limit=${limit}`
           : `/api/my-activities?page=${page}&limit=${limit}`;
@@ -34,16 +34,16 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
         const res = await fetch(url);
         const data = await res.json();
 
-        setActivities(data.activities || []);
-        setTotal(data.total || 0);
-      } catch (error) {
-        console.error("Error fetching activities:", error);
+        setActivities(data.activities ?? []);
+        setTotal(data.total ?? 0);
+      } catch (err) {
+        console.error("Error fetching activities:", err);
         setActivities([]);
         setTotal(0);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchActivities();
   }, [userId, page]);
@@ -85,7 +85,7 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
             <div className="flex justify-center mt-4 gap-2">
               <button
                 disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
+                onClick={() => setPage((p) => p - 1)}
                 className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Prethodna
@@ -97,7 +97,7 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
 
               <button
                 disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Sledeća
