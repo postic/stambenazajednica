@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Bell } from "lucide-react";
 
 interface Notification {
@@ -38,15 +44,27 @@ export default function NotificationsPanel() {
           </span>
         )}
       </SheetTrigger>
-      <SheetContent position="right" size="sm" className="bg-white dark:bg-gray-800">
+
+      {/* Ispravljeno: position → side */}
+      <SheetContent side="right" size="sm" className="bg-white dark:bg-gray-800">
         <SheetHeader>
-          <SheetTitle className="text-gray-900 dark:text-white">Notifications</SheetTitle>
+          <SheetTitle className="text-gray-900 dark:text-white">
+            Notifications
+          </SheetTitle>
         </SheetHeader>
+
         <div className="mt-4 space-y-4">
           {notifications.map((n, i) => (
-            <div key={i} className="p-3 border-b last:border-b-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-              <div className="font-semibold text-gray-900 dark:text-white">{n.title}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-300">{n.time}</div>
+            <div
+              key={i}
+              className="p-3 border-b last:border-b-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            >
+              <div className="font-semibold text-gray-900 dark:text-white">
+                {n.title}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-300">
+                {n.time}
+              </div>
             </div>
           ))}
         </div>
