@@ -45,8 +45,8 @@ export default function NotificationsPanel() {
         )}
       </SheetTrigger>
 
-      {/* Ispravljeno: position → side */}
-      <SheetContent side="right" size="sm" className="bg-white dark:bg-gray-800">
+      {/* Ispravljeno: uklonjen 'size', koristi 'side' */}
+      <SheetContent side="right" className="w-80 bg-white dark:bg-gray-800">
         <SheetHeader>
           <SheetTitle className="text-gray-900 dark:text-white">
             Notifications
