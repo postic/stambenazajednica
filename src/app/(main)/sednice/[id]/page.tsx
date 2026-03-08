@@ -48,7 +48,7 @@ async function getSednica(id: string): Promise<Sednica | null> {
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      typeName: typeName,
+      type?: string; // naziv statusa, opcionalno
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
