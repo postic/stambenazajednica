@@ -24,7 +24,6 @@ async function getObavestenje(id: string): Promise<Obavestenje | null> {
         cache: "no-store",
       }
     );
-
     if (!res.ok) {
       console.error("Fetch failed:", res.status);
       return null;
@@ -79,7 +78,7 @@ export default async function ObavestenjePage({ params }: PageProps) {
       <BackButton />
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {obavestenje.title}
-        {obavestenje.typeName && <StatusBadge status={obavestenje.typeName} />}
+        {obavestenje.type && <StatusBadge status={obavestenje.type} />}
       </h1>
 
       <p className="text-gray-500 text-sm mb-6">
