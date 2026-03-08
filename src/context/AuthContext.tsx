@@ -6,6 +6,7 @@ type User = {
   uid: string;
   name: string;
   mail: string;
+  picture?: string; // opcionalno polje za sliku korisnika
 };
 
 type AuthContextType = {
