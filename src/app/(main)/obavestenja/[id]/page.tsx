@@ -51,7 +51,7 @@ console.log(images);
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      typeName: typeName ?? "", // <<< ovde fix
+      type: typeName ?? "", // <<< ovde fix
       images: images,
     };
   } catch (error) {
