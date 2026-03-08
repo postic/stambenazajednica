@@ -16,6 +16,7 @@ export default function ImageGridLightbox({ images }: Props) {
 
   return (
     <div className="mb-6">
+      {/* Grid preview slika */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {images.map((img, idx) => (
           <div
@@ -35,13 +36,18 @@ export default function ImageGridLightbox({ images }: Props) {
         ))}
       </div>
 
+      {/* Lightbox */}
       {open && (
         <Lightbox
           open={open}
           close={() => setOpen(false)}
           slides={images.map((img) => ({ src: img }))}
           index={photoIndex}
-          onIndexChange={setPhotoIndex}
+          controller={{
+            on: {
+              change: ({ index }) => setPhotoIndex(index),
+            },
+          }}
         />
       )}
     </div>
