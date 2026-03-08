@@ -7,6 +7,7 @@ type User = {
   name: string;
   mail: string;
   picture?: string; // opcionalno polje za sliku korisnika
+  created?: string;    // opcionalno polje za datum registracije
 };
 
 type AuthContextType = {
