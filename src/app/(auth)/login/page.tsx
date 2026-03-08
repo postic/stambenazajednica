@@ -32,10 +32,12 @@ export default function LoginPage() {
   const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
+  // Preusmeravanje ako je korisnik već ulogovan
   useEffect(() => {
     if (user) router.push("/dashboard");
   }, [user, router]);
 
+  // Interval za otključavanje forme
   useEffect(() => {
     if (!lockedUntil) return;
     const interval = setInterval(() => {
@@ -52,34 +54,40 @@ export default function LoginPage() {
     if (lockedUntil) return;
 
     setLoading(true);
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier, password, remember }),
-      credentials: "include",
-    });
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password, remember }),
+        credentials: "include",
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
 
-    if (res.ok) {
-      toast.success("Uspešno ste prijavljeni");
-      await login();
-      router.push("/dashboard");
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      toast.error(data.error || "Neispravni podaci.");
-      if (newAttempts >= 3) {
-        const lockTime = Date.now() + 30000;
-        setLockedUntil(lockTime);
-        toast.warning("Previše pokušaja. Pokušajte ponovo za 30s.");
+      if (res.ok) {
+        toast.success("Uspešno ste prijavljeni");
+        await login();
+        router.push("/dashboard");
+      } else {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        toast.error(data.error || "Neispravni podaci.");
+        if (newAttempts >= 3) {
+          const lockTime = Date.now() + 30_000; // 30 sekundi
+          setLockedUntil(lockTime);
+          toast.warning("Previše pokušaja. Pokušajte ponovo za 30s.");
+        }
       }
+    } catch (err) {
+      console.error(err);
+      toast.error("Greška pri povezivanju sa serverom.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  const isLocked = lockedUntil && Date.now() < lockedUntil;
-  const isDisabled = !identifier || !password || loading || isLocked;
+  const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
+  const isDisabled = !!(!identifier || !password || loading || isLocked);
   const remainingSeconds = lockedUntil
     ? Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000))
     : 0;
@@ -88,16 +96,17 @@ export default function LoginPage() {
     <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
       <Card className="w-full max-w-xl shadow-lg rounded-2xl border-0">
         <CardHeader className="pb-3 pt-8">
-          <CardTitle className="text-2xl font-bold text-center">
-            Prijava
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Prijava</CardTitle>
           <CardDescription className="text-center text-sm mt-1 whitespace-nowrap">
             Unesite svoje podatke za pristup aplikaciji
           </CardDescription>
         </CardHeader>
 
         <CardContent className="px-10 pb-10">
-          <form className="flex flex-col gap-4 max-w-md mx-auto w-full" onSubmit={handleLogin}>
+          <form
+            className="flex flex-col gap-4 max-w-md mx-auto w-full"
+            onSubmit={handleLogin}
+          >
             {/* Identifier */}
             <div className="space-y-1">
               <Label htmlFor="identifier" className="text-sm">
