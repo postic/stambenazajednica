@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { CardContent } from "@/components/ui/card";
 
@@ -10,7 +11,7 @@ type Activity = {
 };
 
 interface ActivitiesListProps {
-  userId?: string; // optional, možeš koristiti za druge korisnike
+  userId?: string;
 }
 
 export default function ActivitiesList({ userId }: ActivitiesListProps) {
@@ -18,27 +19,32 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+
   const limit = 5;
 
   useEffect(() => {
     async function fetchActivities() {
       setLoading(true);
+
       try {
         const url = userId
           ? `/api/activities?userId=${userId}&page=${page}&limit=${limit}`
           : `/api/my-activities?page=${page}&limit=${limit}`;
+
         const res = await fetch(url);
         const data = await res.json();
+
         setActivities(data.activities || []);
         setTotal(data.total || 0);
-      } catch (e) {
-        console.error("Error fetching activities:", e);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
         setActivities([]);
         setTotal(0);
       } finally {
         setLoading(false);
       }
     }
+
     fetchActivities();
   }, [userId, page]);
 
@@ -46,9 +52,13 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
 
   return (
     <CardContent>
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Učitavanje aktivnosti...</p>
-      ) : activities.length > 0 ? (
+      {loading && (
+        <p className="text-sm text-muted-foreground">
+          Učitavanje aktivnosti...
+        </p>
+      )}
+
+      {!loading && activities.length > 0 && (
         <div className="space-y-4">
           {activities.map((activity) => (
             <div
@@ -57,19 +67,20 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
             >
               <div className="flex justify-between items-center">
                 <p className="font-medium">{activity.title}</p>
+
                 {activity.type && (
                   <span className="text-xs bg-muted px-2 py-1 rounded-md">
                     {activity.type}
                   </span>
                 )}
               </div>
+
               <p className="text-sm text-muted-foreground mt-1">
                 {activity.date}
               </p>
             </div>
           ))}
 
-          {/* PAGINACIJA */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-4 gap-2">
               <button
@@ -79,9 +90,11 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
               >
                 Prethodna
               </button>
+
               <span className="px-2 py-1">
                 {page} / {totalPages}
               </span>
+
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
@@ -92,8 +105,12 @@ export default function ActivitiesList({ userId }: ActivitiesListProps) {
             </div>
           )}
         </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">Nemate još aktivnosti.</p>
+      )}
+
+      {!loading && activities.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Nemate još aktivnosti.
+        </p>
       )}
     </CardContent>
   );
