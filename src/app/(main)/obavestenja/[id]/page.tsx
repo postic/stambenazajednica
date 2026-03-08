@@ -9,7 +9,7 @@ interface Obavestenje {
   title: string;
   body: string;
   created: string;
-  images?: string[]; // ← promenjeno sa `image` na `images`
+  images?: string[] | null;
   type?: string; // naziv statusa iz taxonomy term
 }
 
