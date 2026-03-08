@@ -43,10 +43,9 @@ export default function ImageGridLightbox({ images }: Props) {
           close={() => setOpen(false)}
           slides={images.map((img) => ({ src: img }))}
           index={photoIndex}
-          controller={{
-            on: {
-              change: ({ index }) => setPhotoIndex(index),
-            },
+          // type-safe način za praćenje trenutnog slajda
+          on={{
+            indexChange: setPhotoIndex,
           }}
         />
       )}
