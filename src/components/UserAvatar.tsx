@@ -4,13 +4,31 @@ interface UserAvatarProps {
   size?: number;
 }
 
-export default function UserAvatar({ name, picture, size = 40 }: UserAvatarProps) {
+function fixImageUrl(url?: string | null) {
+  if (!url) return null;
+
+  // ako je već apsolutni URL
+  if (url.startsWith("http")) {
+    return url.replace("/web/web/", "/web/");
+  }
+
+  const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "";
+  return `${base}${url}`.replace("/web/web/", "/web/");
+}
+
+export default function UserAvatar({
+  name,
+  picture,
+  size = 40,
+}: UserAvatarProps) {
   const initial = name?.charAt(0).toUpperCase() || "?";
 
-  if (picture) {
+  const src = fixImageUrl(picture);
+
+  if (src) {
     return (
       <img
-        src={picture}
+        src={src}
         alt={name}
         style={{
           width: size,
@@ -28,7 +46,7 @@ export default function UserAvatar({ name, picture, size = 40 }: UserAvatarProps
         width: size,
         height: size,
         borderRadius: "50%",
-        backgroundColor: "#ccc", // sivi krug
+        backgroundColor: "#ccc",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
