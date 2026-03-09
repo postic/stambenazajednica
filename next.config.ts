@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    domains: ['zitnitrg.stambenazajednica.in.rs'],
   },
 };
 
