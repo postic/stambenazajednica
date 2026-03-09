@@ -30,17 +30,3 @@ export function extractImages(node: any, included: any[] = []) {
     })
     .filter((url): url is string => Boolean(url));
 }
-
-
-export function extractUserImage(user: any, included: any[] = []) {
-  const rel = user?.relationships?.user_picture?.data;
-  if (!rel) return null;
-
-  const file = included.find(
-    (i) => i.type === "file--file" && i.id === rel.id
-  );
-
-  const url = file?.attributes?.uri?.url;
-
-  return buildDrupalImageUrl(url);
-}
