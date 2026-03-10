@@ -4,22 +4,30 @@ import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import UserAvatar from "@/components/UserAvatar";
+import NotificationsPanel from "./NotificationsPanel";
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Sun, Moon } from "lucide-react";
-import NotificationsPanel from "./NotificationsPanel";
 
-export default function Navbar() {
+import { Sun, Moon, Menu } from "lucide-react";
+
+interface NavbarProps {
+  setMobileOpen: (open: boolean) => void;
+}
+
+export default function Navbar({ setMobileOpen }: NavbarProps) {
   const { user, logout, loading } = useAuth();
-  const [darkMode, setDarkMode] = useState(false);
   const router = useRouter();
+
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
+
     if (darkMode) {
       root.classList.add("dark");
     } else {
@@ -29,7 +37,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await logout(); // koristi AuthContext logout
+      await logout();
       router.push("/login");
       router.refresh();
     } catch (error) {
@@ -38,14 +46,29 @@ export default function Navbar() {
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-900 shadow flex items-center justify-between px-6">
-      {/* Leva strana */}
-      <h1 className="font-bold text-2xl text-gray-900 dark:text-white">
-        Stambena zajednica
-      </h1>
+    <header className="h-16 bg-white dark:bg-gray-900 shadow flex items-center justify-between px-4 md:px-6">
 
-      {/* Desna strana */}
-      <div className="flex items-center gap-4">
+      {/* LEFT SIDE */}
+      <div className="flex items-center gap-3">
+
+        {/* Mobile sidebar button */}
+        <button
+          className="md:hidden p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+          onClick={() => setMobileOpen(true)}
+        >
+          <Menu size={22} />
+        </button>
+
+        {/* Title */}
+        <h1 className="font-bold text-lg md:text-2xl text-gray-900 dark:text-white">
+          Stambena zajednica
+        </h1>
+
+      </div>
+
+      {/* RIGHT SIDE */}
+      <div className="flex items-center gap-3 md:gap-4">
+
         {/* Dark mode toggle */}
         <button
           className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -55,14 +78,15 @@ export default function Navbar() {
           {darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
+        {/* Notifications */}
         <NotificationsPanel />
 
-        {/* Loader dok se auth učitava */}
+        {/* Loading skeleton */}
         {loading && (
           <div className="h-10 w-10 rounded-full bg-gray-300 animate-pulse" />
         )}
 
-        {/* Ako korisnik NIJE logovan */}
+        {/* Not logged */}
         {!loading && !user && (
           <button
             onClick={() => router.push("/login")}
@@ -72,9 +96,10 @@ export default function Navbar() {
           </button>
         )}
 
-        {/* Ako korisnik JESTE logovan */}
+        {/* Logged user */}
         {!loading && user && (
           <DropdownMenu>
+
             <DropdownMenuTrigger className="flex items-center gap-2 cursor-pointer">
 
               <UserAvatar
@@ -83,12 +108,14 @@ export default function Navbar() {
                 size={40}
               />
 
-              <span className="text-gray-900 dark:text-white text-sm font-medium">
+              <span className="hidden md:block text-gray-900 dark:text-white text-sm font-medium">
                 {user?.name}
               </span>
+
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
+
               <DropdownMenuItem onClick={() => router.push("/profile")}>
                 Profile
               </DropdownMenuItem>
@@ -103,9 +130,12 @@ export default function Navbar() {
               >
                 Logout
               </DropdownMenuItem>
+
             </DropdownMenuContent>
+
           </DropdownMenu>
         )}
+
       </div>
     </header>
   );
