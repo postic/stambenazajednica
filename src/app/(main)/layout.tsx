@@ -2,7 +2,6 @@
 
 import "../globals.css";
 import { ReactNode, useState } from "react";
-
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -16,9 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="sr">
       <body className="bg-gray-100 h-screen overflow-hidden">
-
         <AuthProvider>
-
           <div className="flex h-screen">
 
             {/* LEFT SIDEBAR */}
@@ -36,27 +33,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <main className="flex flex-1 overflow-hidden">
 
                 {/* CONTENT AREA */}
-                <div className="flex-1 flex flex-col overflow-y-auto">
-                  <AlertBanner />
-
-                  <div className="flex-1 p-6 bg-gray-100">
-                    {children}
-                  </div>
+                <div className="flex-1 flex flex-col overflow-y-auto p-6">
+                  {children}
                 </div>
 
                 {/* RIGHT SIDEBAR */}
-                <RightSidebar />
+                <div className="hidden lg:block">
+                  <RightSidebar />
+                </div>
 
               </main>
             </div>
 
           </div>
 
-          {/* TOASTER */}
           <Toaster position="top-center" richColors />
-
         </AuthProvider>
-
       </body>
     </html>
   );
