@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ObavestenjaTable from "@/components/ObavestenjaTable";
+import { DataTable } from "@/components/table/DataTable";
+import { Obavestenja, obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
 
 export default function ObavestenjaPage() {
-  const [obavestenja, setObavestenja] = useState<any[]>([]);
+  const [obavestenja, setObavestenja] = useState<Obavestenja[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -26,7 +27,12 @@ export default function ObavestenjaPage() {
         Obaveštenja
       </h1>
 
-      <ObavestenjaTable obavestenja={obavestenja} />
+      {/* Koristimo generički DataTable */}
+      <DataTable
+        data={obavestenja}
+        columns={obavestenjaColumns}
+        emptyMessage="Nema obaveštenja."
+      />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">

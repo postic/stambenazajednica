@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import SedniceTable from "@/components/SedniceTable";
+import { DataTable } from "@/components/table/DataTable";
+import { Sednica, sedniceColumns } from "@/features/sednice/SedniceColumns";
 
 export default function SednicePage() {
-  const [sednice, setSednice] = useState<any[]>([]);
+  const [sednice, setSednice] = useState<Sednica[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -14,7 +15,8 @@ export default function SednicePage() {
       .then((data) => {
         setSednice(data.data);
         setTotalPages(data.totalPages);
-      });
+      })
+      .catch((err) => console.error("Greška pri učitavanju sednica:", err));
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -26,7 +28,12 @@ export default function SednicePage() {
         Sednice
       </h1>
 
-      <SedniceTable sednice={sednice} />
+      {/* Generički DataTable */}
+      <DataTable
+        data={sednice}
+        columns={sedniceColumns}
+        emptyMessage="Nema sednica."
+      />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">

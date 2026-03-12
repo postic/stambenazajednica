@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DokumentiTable from "@/components/DokumentiTable";
+//import DokumentiTable from "@/components/DokumentiTable";
+import DokumentiTable from "@/features/dokumenti/DokumentiTable"
 
 export default function DokumentiPage() {
   const [dokumenti, setDokumenti] = useState<any[]>([]);

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import KvaroviList from "@/components/KvaroviTable";
+import { DataTable } from "@/components/table/DataTable";
+import { Kvar, kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
 
 export default function KvaroviPage() {
-  const [kvarovi, setKvarovi] = useState<any[]>([]);
+  const [kvarovi, setKvarovi] = useState<Kvar[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -14,7 +15,8 @@ export default function KvaroviPage() {
       .then((data) => {
         setKvarovi(data.data);
         setTotalPages(data.totalPages);
-      });
+      })
+      .catch((err) => console.error("Greška pri učitavanju kvarova:", err));
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -23,10 +25,15 @@ export default function KvaroviPage() {
   return (
     <div>
       <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Kvarovi
+        Prijavljeni kvarovi
       </h1>
 
-      <KvaroviList kvarovi={kvarovi} />
+      {/* Generički DataTable */}
+      <DataTable
+        data={kvarovi}
+        columns={kvaroviColumns}
+        emptyMessage="Nema prijavljenih kvarova."
+      />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">
