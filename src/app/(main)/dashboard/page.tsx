@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import AlertBanner from "@/components/AlertBanner";
 import Card from "@/components/Card";
 import ChartCard from "@/components/ChartCard";
-import Table from "@/components/Table";
 
 export default function DashboardPage() {
   const chartData = [
@@ -13,13 +12,6 @@ export default function DashboardPage() {
     { name: "Feb", value: 50 },
     { name: "Mar", value: 70 },
     { name: "Apr", value: 40 },
-  ];
-
-  const tableColumns = ["Name", "Email", "Role"];
-  const tableData = [
-    { Name: "John Doe", Email: "john@example.com", Role: "Admin" },
-    { Name: "Jane Smith", Email: "jane@example.com", Role: "Editor" },
-    { Name: "Bob Johnson", Email: "bob@example.com", Role: "User" },
   ];
 
   return (
@@ -42,10 +34,6 @@ export default function DashboardPage() {
               <ChartCard title="Revenue Trend" data={chartData} />
             </div>
 
-            {/* Tabela */}
-            <div className="overflow-auto">
-              <Table columns={tableColumns} data={tableData} />
-            </div>
           </div>
         </main>
     </div>

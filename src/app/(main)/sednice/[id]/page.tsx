@@ -18,7 +18,7 @@ const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
 async function getSednica(id: string): Promise<Sednica | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}?include=field_status_sednice`,
+      `${DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}?include=field_status_sednice,field_dokumenti_sednice`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -41,14 +41,14 @@ async function getSednica(id: string): Promise<Sednica | null> {
       data.included?.find(
         (i: any) => i.type === statusRel.type && i.id === statusRel.id
       );
-    const typeName = statusIncluded?.attributes?.name || "Nepoznat";
+    const type = statusIncluded?.attributes?.name || "Nepoznat";
 
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      type: typeName ?? "Nepoznat", // samo vrednost
+      type: type ?? "Nepoznat", // samo vrednost
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
