@@ -1,77 +1,161 @@
+// src/app/(main)/sednice/[id]/page.tsx
 import { notFound } from "next/navigation";
-import { extractImages } from "@/lib/images";
-import ImageGridLightbox from "@/components/ImageGridLightbox";
-import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
+import StatusBadge from "@/components/StatusBadge";
+import { FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt } from "react-icons/fa";
+
+interface Dokument {
+  id: string;
+  title: string;
+  url: string;
+  mimeType: string;
+}
 
 interface Sednica {
   id: string;
   title: string;
   body: string;
   created: string;
-  image?: string[] | null;
-  type?: string; // naziv statusa iz taxonomy term
-}
-
-const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
-
-async function getSednica(id: string): Promise<Sednica | null> {
-  try {
-    const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}?include=field_status_sednice,field_dokumenti_sednice`,
-      {
-        headers: { Accept: "application/vnd.api+json" },
-        cache: "no-store",
-      }
-    );
-
-    if (!res.ok) {
-      console.error("Fetch failed:", res.status);
-      return null;
-    }
-
-    const data = await res.json();
-    const item = data?.data;
-    if (!item) return null;
-
-    / === parsiranje statusa === /
-    const statusRel = item.relationships?.field_status_sednice?.data;
-    const statusIncluded =
-      statusRel &&
-      data.included?.find(
-        (i: any) => i.type === statusRel.type && i.id === statusRel.id
-      );
-    const type = statusIncluded?.attributes?.name || "Nepoznat";
-
-    return {
-      id: item.id,
-      title: item.attributes.title,
-      body: item.attributes.body?.value ?? "",
-      created: item.attributes.created,
-      type: type ?? "Nepoznat", // samo vrednost
-    };
-  } catch (error) {
-    console.error("Greška pri fetch-u:", error);
-    return null;
-  }
+  type?: string;
+  dokumenti?: Dokument[];
 }
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+const DRUPAL_BASE_URL =
+  process.env.DRUPAL_BASE_URL || "http://localhost:8888/web";
+
+// Kreira mapu top-level included entiteta
+function indexIncluded(included: any[] = []) {
+  const map = new Map();
+  for (const item of included) {
+    map.set(`${item.type}:${item.id}`, item);
+  }
+  return map;
+}
+
+// Generiše pun URL fajla sa fallback-om
+function getDrupalFileUrl(fileEntity: any) {
+  if (!fileEntity) return "";
+  const rawUrl = fileEntity.attributes?.uri?.url;
+  const filename = fileEntity.attributes?.filename;
+  const base = DRUPAL_BASE_URL.replace(/\/web$/, "");
+
+  if (rawUrl) {
+    const url = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
+    return `${base}${url}`;
+  }
+
+  if (filename) {
+    return `${base}/sites/default/files/${filename}`;
+  }
+
+  return "";
+}
+
+// Fetch sednice i dokumenata
+async function getSednica(id: string): Promise<Sednica | null> {
+  try {
+    const endpoint =
+      `${DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}` +
+      `?include=field_status_sednice,field_dokumenti_sednice,field_dokumenti_sednice.field_dokument_file`;
+
+    const res = await fetch(endpoint, {
+      headers: { Accept: "application/vnd.api+json" },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const item = data.data;
+    if (!item) return null;
+
+    const includedMap = indexIncluded(data.included);
+
+    // STATUS
+    const statusRel = item.relationships?.field_status_sednice?.data;
+    const statusIncluded =
+      statusRel && includedMap.get(`${statusRel.type}:${statusRel.id}`);
+    const typeName = statusIncluded?.attributes?.name || "Nepoznat";
+
+    // DOKUMENTI
+    const dokumenti: Dokument[] = [];
+    const dokumentiRelRaw = item.relationships?.field_dokumenti_sednice?.data;
+    const dokumentiRel = Array.isArray(dokumentiRelRaw)
+      ? dokumentiRelRaw
+      : dokumentiRelRaw
+      ? [dokumentiRelRaw]
+      : [];
+
+    for (const rel of dokumentiRel) {
+      const media = includedMap.get(`${rel.type}:${rel.id}`);
+      if (!media) continue;
+
+      // media je tvoj MEDIA objekat
+      const fileRel = media.relationships?.field_dokument_file?.data;
+
+      // može biti array ili single object
+      const files = Array.isArray(fileRel) ? fileRel : [fileRel];
+
+      for (const f of files) {
+      if (!f) continue;
+
+      // dohvat file entity iz includedMap
+      const fileEntity = includedMap.get(`${f.type}:${f.id}`);
+      if (!fileEntity) continue;
+
+      // url fajla
+      const fileUrl = getDrupalFileUrl(fileEntity);
+      const fileMime = fileEntity.attributes?.filemime
+
+      dokumenti.push({
+        id: rel.id,
+        title: media.attributes?.title || media.attributes?.name || "Dokument",
+        url: fileUrl,
+        mimeType: fileMime, // ostavljamo u objektu, ali ne prikazujemo
+      });
+
+      }
+    }
+
+    return {
+      id: item.id,
+      title: item.attributes.title,
+      body: item.attributes.body?.value ?? "",
+      created: item.attributes.created,
+      type: typeName,
+      dokumenti,
+    };
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return null;
+  }
+}
+
+// Ikone fajlova
+function getFileIcon(mimeType: string) {
+  if (mimeType.includes("pdf")) return <FaFilePdf className="inline mr-1 text-red-600" />;
+  if (mimeType.includes("word")) return <FaFileWord className="inline mr-1 text-blue-600" />;
+  if (mimeType.includes("excel")) return <FaFileExcel className="inline mr-1 text-green-600" />;
+  return <FaFileAlt className="inline mr-1 text-gray-600" />;
+}
+
+// Glavna stranica
 export default async function SednicaPage({ params }: PageProps) {
   const { id } = await params;
+  if (!id) notFound();
 
   const sednica = await getSednica(id);
-
   if (!sednica) notFound();
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* 🔙 BACK BUTTON */}
       <BackButton />
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
+
+      <h1 className="text-xl font-bold mb-2 flex items-center gap-3">
         {sednica.title}
         {sednica.type && <StatusBadge status={sednica.type} />}
       </h1>
@@ -85,9 +169,30 @@ export default async function SednicaPage({ params }: PageProps) {
       </p>
 
       <div
-        className="prose max-w-none"
+        className="prose max-w-none mb-6"
         dangerouslySetInnerHTML={{ __html: sednica.body }}
       />
+
+      {sednica.dokumenti && sednica.dokumenti.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-semibold mb-2">Dokumenti sednice:</h2>
+          <ul className="list-none space-y-2">
+            {sednica.dokumenti.map((doc) => (
+              <li key={doc.id}>
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {getFileIcon(doc.mimeType)}
+                  {doc.title} {/* NE prikazujemo MIME tip */}
+                </a>
+              </li>
+            ))}
+        </ul>
+        </div>
+      )}
     </div>
   );
 }
