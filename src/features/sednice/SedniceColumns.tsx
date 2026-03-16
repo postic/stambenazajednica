@@ -1,18 +1,10 @@
 "use client";
 
-import React from "react";
 import { Column } from "@/components/table/DataTable";
-import StatusBadge from "@/components/StatusBadge";
+import { Sednica } from "./types";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-
-// Tip za jednu sednicu
-export interface Sednica {
-  id: string;
-  title: string;
-  created: string;
-  type?: string;
-}
+import StatusBadge from "@/components/StatusBadge";
 
 // Delete stub funkcija
 const handleDelete = (id: string) => {
@@ -26,50 +18,59 @@ const getStatus = (s: Sednica) => s.type || "Nepoznat";
 export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "title",
-    label: "Naslov",
-    render: (s) => <span>{s.title}</span>,
-  },
-  {
-    key: "date",
-    label: "Datum",
+    header: "Naslov",
     render: (s) => (
-      <span>
-        {new Date(s.created).toLocaleDateString("sr-RS", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-      </span>
+      <Link
+        href={`/sednice/${s.id}`}
+        className="text-blue-600 hover:underline"
+        title={s.title}
+      >
+        {s.title}
+      </Link>
     ),
   },
   {
+    key: "created",
+    header: "Datum",
+    render: (s) =>
+      s.created
+        ? new Date(s.created).toLocaleDateString("sr-RS", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "-",
+  },
+  {
     key: "type",
-    label: "Tip",
+    header: "Tip",
     render: (s) => <StatusBadge status={getStatus(s)} />,
   },
   {
     key: "actions",
-    label: "Akcije",
-    isAction: true, // spaja dugmiće u jedan red na mobile prikazu
+    header: "Akcije",
     render: (s) => (
-      <div className="flex justify-center items-center gap-3 whitespace-nowrap">
+      <div className="flex justify-center gap-2">
         <Link
           href={`/sednice/${s.id}`}
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-blue-600"
+          className="text-blue-600 hover:text-blue-800"
+          title="View"
         >
-          <Eye size={18} />
+          <FaEye />
         </Link>
         <Link
           href={`/sednice/${s.id}/edit`}
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-green-600"
+          className="text-yellow-600 hover:text-yellow-800"
+          title="Edit"
         >
-          <Pencil size={18} />
+          <FaEdit />
         </Link>
         <button
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-red-600"
+          className="text-red-600 hover:text-red-800"
+          title="Delete"
           onClick={() => handleDelete(s.id)}
         >
-          <Trash2 size={18} />
+          <FaTrash />
         </button>
       </div>
     ),
