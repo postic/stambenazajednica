@@ -50,6 +50,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         { title: "Dokumenti", icon: FileText, badge: 5, submenu: [
             { title: "Zapisnici", href: "/dokumenti/zapisnici" },
             { title: "Odluke", href: "/dokumenti/odluke" },
+            { title: "Ponude", href: "/dokumenti/ponude" },
+            { title: "Ugovori", href: "/dokumenti/ugovori" },
+            { title: "Finansijski izveštaji", href: "/dokumenti/finansijski-izvestaji" },
+            { title: "Ostalo", href: "/dokumenti/ostalo" },
           ]
         },
       ],
