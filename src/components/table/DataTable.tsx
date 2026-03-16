@@ -19,26 +19,36 @@ export function DataTable<T extends { id?: string | number }>({
 }: DataTableProps<T>) {
   return (
     <table className="w-full border-collapse border text-sm">
-      <thead className="bg-gray-100">
-        <tr>
-          {columns.map((col) => (
-            <th key={col.key} className="border px-4 py-2 text-left">
-              {col.header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((item) => (
-          <tr key={item.id ?? JSON.stringify(item)} className="hover:bg-gray-50">
-            {columns.map((col) => (
-              <td key={col.key} className="border px-4 py-2">
-                {col.render(item)}
-              </td>
-            ))}
-          </tr>
+  <thead className="bg-gray-100">
+    <tr>
+      {columns.map((col) => (
+        <th
+          key={col.key}
+          className={`border px-4 py-2 ${
+            col.key === "actions" ? "text-center" : "text-left"
+          }`}
+        >
+          {col.header}
+        </th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {data.map((item) => (
+      <tr key={item.id ?? JSON.stringify(item)} className="hover:bg-gray-50">
+        {columns.map((col) => (
+          <td
+            key={col.key}
+            className={`border px-4 py-2 ${
+              col.key === "actions" ? "text-center" : ""
+            }`}
+          >
+            {col.render(item)}
+          </td>
         ))}
-      </tbody>
-    </table>
+      </tr>
+    ))}
+  </tbody>
+</table>
   );
 }

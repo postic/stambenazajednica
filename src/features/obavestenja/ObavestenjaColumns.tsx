@@ -1,76 +1,65 @@
-// src/features/obavestenja/ObavestenjaColumns.tsx
-"use client";
-
-import React from "react";
 import { Column } from "@/components/table/DataTable";
-import StatusBadge from "@/components/StatusBadge";
+import { Obavestenja } from "./types";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-
-// Tip za jedno obaveštenje
-export interface Obavestenja {
-  id: string;
-  title: string;
-  created: string;
-  type?: string;
-}
-
-// Delete stub funkcija
-const handleDelete = (id: string) => {
-  alert(`Delete funkcija nije implementirana za obaveštenje ID: ${id}`);
-};
+import StatusBadge from "@/components/StatusBadge";
 
 // Funkcija koja bira pravi status
-const getStatus = (o: Obavestenja) => o.type || o.type || "Nepoznat";
+const getStatus = (o: Obavestenja) => o.type || "Nepoznat";
 
-// Kolone za DataTable
 export const obavestenjaColumns: Column<Obavestenja>[] = [
   {
     key: "title",
-    label: "Naslov",
-    render: (o) => <span>{o.title}</span>,
-  },
-  {
-    key: "date",
-    label: "Datum",
+    header: "Naslov",
     render: (o) => (
-      <span>
-        {new Date(o.created).toLocaleDateString("sr-RS", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-      </span>
+      <Link
+        href={`/obavestenja/${o.id}`}
+        className="text-blue-600 hover:underline"
+        title={o.title}
+      >
+        {o.title}
+      </Link>
     ),
   },
   {
+    key: "date",
+    header: "Datum",
+    render: (o) =>
+      new Date(o.created).toLocaleDateString("sr-RS", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+  },
+  {
     key: "type",
-    label: "Tip",
+    header: "Tip",
     render: (o) => <StatusBadge status={getStatus(o)} />,
   },
   {
     key: "actions",
-    label: "Akcije",
-    isAction: true, // spaja dugmiće u jedan red na mobile prikazu
+    header: "Akcije",
     render: (o) => (
-      <div className="flex justify-center items-center gap-3 whitespace-nowrap">
+      <div className="flex justify-center gap-2">
         <Link
           href={`/obavestenja/${o.id}`}
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-blue-600"
+          className="text-blue-600 hover:text-blue-800"
+          title="View"
         >
-          <Eye size={18} />
+          <FaEye />
         </Link>
         <Link
           href={`/obavestenja/${o.id}/edit`}
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-green-600"
+          className="text-yellow-600 hover:text-yellow-800"
+          title="Edit"
         >
-          <Pencil size={18} />
+          <FaEdit />
         </Link>
         <button
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-red-600"
-          onClick={() => handleDelete(o.id)}
+          className="text-red-600 hover:text-red-800"
+          title="Delete"
         >
-          <Trash2 size={18} />
+          <FaTrash />
         </button>
       </div>
     ),

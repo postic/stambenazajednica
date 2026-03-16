@@ -4,6 +4,7 @@ interface Kvar {
   body: string;
   created: string;
   image?: string | null;
+  statusName?: string;
 }
 
 export async function GET(req: Request) {

@@ -1,71 +1,55 @@
-// src/features/dokumenti/DokumentiColumns.tsx
-"use client";
+import { Column } from "@/components/table/DataTable";
+import { Obavestenje } from "./types";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
-import React from "react";
-import Link from "next/link";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-import StatusBadge from "@/components/StatusBadge";
-
-// Tip za jedan dokument
-export interface Dokument {
-  id: string;
-  title: string;
-  created: string;
-  type?: string;
-}
-
-// Funkcija koja poziva delete handler (možeš kasnije povezati sa realnom funkcijom)
-const handleDelete = (id: string) => {
-  alert(`Delete funkcija nije implementirana za dokument ID: ${id}`);
-};
-
-// Definicija kolona za DataTable ili sličnu tabelu
-export const dokumentiColumns = [
+export const obavestenjaColumns: Column<Obavestenje>[] = [
   {
     key: "title",
-    label: "Naslov",
-    render: (d: Dokument) => <span>{d.title}</span>,
+    header: "Naslov", // običan tekst, bez linka ili ikonice
+    render: (item) => item.title, // samo plain text
   },
   {
     key: "date",
-    label: "Datum",
-    render: (d: Dokument) => (
-      <span>
-        {new Date(d.created).toLocaleDateString("sr-RS", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-      </span>
-    ),
+    header: "Datum",
+    render: (item) => item.date || "-",
   },
   {
     key: "status",
-    label: "Status",
-    render: (d: Dokument) => <StatusBadge status={d.type || "Nepoznat"} />,
+    header: "Status",
+    render: (item) =>
+      item.status ? (
+        <span
+          className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded"
+          title={item.status}
+        >
+          {item.status}
+        </span>
+      ) : (
+        "-"
+      ),
   },
   {
     key: "actions",
-    label: "Akcije",
-    render: (d: Dokument) => (
-      <div className="flex justify-center items-center gap-3 whitespace-nowrap">
-        <Link
-          href={`/dokumenti/${d.id}`}
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-blue-600"
-        >
-          <Eye size={18} />
-        </Link>
-        <Link
-          href={`/dokumenti/${d.id}/edit`}
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-green-600"
-        >
-          <Pencil size={18} />
-        </Link>
+    header: "Akcije",
+    render: (item) => (
+      <div className="flex gap-2 justify-center">
         <button
-          className="p-1 rounded hover:bg-gray-200 text-gray-600 hover:text-red-600"
-          onClick={() => handleDelete(d.id)}
+          className="text-blue-600 hover:text-blue-800"
+          title="View"
         >
-          <Trash2 size={18} />
+          <FaEye />
+        </button>
+        <button
+          className="text-yellow-600 hover:text-yellow-800"
+          title="Edit"
+        >
+          <FaEdit />
+        </button>
+        <button
+          className="text-red-600 hover:text-red-800"
+          title="Delete"
+        >
+          <FaTrash />
         </button>
       </div>
     ),
