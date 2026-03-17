@@ -1,13 +1,11 @@
-export interface DokumentFile {
-  id: string;
-  url: string;
-  mimeType: string;
-}
-
 export interface Dokument {
   id: string;
   title: string;
+  created?: string;
   status?: string;
-  date?: string;
-  files: DokumentFile[];
+  files?: {
+    id: string;
+    url: string;
+    filemime?: string;
+  }[];
 }

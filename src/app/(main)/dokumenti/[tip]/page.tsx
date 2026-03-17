@@ -23,8 +23,8 @@ export default async function DokumentiPage({ params }: PageProps) {
   }));
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Dokumenti: {tip}</h1>
+    <div>
+      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">{tip}</h1>
 
       {dokumenti.length === 0 ? (
         <p className="text-gray-500">Nema dokumenata.</p>

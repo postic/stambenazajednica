@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-//import DokumentiTable from "@/components/DokumentiTable";
-import DokumentiTable from "@/features/dokumenti/DokumentiTable"
+import { DataTable } from "@/components/table/DataTable";
+import { Dokument, dokumentiColumns } from "@/features/dokumenti/DokumentiColumns";
 
 export default function DokumentiPage() {
-  const [dokumenti, setDokumenti] = useState<any[]>([]);
+  const [dokumenti, setDokumenti] = useState<Dokument[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -15,7 +15,8 @@ export default function DokumentiPage() {
       .then((data) => {
         setDokumenti(data.data);
         setTotalPages(data.totalPages);
-      });
+      })
+      .catch((err) => console.error("Greška pri učitavanju kvarova:", err));
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -27,7 +28,12 @@ export default function DokumentiPage() {
         Dokumenti
       </h1>
 
-      <DokumentiTable dokumenti={dokumenti} />
+      {/* Generički DataTable */}
+      <DataTable
+        data={dokumenti}
+        columns={dokumentiColumns}
+        emptyMessage="Nema dokumenata."
+      />
 
       {/* Numerička paginacija */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">
