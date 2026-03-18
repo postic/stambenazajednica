@@ -1,7 +1,6 @@
 "use client";
 
 import { Column } from "@/components/table/DataTable";
-import { Dokument } from "./types";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
