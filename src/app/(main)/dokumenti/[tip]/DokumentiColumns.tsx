@@ -13,7 +13,6 @@ const handleDelete = (id: string) => {
 
 // Funkcija koja bira pravi status
 const getTip = (d: Dokument) => d.tip || "Nepoznat";
-
 // Kolone za DataTable
 export const dokumentiColumns: Column<Dokument>[] = [
   {
