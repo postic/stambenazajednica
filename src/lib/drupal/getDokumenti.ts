@@ -41,6 +41,7 @@ const url =
     return {
       id: doc.id,
       title: doc.attributes.title,
+      created: doc.attributes.created,
       files: dokumenti,
     };
   });

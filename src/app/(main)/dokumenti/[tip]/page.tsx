@@ -1,5 +1,5 @@
 import { getDokumenti } from "@/lib/drupal/getDokumenti";
-import DokumentiTable from "@/features/dokumenti/DokumentiTable";
+import DokumentiTable from "./DokumentiTable";
 import { Dokument } from "@/features/dokumenti/types";
 
 interface PageProps {
@@ -10,11 +10,13 @@ export default async function DokumentiPage({ params }: PageProps) {
   const { tip } = await params;
   const dokumentiRaw = await getDokumenti(tip);
 
+  //console.error('DOKUMENTI (NE FAJLOVI!!!!!!!!) IZABRANE KATEGORIJE:', dokumentiRaw);
+
   const dokumenti: Dokument[] = dokumentiRaw.map((doc: any) => ({
     id: doc.id,
     title: doc.title,
-    status: doc.status || null,
-    date: doc.date || null,
+    created: doc.created,
+    type: tip,
     files: doc.files.map((file: any) => ({
       id: file.id,
       url: file.url,

@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     const typeIncluded = typeRel && data.included?.find(
       (i: any) => i.type === typeRel.type && i.id === typeRel.id
     );
-    const type = typeIncluded?.attributes?.name || "Nepoznat";
+    const type = typeIncluded?.attributes?.name || "nepoznat";
 
       return {
         id: item.id,

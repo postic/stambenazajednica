@@ -1,11 +1,11 @@
 export interface Dokument {
   id: string;
   title: string;
-  created?: string;
-  status?: string;
-  files?: {
+  created?: string | null;
+  type?: string;
+  files: {
     id: string;
     url: string;
-    filemime?: string;
+    mimeType: string;
   }[];
 }

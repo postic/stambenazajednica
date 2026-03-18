@@ -21,7 +21,7 @@ export const dokumentiColumns: Column<Dokument>[] = [
     header: "Naziv",
     render: (d) => (
       <Link
-        href={`/dokumenti/${d.id}`}
+        href={`/dokumenti/${d.type}/${d.id}`}
         className="text-blue-600 hover:underline"
         title={d.title}
       >
@@ -42,34 +42,19 @@ export const dokumentiColumns: Column<Dokument>[] = [
         : "-",
   },
   {
-    key: "type",
-    header: "Tip",
-    render: (d) =>
-      d.type ? (
-        <span
-          className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded"
-          title={d.type}
-        >
-          {d.type}
-        </span>
-      ) : (
-        "-"
-      ),
-  },
-  {
     key: "actions",
     header: "Akcije",
     render: (d) => (
       <div className="flex justify-center gap-2">
         <Link
-          href={`/dokumenti/${d.id}`}
+          href={`/dokumenti/${d.type}/${d.id}`}
           className="text-blue-600 hover:text-blue-800"
           title="View"
         >
           <FaEye />
         </Link>
         <Link
-          href={`/dokumenti/${d.id}/edit`}
+          href={`/dokumenti/${d.type}/${d.id}/edit`}
           className="text-yellow-600 hover:text-yellow-800"
           title="Edit"
         >
