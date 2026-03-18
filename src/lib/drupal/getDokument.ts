@@ -22,6 +22,7 @@ console.log(JSON.stringify(data, null, 2));
         ? `${API_URL}${file.attributes.uri.url}`
         : null,
       mime: file.attributes?.filemime ?? null,
+      filename: file.attributes?.filename ?? null,
     }));
 
   return {

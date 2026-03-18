@@ -36,20 +36,31 @@ export default async function Page({ params }: { params: Promise<{ tip: string; 
       </p>
 
       <p className="mb-2"><strong>Tip:</strong> {tip}</p>
-      <h2 className="mt-4 font-semibold">Fajlovi:</h2>
+
       {files.length > 0 ? (
-        <ul className="list-disc ml-6">
+      <table className="table-auto border-collapse border border-gray-300 w-full">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 px-4 py-2 text-left">Naziv fajla</th>
+            <th className="border border-gray-300 px-4 py-2 text-left">Opis</th>
+          </tr>
+        </thead>
+        <tbody>
           {files.map((f: any) => (
-            <li key={f.id}>
-              <a href={f.url} target="_blank" className="text-blue-600 hover:underline">
-                {f.filename || "Neimenovani fajl"}
-              </a>
-            </li>
+            <tr key={f.id}>
+              <td className="border border-gray-300 px-4 py-2">
+                <a href={f.url} target="_blank" className="text-blue-600 hover:underline">
+                  {f.filename}
+                </a>
+              </td>
+              <td className="border border-gray-300 px-4 py-2">{f.mime || "-"}</td>
+            </tr>
           ))}
-        </ul>
-      ) : (
-        <p>Nema fajlova.</p>
-      )}
+        </tbody>
+      </table>
+    ) : (
+      <p>Nema fajlova.</p>
+    )}
     </div>
   );
 }
