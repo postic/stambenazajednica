@@ -12,7 +12,7 @@ export async function getDokument(id: string) {
   const doc = data.data;
   const included = data.included || [];
 
-console.log(JSON.stringify(data, null, 2));
+//console.log(JSON.stringify(data, null, 2));
 
   const files = included
     .filter((i: any) => i.type === "file--file")
