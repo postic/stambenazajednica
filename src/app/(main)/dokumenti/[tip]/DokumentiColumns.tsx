@@ -1,5 +1,6 @@
 "use client";
 
+import { Dokument } from "@/types/dokument";
 import { Column } from "@/components/table/DataTable";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
