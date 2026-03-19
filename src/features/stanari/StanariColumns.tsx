@@ -7,6 +7,7 @@ export const stanariColumns: Column<stanar>[] = [
   {
     key: "title",
     header: "Naziv",
+    sortable: true,
     render: (stanar) => (
       <Link
         href={`/stanari/${stanar.id}`}
@@ -20,6 +21,7 @@ export const stanariColumns: Column<stanar>[] = [
   {
     key: "date",
     header: "Datum prijave",
+    sortable: true,
     render: (stanar) =>
       stanar.created
         ? new Date(stanar.created).toLocaleDateString("sr-RS", {
@@ -32,6 +34,7 @@ export const stanariColumns: Column<stanar>[] = [
   {
     key: "status",
     header: "Status",
+    sortable: true,
     render: (stanar) =>
       stanar.statusName ? (
         <span

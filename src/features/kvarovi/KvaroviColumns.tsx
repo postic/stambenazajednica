@@ -20,6 +20,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "date",
     header: "Datum prijave",
+    sortable: true,
     render: (kvar) =>
       kvar.created
         ? new Date(kvar.created).toLocaleDateString("sr-RS", {
@@ -32,6 +33,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "status",
     header: "Status",
+    sortable: true,
     render: (kvar) =>
       kvar.statusName ? (
         <span

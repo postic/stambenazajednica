@@ -30,6 +30,7 @@ export const dokumentiColumns: Column<Dokument>[] = [
   {
     key: "created",
     header: "Datum",
+    sortable: true,
     render: (d) =>
       d.created
         ? new Date(d.created).toLocaleDateString("sr-RS", {

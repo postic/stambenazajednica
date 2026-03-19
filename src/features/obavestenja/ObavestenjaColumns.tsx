@@ -24,6 +24,7 @@ export const obavestenjaColumns: Column<Obavestenja>[] = [
   {
     key: "date",
     header: "Datum",
+    sortable: true,
     render: (o) =>
       new Date(o.created).toLocaleDateString("sr-RS", {
         day: "numeric",

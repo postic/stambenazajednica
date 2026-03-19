@@ -32,6 +32,7 @@ export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "created",
     header: "Datum",
+    sortable: true,
     render: (s) =>
       s.created
         ? new Date(s.created).toLocaleDateString("sr-RS", {
