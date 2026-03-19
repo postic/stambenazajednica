@@ -11,6 +11,7 @@ export interface Column<T> {
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
+  emptyMessage?: string;
 }
 
 export function DataTable<T extends { id?: string | number }>({

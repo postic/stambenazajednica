@@ -1,6 +1,7 @@
 // src/app/(main)/dokumenti/[tip]/[id]/page.tsx
 import { notFound } from "next/navigation";
 import { getDokument } from "@/lib/drupal/getDokument";
+import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
 
 export default async function Page({ params }: { params: Promise<{ tip: string; id: string }> }) {
@@ -12,7 +13,7 @@ export default async function Page({ params }: { params: Promise<{ tip: string; 
   if (!dokument) return notFound(); // 404 ako ne postoji
 
   // datum kreiranja
-  const createdDate = new Date(dokument.created?.value || dokument.created);
+  const createdDate = new Date(dokument.date?.value || dokument.date);
   const formattedDate = isNaN(createdDate.getTime())
     ? "Nepoznat"
     : createdDate.toLocaleDateString("sr-RS");
@@ -26,7 +27,11 @@ export default async function Page({ params }: { params: Promise<{ tip: string; 
       {/* 🔙 BACK BUTTON */}
       <BackButton />
 
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">{dokument.title}</h1>
+      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
+        {dokument.title}
+        <StatusBadge status={tip} />
+      </h1>
+
       <p className="text-gray-500 text-sm mb-6">
         {new Date(dokument.date).toLocaleDateString("sr-RS", {
           day: "numeric",
@@ -34,8 +39,6 @@ export default async function Page({ params }: { params: Promise<{ tip: string; 
           year: "numeric",
         })}
       </p>
-
-      <p className="mb-2"><strong>Tip:</strong> {tip}</p>
 
       {files.length > 0 ? (
       <table className="table-auto border-collapse border border-gray-300 w-full">

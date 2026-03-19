@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Dokument } from "./types";
+import { Dokument } from "@/types/dokument";
 import { DataTable } from "@/components/table/DataTable"; // named export
 import { dokumentiColumns } from "./DokumentiColumns"; // ako je fajl sa velikim D
 
