@@ -27,18 +27,19 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const menuSections = [
-    {
-      title: "GLAVNO",
-      items: [{ title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" }],
-    },
+    //{
+    //  title: "GLAVNO",
+    //  items: [{ title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" }],
+    //},
     {
       title: "ZGRADA",
       items: [
-        { title: "Stanari", icon: Users, submenu: [
-            { title: "Lista stanara", href: "/dashboard/users/list" },
-            { title: "Dodaj stanara", href: "/dashboard/users/add" },
-          ]
-        },
+        //{ title: "Stanari", icon: Users, submenu: [
+        //    { title: "Lista stanara", href: "/dashboard/users/list" },
+        //    { title: "Dodaj stanara", href: "/dashboard/users/add" },
+        //  ]
+        //},
+        { title: "Stanari", icon: Users, href: "/stanari", badge: 3 },
         { title: "Kvarovi", icon: Wrench, href: "/kvarovi", badge: 3 },
         { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja", badge: 2 },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
@@ -58,10 +59,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         },
       ],
     },
-    {
-      title: "SISTEM",
-      items: [{ title: "Settings", icon: Settings, href: "/dashboard/settings" }],
-    },
+    //{
+    //  title: "SISTEM",
+    //  items: [{ title: "Settings", icon: Settings, href: "/dashboard/settings" }],
+    //},
   ];
 
   useEffect(() => {

@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   // Preusmeravanje ako je korisnik već ulogovan
   useEffect(() => {
-    if (user) router.push("/dashboard");
+    if (user) router.push("/stanari");
   }, [user, router]);
 
   // Interval za otključavanje forme
@@ -67,7 +67,7 @@ export default function LoginPage() {
       if (res.ok) {
         toast.success("Uspešno ste prijavljeni");
         await login();
-        router.push("/dashboard");
+        router.push("/stanari");
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
