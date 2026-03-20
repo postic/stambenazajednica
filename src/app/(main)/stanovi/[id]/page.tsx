@@ -9,6 +9,7 @@ interface Stan {
   title: string;
   body: string;
   created: string;
+  image?: string[] | null;
 }
 
 const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
@@ -16,7 +17,7 @@ const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
 async function getStan(id: string): Promise<Stanar | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/stan/${id}`,
+      `${DRUPAL_BASE_URL}/jsonapi/node/stan/${id}?include=field_stan_images`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -32,11 +33,14 @@ async function getStan(id: string): Promise<Stanar | null> {
     const item = data?.data;
     if (!item) return null;
 
+    const images: string[] = extractImages(item, data.included, "field_stan_images") ?? [];
+
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
+      image: images,
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
@@ -55,8 +59,10 @@ export default async function StanPage({ params }: PageProps) {
 
   if (!stan) notFound();
 
+  const images = stan.image ?? [];
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl">
 
       {/* 🔙 BACK BUTTON */}
       <BackButton />
@@ -72,6 +78,13 @@ export default async function StanPage({ params }: PageProps) {
           year: "numeric",
         })}
       </p>
+
+      {/* 🔥 Slider se prikazuje SAMO ako ima slika */}
+      {images.length > 0 && (
+        <div className="mb-6">
+          <ImageGridLightbox images={images} />
+        </div>
+      )}
 
       <div
         className="prose max-w-none"

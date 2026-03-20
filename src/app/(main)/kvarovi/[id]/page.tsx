@@ -34,7 +34,7 @@ async function getKvar(id: string): Promise<Kvar | null> {
     const item = data?.data;
     if (!item) return null;
 
-    const images: string[] = extractImages(item, data.included) ?? [];
+    const images: string[] = extractImages(item, data.included, "field_image") ?? [];
 
     / === parsiranje statusa === /
     const statusRel = item.relationships?.field_status?.data;

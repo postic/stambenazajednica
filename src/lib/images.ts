@@ -1,5 +1,9 @@
-export function extractImages(node: any, included: any[] = []) {
-  const imageData = node?.relationships?.field_image?.data;
+export function extractImages(
+  node: any,
+  included: any[] = [],
+  fieldName: string
+) {
+  const imageData = node?.relationships?.[fieldName]?.data;
   if (!imageData) return [];
 
   const imagesArray = Array.isArray(imageData)
@@ -10,23 +14,34 @@ export function extractImages(node: any, included: any[] = []) {
 
   return imagesArray
     .map((img: any) => {
-      const file = included.find((inc) => inc.id === img.id);
-      const url = file?.attributes?.uri?.url;
+      // file
+      if (img.type === "file--file") {
+        const file = included.find((i) => i.id === img.id);
+        return formatUrl(file?.attributes?.uri?.url, base);
+      }
 
-      if (!url) return null;
+      // media
+      if (img.type.startsWith("media--")) {
+        const media = included.find((i) => i.id === img.id);
+        const fileRef =
+          media?.relationships?.field_media_image?.data;
 
-      // ako je već apsolutni URL
-      if (url.startsWith("http")) return url;
+        const file = included.find((i) => i.id === fileRef?.id);
+        return formatUrl(file?.attributes?.uri?.url, base);
+      }
 
-      let full = `${base}${url}`;
-
-      // ukloni duple slashes
-      full = full.replace(/([^:]\/)\/+/g, "$1");
-
-      // ukloni dupli /web
-      full = full.replace(/\/web\/web\//, "/web/");
-
-      return full;
+      return null;
     })
     .filter((url): url is string => Boolean(url));
+}
+
+function formatUrl(url: string | undefined, base: string) {
+  if (!url) return null;
+
+  if (url.startsWith("http")) return url;
+
+  let full = `${base}${url}`;
+  full = full.replace(/([^:]\/)\/+/g, "$1");
+
+  return full;
 }

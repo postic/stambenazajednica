@@ -18,9 +18,7 @@ export async function GET(req: Request) {
     const DRUPAL_BASE_URL =
       process.env.DRUPAL_BASE_URL || "http://localhost:8888";
 
-    const response = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/stan?page[offset]=${offset}&page[limit]=${limit}`
-    );
+    const response = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/stan?include=field_stan_images`);
 
     if (!response.ok) {
       const text = await response.text();
@@ -36,14 +34,35 @@ export async function GET(req: Request) {
     const total = data.meta?.count || 0;
     const totalPages = Math.ceil(total / limit);
 
-    const stanovi: Stan[] = (data.data || []).map((item: any) => ({
+    // uzmi samo tekuću stranu
+    const currentPageData = (data.data || []).slice(offset, offset + limit);
+
+    const stanovi: Stan[] = currentPageData.map((item: any) => {
+
+    // Slika
+    let imageUrl: string | null = null;
+    const imageRel = item.relationships?.field_stan_images?.data?.[0];
+    if (imageRel && data.included) {
+      const fileObj = data.included.find(
+        (i: any) => i.type === "file--file" && i.id === imageRel.id
+      );
+      const fileUriValue = fileObj?.attributes?.uri?.value;
+      if (fileUriValue) {
+        const filePath = fileUriValue.replace("public://", "/sites/default/files/");
+        imageUrl = `${DRUPAL_BASE_URL}${filePath}`;
+      }
+    }
+
+    return {
       id: item.id,
-      title: item.attributes?.title ?? "",
-      body: item.attributes?.body?.value ?? "",
-      created: item.attributes?.created ?? "",
+      title: item.attributes.title,
+      body: item.attributes.body?.value || "",
+      created: item.attributes.created,
       field_sprat: item.attributes?.field_sprat ?? null,
       field_kvadratura: item.attributes?.field_kvadratura ?? null,
-    }));
+      image: imageUrl,
+    };
+  });
 
     return new Response(
       JSON.stringify({
