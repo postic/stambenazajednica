@@ -34,12 +34,12 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     {
       title: "ZGRADA",
       items: [
-        //{ title: "Stanari", icon: Users, submenu: [
-        //    { title: "Lista stanara", href: "/dashboard/users/list" },
-        //    { title: "Dodaj stanara", href: "/dashboard/users/add" },
-        //  ]
-        //},
-        { title: "Stanari", icon: Users, href: "/stanari", badge: 3 },
+        { title: "Stanari", icon: Users, submenu: [
+            { title: "Stanovi", icon: Users, href: "/stanovi", badge: 2 },
+            { title: "Stanari", icon: Users, href: "/stanari", badge: 3 },
+            //{ title: "Dodaj stanara", href: "/dashboard/users/add" },
+          ]
+        },
         { title: "Kvarovi", icon: Wrench, href: "/kvarovi", badge: 3 },
         { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja", badge: 2 },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },

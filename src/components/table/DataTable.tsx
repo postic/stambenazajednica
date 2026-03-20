@@ -74,7 +74,10 @@ export function DataTable<T extends Record<string, any>>({
       </thead>
       <tbody>
         {sortedData.map((row, i) => (
-          <tr key={i} className="hover:bg-gray-50">
+          <tr
+            key={i}
+            className="hover:bg-gray-100 even:bg-gray-50" // <- ovo dodaje zebra striping
+          >
             {columns.map((col) => (
               <td key={col.key} className="border px-4 py-2">
                 {col.render(row)}
