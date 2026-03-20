@@ -16,7 +16,7 @@ const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
 async function getStan(id: string): Promise<Stanar | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/stanovi/${id}`,
+      `${DRUPAL_BASE_URL}/jsonapi/node/stan/${id}`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",

@@ -10,7 +10,7 @@ export const stanoviColumns: Column<stan>[] = [
     sortable: false,
     render: (stan) => (
       <Link
-        href={`/stan/${stan.id}`}
+        href={`/stanovi/${stan.id}`}
         className="text-blue-600 hover:underline"
         title={stan.title}
       >
