@@ -17,6 +17,7 @@ export const dokumentiColumns: Column<Dokument>[] = [
   {
     key: "title",
     header: "Naziv",
+    width: "50%",
     render: (d) => (
       <Link
         href={`/dokumenti/${d.type}/${d.id}`}
@@ -43,6 +44,8 @@ export const dokumentiColumns: Column<Dokument>[] = [
   {
     key: "actions",
     header: "Akcije",
+    width: "90px", // 👈 KLJUČNO
+    isAction: true,
     render: (d) => (
       <div className="flex justify-center gap-2">
         <Link

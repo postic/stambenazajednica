@@ -7,6 +7,7 @@ export const stanoviColumns: Column<stan>[] = [
   {
     key: "title",
     header: "Naziv",
+    width: "50%",
     sortable: false,
     render: (stan) => (
       <Link
@@ -41,6 +42,8 @@ export const stanoviColumns: Column<stan>[] = [
   {
     key: "actions",
     header: "Akcije",
+    width: "90px", // 👈 KLJUČNO
+    isAction: true,
     render: (stan) => (
       <div className="flex justify-center gap-2">
         <Link

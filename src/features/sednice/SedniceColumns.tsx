@@ -19,6 +19,7 @@ export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "title",
     header: "Naslov",
+    width: "50%",
     render: (s) => (
       <Link
         href={`/sednice/${s.id}`}
@@ -50,6 +51,8 @@ export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "actions",
     header: "Akcije",
+    width: "90px", // 👈 KLJUČNO
+    isAction: true,
     render: (s) => (
       <div className="flex justify-center gap-2">
         <Link

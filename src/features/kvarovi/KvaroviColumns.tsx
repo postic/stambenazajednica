@@ -7,6 +7,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "title",
     header: "Naziv",
+    width: "50%",
     render: (kvar) => (
       <Link
         href={`/kvarovi/${kvar.id}`}
@@ -48,6 +49,8 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "actions",
     header: "Akcije",
+    width: "90px", // 👈 KLJUČNO
+    isAction: true,
     render: (kvar) => (
       <div className="flex justify-center gap-2">
         <Link

@@ -11,6 +11,7 @@ export const obavestenjaColumns: Column<Obavestenja>[] = [
   {
     key: "title",
     header: "Naslov",
+    width: "50%",
     render: (o) => (
       <Link
         href={`/obavestenja/${o.id}`}
@@ -40,6 +41,8 @@ export const obavestenjaColumns: Column<Obavestenja>[] = [
   {
     key: "actions",
     header: "Akcije",
+    width: "90px", // 👈 KLJUČNO
+    isAction: true,
     render: (o) => (
       <div className="flex justify-center gap-2">
         <Link

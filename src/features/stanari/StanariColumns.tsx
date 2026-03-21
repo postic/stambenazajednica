@@ -7,6 +7,7 @@ export const stanariColumns: Column<stanar>[] = [
   {
     key: "title",
     header: "Naziv",
+    width: "50%",
     sortable: true,
     render: (stanar) => (
       <Link
@@ -50,6 +51,8 @@ export const stanariColumns: Column<stanar>[] = [
   {
     key: "actions",
     header: "Akcije",
+    width: "90px", // 👈 KLJUČNO
+    isAction: true,
     render: (stanar) => (
       <div className="flex justify-center gap-2">
         <Link
