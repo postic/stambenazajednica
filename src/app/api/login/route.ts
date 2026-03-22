@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   });
 
   try {
-    const res = await fetch(`${process.env.DRUPAL_BASE_URL}/oauth/token`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),

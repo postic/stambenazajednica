@@ -2,7 +2,7 @@ export async function POST(req: Request) {
   const { email } = await req.json();
 
   const response = await fetch(
-    `${process.env.DRUPAL_BASE_URL}/user/password?_format=json`,
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/user/password?_format=json`,
     {
       method: "POST",
       headers: {

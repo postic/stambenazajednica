@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Sednica, sedniceColumns } from "@/features/sednice/SedniceColumns";
+import { sedniceColumns } from "@/features/sednice/SedniceColumns";
+import { Sednica } from "@/features/sednice/types";
 
 export default function SednicePage() {
   const [sednice, setSednice] = useState<Sednica[]>([]);

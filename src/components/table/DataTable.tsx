@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-interface Column<T> {
+export interface Column<T> {
   key: string;
   header: string;
   render: (row: T) => React.ReactNode;
@@ -14,6 +14,7 @@ interface Column<T> {
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
+  emptyMessage?: string; // 👈 MORA da postoji
 }
 
 export function DataTable<T extends Record<string, any>>({

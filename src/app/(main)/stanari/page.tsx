@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Stanar, stanariColumns } from "@/features/stanari/StanariColumns";
+import { stanariColumns } from "@/features/stanari/StanariColumns";
+import { Stanar } from "@/features/stanari/types";
 
 export default function StanariPage() {
   const [stanari, setStanari] = useState<Stanar[]>([]);

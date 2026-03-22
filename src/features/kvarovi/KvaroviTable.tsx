@@ -3,7 +3,8 @@
 
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Kvar, kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
+import { kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
+import { Kvar } from "@/features/kvarovi/types";
 
 interface KvaroviTableProps {
   kvarovi?: Kvar[];

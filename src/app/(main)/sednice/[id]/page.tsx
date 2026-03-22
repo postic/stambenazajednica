@@ -3,29 +3,14 @@ import { notFound } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt } from "react-icons/fa";
-
-interface Dokument {
-  id: string;
-  title: string;
-  url: string;
-  mimeType: string;
-}
-
-interface Sednica {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  type?: string;
-  dokumenti?: Dokument[];
-}
+import { Sednica, Dokument } from "@/features/sednice/types";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const DRUPAL_BASE_URL =
-  process.env.DRUPAL_BASE_URL || "http://localhost:8888/web";
+const NEXT_PUBLIC_DRUPAL_BASE_URL =
+  process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888/web";
 
 // Kreira mapu top-level included entiteta
 function indexIncluded(included: any[] = []) {
@@ -41,7 +26,7 @@ function getDrupalFileUrl(fileEntity: any) {
   if (!fileEntity) return "";
   const rawUrl = fileEntity.attributes?.uri?.url;
   const filename = fileEntity.attributes?.filename;
-  const base = DRUPAL_BASE_URL.replace(/\/web$/, "");
+  const base = NEXT_PUBLIC_DRUPAL_BASE_URL.replace(/\/web$/, "");
 
   if (rawUrl) {
     const url = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
@@ -59,7 +44,7 @@ function getDrupalFileUrl(fileEntity: any) {
 async function getSednica(id: string): Promise<Sednica | null> {
   try {
     const endpoint =
-      `${DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}` +
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}` +
       `?include=field_status_sednice,field_dokumenti_sednice,field_dokumenti_sednice.field_dokument_file`;
 
     const res = await fetch(endpoint, {

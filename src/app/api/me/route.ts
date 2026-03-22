@@ -9,7 +9,7 @@ export async function GET() {
 
   // 1️⃣ Ko je user
   const userinfoRes = await fetch(
-    `${process.env.DRUPAL_BASE_URL}/oauth/userinfo`,
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/userinfo`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -27,7 +27,7 @@ export async function GET() {
 
   // 2️⃣ Uzmi user preko JSON:API
   const userRes = await fetch(
-    `${process.env.DRUPAL_BASE_URL}/jsonapi/user/user?filter[uid]=${uid}&include=user_picture`,
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user?filter[uid]=${uid}&include=user_picture`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -52,7 +52,7 @@ export async function GET() {
     );
 
     if (file?.attributes?.uri?.url) {
-      pictureUrl = process.env.DRUPAL_BASE_URL + file.attributes.uri.url;
+      pictureUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL + file.attributes.uri.url;
     }
   }
 

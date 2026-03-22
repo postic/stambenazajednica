@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Obavestenja, obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
+import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
+import { Obavestenje } from "@/features/obavestenja/types";
 
 export default function ObavestenjaPage() {
-  const [obavestenja, setObavestenja] = useState<Obavestenja[]>([]);
+  const [obavestenja, setObavestenja] = useState<Obavestenje[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 

@@ -3,10 +3,11 @@
 
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Obavestenja, obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
+import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
+import { Obavestenje } from "@/features/obavestenja/types";
 
 interface ObavestenjaTableProps {
-  obavestenja?: Obavestenja[];
+  obavestenja?: Obavestenje[];
 }
 
 export default function ObavestenjaTable({ obavestenja = [] }: ObavestenjaTableProps) {

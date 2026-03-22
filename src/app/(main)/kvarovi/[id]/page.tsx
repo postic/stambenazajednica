@@ -3,22 +3,14 @@ import { extractImages } from "@/lib/images";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
+import { Kvar } from "@/features/kvarovi/types";
 
-interface Kvar {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  image?: string[] | null;
-  statusName?: string; // naziv statusa iz taxonomy term
-}
-
-const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
+const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
 async function getKvar(id: string): Promise<Kvar | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}?include=field_status,field_image`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}?include=field_status,field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",

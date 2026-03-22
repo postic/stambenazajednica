@@ -3,21 +3,14 @@ import { extractImages } from "@/lib/images";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
+import { Stan } from "@/features/stanovi/types";
 
-interface Stan {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  image?: string[] | null;
-}
+const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
-const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
-
-async function getStan(id: string): Promise<Stanar | null> {
+async function getStan(id: string): Promise<Stan | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/stan/${id}?include=field_stan_images`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan/${id}?include=field_stan_images`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",

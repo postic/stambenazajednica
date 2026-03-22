@@ -4,6 +4,8 @@ export interface Dokument {
   created?: string | null;
   type?: string;
   tip?: string;
+  date?: string | null; // 👈 DODAJ OVO
+  status?: string | null; // 👈 DODAJ OVO
   files: {
     id: string;
     url: string;

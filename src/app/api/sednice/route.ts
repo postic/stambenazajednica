@@ -15,10 +15,10 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
-    const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
+    const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     // Fetch svih sednica (bez count=true)
-    const response = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/sednica?include=field_status_sednice`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica?include=field_status_sednice`);
 
     if (!response.ok) {
       const text = await response.text();

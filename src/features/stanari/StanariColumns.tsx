@@ -1,9 +1,9 @@
 import { Column } from "@/components/table/DataTable";
-import { stanar } from "./types";
+import { Stanar } from "./types";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 
-export const stanariColumns: Column<stanar>[] = [
+export const stanariColumns: Column<Stanar>[] = [
   {
     key: "title",
     header: "Naziv",

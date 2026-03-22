@@ -3,7 +3,8 @@
 
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Sednica, sedniceColumns } from "@/features/sednice/SedniceColumns";
+import { sedniceColumns } from "@/features/sednice/SedniceColumns";
+import { Sednica } from "@/features/sednice/types";
 
 interface SedniceTableProps {
   sednice?: Sednica[];

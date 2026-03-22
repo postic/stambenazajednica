@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Stan, stanoviColumns } from "@/features/stanovi/StanoviColumns";
+import { stanoviColumns } from "@/features/stanovi/StanoviColumns";
+import { Stan } from "@/features/stanovi/types";
 
 export default function StanoviPage() {
   const [stanovi, setStanovi] = useState<Stan[]>([]);

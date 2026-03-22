@@ -3,22 +3,14 @@ import { extractImages } from "@/lib/images";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
+import { Obavestenje } from "@/features/obavestenja/types";
 
-interface Obavestenje {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  images?: string[] | null;
-  type?: string; // naziv statusa iz taxonomy term
-}
-
-const DRUPAL_BASE_URL = process.env.DRUPAL_BASE_URL || "http://localhost:8888";
+const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
 async function getObavestenje(id: string): Promise<Obavestenje | null> {
   try {
     const res = await fetch(
-      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}?include=field_type,field_image`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}?include=field_type,field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -33,8 +25,7 @@ async function getObavestenje(id: string): Promise<Obavestenje | null> {
     const item = data?.data;
     if (!item) return null;
 
-const images: string[] = extractImages(item, data.included) ?? [];
-console.log(images);
+    const images: string[] = extractImages(item, data.included, "field_image") ?? [];
 
     / === parsiranje statusa === /
     const statusRel = item.relationships?.field_type?.data;

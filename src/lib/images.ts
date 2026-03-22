@@ -10,7 +10,7 @@ export function extractImages(
     ? imageData
     : [imageData];
 
-  const base = process.env.DRUPAL_BASE_URL || "";
+  const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "";
 
   return imagesArray
     .map((img: any) => {

@@ -1,20 +1,17 @@
-// src/components/StanoviTable.tsx
-"use client";
-
-import React from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Stan, stanoviColumns } from "@/features/stanovi/StanoviColumns";
+import { stanoviColumns } from "./StanoviColumns";
+import { Stan } from "./types";
 
 interface StanoviTableProps {
-  kvarovi?: Stan[];
+  stanovi?: Stan[];
 }
 
-export default function StanoviTable({ kvarovi = [] }: StanoviTableProps) {
+export default function StanoviTable({ stanovi = [] }: StanoviTableProps) {
   return (
     <DataTable
       data={stanovi}
       columns={stanoviColumns}
-      emptyMessage="Nema prijavljenih stanova."
+      emptyMessage="Nema stanova."
     />
   );
 }

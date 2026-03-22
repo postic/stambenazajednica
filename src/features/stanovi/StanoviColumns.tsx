@@ -1,9 +1,9 @@
 import { Column } from "@/components/table/DataTable";
-import { stan } from "./types";
+import { Stan } from "./types";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 
-export const stanoviColumns: Column<stan>[] = [
+export const stanoviColumns: Column<Stan>[] = [
   {
     key: "title",
     header: "Naziv",

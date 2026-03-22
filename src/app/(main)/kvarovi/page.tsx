@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Kvar, kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
+import { kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
+import { Kvar } from "@/features/kvarovi/types";
 
 export default function KvaroviPage() {
   const [kvarovi, setKvarovi] = useState<Kvar[]>([]);

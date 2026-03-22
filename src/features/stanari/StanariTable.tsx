@@ -1,20 +1,18 @@
-// src/components/StanariTable.tsx
-"use client";
-
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
-import { Stanar, stanariColumns } from "@/features/stanari/StanariColumns";
+import { stanariColumns } from "@/features/stanari/StanariColumns";
+import { Stanar } from "@/features/stanari/types";
 
 interface StanariTableProps {
-  kvarovi?: Stanar[];
+  stanari?: Stanar[];
 }
 
-export default function StanariTable({ kvarovi = [] }: StanariTableProps) {
+export default function StanariTable({ stanari = [] }: StanariTableProps) {
   return (
     <DataTable
       data={stanari}
       columns={stanariColumns}
-      emptyMessage="Nema prijavljenih stanara."
+      emptyMessage="Nema stanara."
     />
   );
 }
