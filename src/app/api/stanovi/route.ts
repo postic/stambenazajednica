@@ -3,8 +3,8 @@ interface Stan {
   title: string;
   body: string;
   created: string;
-  field_sprat: number | null;
-  field_kvadratura: number | null;
+  sprat: number | null;
+  kvadratura: number | null;
 }
 
 export async function GET(req: Request) {
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL =
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?include=field_stan_images`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?include=field_tip_stana,field_vlasnik`);
 
     if (!response.ok) {
       const text = await response.text();
@@ -39,28 +39,12 @@ export async function GET(req: Request) {
 
     const stanovi: Stan[] = currentPageData.map((item: any) => {
 
-    // Slika
-    let imageUrl: string | null = null;
-    const imageRel = item.relationships?.field_stan_images?.data?.[0];
-    if (imageRel && data.included) {
-      const fileObj = data.included.find(
-        (i: any) => i.type === "file--file" && i.id === imageRel.id
-      );
-      const fileUriValue = fileObj?.attributes?.uri?.value;
-      if (fileUriValue) {
-        const filePath = fileUriValue.replace("public://", "/sites/default/files/");
-        imageUrl = `${NEXT_PUBLIC_DRUPAL_BASE_URL}${filePath}`;
-      }
-    }
-
     return {
       id: item.id,
       title: item.attributes.title,
-      body: item.attributes.body?.value || "",
       created: item.attributes.created,
-      field_sprat: item.attributes?.field_sprat ?? null,
-      field_kvadratura: item.attributes?.field_kvadratura ?? null,
-      image: imageUrl,
+      sprat: item.attributes?.field_sprat ?? null,
+      kvadratura: item.attributes?.field_kvadratura ?? null,
     };
   });
 

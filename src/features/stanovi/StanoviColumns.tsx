@@ -22,7 +22,6 @@ export const stanoviColumns: Column<Stan>[] = [
   {
     key: "sprat",
     header: "Sprat",
-    sortable: true,
     render: (stan) => (
       <span>{stan.sprat ?? "-"}</span>
     )
@@ -30,7 +29,6 @@ export const stanoviColumns: Column<Stan>[] = [
   {
     key: "porsina",
     header: "Površina",
-    sortable: false,
     render: (stan) => (
       <span>
         {stan.kvadratura != null

@@ -3,7 +3,6 @@ interface Kvar {
   title: string;
   body: string;
   created: string;
-  image?: string | null;
   statusName?: string;
 }
 
@@ -65,9 +64,7 @@ export async function GET(req: Request) {
     return {
       id: item.id,
       title: item.attributes.title,
-      body: item.attributes.body?.value || "",
       created: item.attributes.created,
-      image: imageUrl,
       statusName,
     };
   });
