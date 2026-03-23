@@ -4,6 +4,8 @@ export interface Stan {
   body: string;
   created: string;
   image?: string[] | null;
-  field_sprat?: number | string | null; // 👈 DODAJ
-  field_kvadratura?: number | string | null; // 👈 DODAJ
+  sprat?: number | string | null; // 👈 DODAJ
+  kvadratura?: number | string | null; // 👈 DODAJ
+  tip?: number | string | null; // 👈 DODAJ
+  vlasnik?: number | string | null; // 👈 DODAJ
 }

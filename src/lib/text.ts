@@ -34,3 +34,16 @@ export function htmlToPreview(html: string, maxLength: number): string {
   const clean = normalizeWhitespace(plain);
   return truncateByWords(clean, maxLength);
 }
+
+export function isEmptyHtml(html?: string): boolean {
+  if (!html) return true;
+
+  const clean = html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return clean.length === 0;
+}
