@@ -24,7 +24,7 @@ export const stanoviColumns: Column<Stan>[] = [
     header: "Sprat",
     sortable: true,
     render: (stan) => (
-      <span>{stan.field_sprat ?? "-"}</span>
+      <span>{stan.sprat ?? "-"}</span>
     )
   },
   {
@@ -33,8 +33,8 @@ export const stanoviColumns: Column<Stan>[] = [
     sortable: false,
     render: (stan) => (
       <span>
-        {stan.field_kvadratura != null
-        ? `${Number(stan.field_kvadratura).toLocaleString("sr-RS")} m²`
+        {stan.kvadratura != null
+        ? `${Number(stan.kvadratura).toLocaleString("sr-RS")} m²`
         : "-"}
       </span>
     )
