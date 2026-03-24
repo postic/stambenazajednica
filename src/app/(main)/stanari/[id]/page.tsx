@@ -75,9 +75,17 @@ export default async function StanarPage({ params }: PageProps) {
 
       {/* 🖼️ PROFILE CARD */}
       <div className="bg-white rounded-2xl shadow p-5 flex flex-col md:flex-row gap-6 items-center md:items-start">
-        {/* AVATAR */}
-        <div className="w-32 h-32">
-          <UserAvatar name={stanar.title} picture={stanar.image} size={128} />
+        {/* SLIKA */}
+        <div className="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+          {stanar.image ? (
+            <img
+              src={stanar.image}
+              alt={stanar.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-gray-400 text-sm">Nema slike</span>
+          )}
         </div>
 
         {/* INFO */}

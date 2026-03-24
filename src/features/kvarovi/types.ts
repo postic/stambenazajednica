@@ -4,5 +4,6 @@ export interface Kvar {
   body: string;
   created: string;
   image?: string[] | null;
-  statusName?: string; // naziv statusa iz taxonomy term
+  status?: string;      // value iz Drupal JSON:API
+  prioritet?: string;   // value iz Drupal JSON:API
 }

@@ -26,7 +26,7 @@ export default function KvaroviPage() {
   return (
     <div>
       <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Prijavljeni kvarovi
+        Kvarovi
       </h1>
 
       {/* Generički DataTable */}

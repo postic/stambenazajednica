@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
+import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
@@ -10,7 +11,7 @@ const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "
 async function getKvar(id: string): Promise<Kvar | null> {
   try {
     const res = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}?include=field_status,field_image`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}?include=field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -28,22 +29,14 @@ async function getKvar(id: string): Promise<Kvar | null> {
 
     const images: string[] = extractImages(item, data.included, "field_image") ?? [];
 
-    / === parsiranje statusa === /
-    const statusRel = item.relationships?.field_status?.data;
-    const statusIncluded =
-      statusRel &&
-      data.included?.find(
-        (i: any) => i.type === statusRel.type && i.id === statusRel.id
-      );
-    const statusName = statusIncluded?.attributes?.name || "Nepoznat";
-
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
+      status: item.attributes.field_status_kvara,
+      prioritet: item.attributes.field_prioritet_kvara,
       image: images,
-      statusName: statusName,
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
@@ -72,7 +65,8 @@ export default async function KvarPage({ params }: PageProps) {
 
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {kvar.title}
-        {kvar.statusName && <StatusBadge status={kvar.statusName} />}
+        {kvar.prioritet && <StatusBadge prioritet={kvar.prioritet} />}
+        {kvar.status && <StatusBadge status={kvar.status} />}
       </h1>
 
       <p className="text-gray-500 text-sm mb-6">
@@ -90,11 +84,13 @@ export default async function KvarPage({ params }: PageProps) {
         </div>
       )}
 
-
-      <div
-        className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: kvar.body }}
-      />
+      {/* 📄 OPIS */}
+      {!isEmptyHtml(kvar.body) && (
+        <div
+          className="prose max-w-none bg-white p-5 rounded-2xl border"
+          dangerouslySetInnerHTML={{ __html: kvar.body }}
+        />
+      )}
     </div>
   );
 }
