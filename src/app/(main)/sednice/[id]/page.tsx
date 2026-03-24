@@ -1,5 +1,6 @@
 // src/app/(main)/sednice/[id]/page.tsx
 import { notFound } from "next/navigation";
+import { isEmptyHtml } from "@/lib/text";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt } from "react-icons/fa";
@@ -45,7 +46,7 @@ async function getSednica(id: string): Promise<Sednica | null> {
   try {
     const endpoint =
       `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}` +
-      `?include=field_status_sednice,field_dokumenti_sednice,field_dokumenti_sednice.field_dokument_file`;
+      `?include=field_dokumenti_sednice,field_dokumenti_sednice.field_dokument_file`;
 
     const res = await fetch(endpoint, {
       headers: { Accept: "application/vnd.api+json" },
@@ -59,12 +60,6 @@ async function getSednica(id: string): Promise<Sednica | null> {
     if (!item) return null;
 
     const includedMap = indexIncluded(data.included);
-
-    // STATUS
-    const statusRel = item.relationships?.field_status_sednice?.data;
-    const statusIncluded =
-      statusRel && includedMap.get(`${statusRel.type}:${statusRel.id}`);
-    const typeName = statusIncluded?.attributes?.name || "Nepoznat";
 
     // DOKUMENTI
     const dokumenti: Dokument[] = [];
@@ -111,7 +106,7 @@ async function getSednica(id: string): Promise<Sednica | null> {
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      type: typeName,
+      status: item.attributes.field_status_sednice,
       dokumenti,
     };
   } catch (error) {
@@ -137,12 +132,12 @@ export default async function SednicaPage({ params }: PageProps) {
   if (!sednica) notFound();
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl">
       <BackButton />
 
-      <h1 className="text-xl font-bold mb-2 flex items-center gap-3">
+      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {sednica.title}
-        {sednica.type && <StatusBadge status={sednica.type} />}
+        {sednica.status && <StatusBadge status={sednica.status} />}
       </h1>
 
       <p className="text-gray-500 text-sm mb-6">
@@ -153,14 +148,16 @@ export default async function SednicaPage({ params }: PageProps) {
         })}
       </p>
 
-      <div
-        className="prose max-w-none mb-6"
-        dangerouslySetInnerHTML={{ __html: sednica.body }}
-      />
+      {/* 📄 OPIS */}
+      {!isEmptyHtml(sednica.body) && (
+        <div
+          className="prose max-w-none bg-white p-5 rounded-2xl border"
+          dangerouslySetInnerHTML={{ __html: sednica.body }}
+        />
+      )}
 
       {sednica.dokumenti && sednica.dokumenti.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-semibold mb-2">Dokumenti sednice:</h2>
+        <div className="mt-8 prose max-w-none bg-white p-5 rounded-2xl border">
           <ul className="list-none space-y-2">
             {sednica.dokumenti.map((doc) => (
               <li key={doc.id}>

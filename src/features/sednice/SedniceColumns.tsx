@@ -11,15 +11,12 @@ const handleDelete = (id: string) => {
   alert(`Delete funkcija nije implementirana za sednicu ID: ${id}`);
 };
 
-// Funkcija koja bira pravi status
-const getStatus = (s: Sednica) => s.type || "Nepoznat";
-
 // Kolone za DataTable
 export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "title",
     header: "Naslov",
-    width: "50%",
+    width: "55%",
     render: (s) => (
       <Link
         href={`/sednice/${s.id}`}
@@ -44,9 +41,10 @@ export const sedniceColumns: Column<Sednica>[] = [
         : "-",
   },
   {
-    key: "type",
-    header: "Tip",
-    render: (s) => <StatusBadge status={getStatus(s)} />,
+    key: "status",
+    header: "Status",
+    render: (s) =>
+      <StatusBadge status={s.status} />
   },
   {
     key: "actions",

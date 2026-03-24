@@ -11,7 +11,7 @@ export const obavestenjaColumns: Column<Obavestenje>[] = [
   {
     key: "title",
     header: "Naslov",
-    width: "50%",
+    width: "70%",
     render: (o) => (
       <Link
         href={`/obavestenja/${o.id}`}
@@ -32,11 +32,6 @@ export const obavestenjaColumns: Column<Obavestenje>[] = [
         month: "short",
         year: "numeric",
       }),
-  },
-  {
-    key: "type",
-    header: "Tip",
-    render: (o) => <StatusBadge status={getStatus(o)} />,
   },
   {
     key: "actions",

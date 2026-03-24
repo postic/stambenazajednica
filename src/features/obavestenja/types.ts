@@ -4,5 +4,4 @@ export interface Obavestenje {
   body: string;
   created: string;
   images?: string[] | null;
-  type?: string; // naziv statusa iz taxonomy term
 }

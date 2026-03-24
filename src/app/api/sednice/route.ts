@@ -1,11 +1,3 @@
-interface Sednica {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  image?: string | null;
-}
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -18,7 +10,7 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     // Fetch svih sednica (bez count=true)
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica?include=field_status_sednice`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica`);
 
     if (!response.ok) {
       const text = await response.text();
@@ -40,19 +32,12 @@ export async function GET(req: Request) {
 
     const sednice: Sednica[] = currentPageData.map((item: any) => {
 
-    // Type taxonomy term
-    const typeRel = item.relationships?.field_status_sednice?.data;
-    const typeIncluded = typeRel && data.included?.find(
-      (i: any) => i.type === typeRel.type && i.id === typeRel.id
-    );
-    const type = typeIncluded?.attributes?.name || "Nepoznat";
-
       return {
         id: item.id,
         title: item.attributes.title,
         body: item.attributes.body?.value || "",
         created: item.attributes.created,
-        type,
+        status: item.attributes.field_status_sednice ?? "",
       };
     });
 

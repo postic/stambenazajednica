@@ -10,6 +10,6 @@ export interface Sednica {
   title: string;
   body: string;
   created: string;
-  type?: string;
+  status?: string;
   dokumenti?: Dokument[];
 }

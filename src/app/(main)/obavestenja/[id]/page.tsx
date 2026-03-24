@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
+import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
@@ -10,7 +11,7 @@ const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "
 async function getObavestenje(id: string): Promise<Obavestenje | null> {
   try {
     const res = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}?include=field_type,field_image`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}?include=field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -27,21 +28,11 @@ async function getObavestenje(id: string): Promise<Obavestenje | null> {
 
     const images: string[] = extractImages(item, data.included, "field_image") ?? [];
 
-    / === parsiranje statusa === /
-    const statusRel = item.relationships?.field_type?.data;
-    const statusIncluded =
-      statusRel &&
-      data.included?.find(
-        (i: any) => i.type === statusRel.type && i.id === statusRel.id
-      );
-    const typeName = statusIncluded?.attributes?.name || "Nepoznat";
-
     return {
       id: item.id,
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-      type: typeName ?? "", // <<< ovde fix
       images: images,
     };
   } catch (error) {
@@ -87,10 +78,13 @@ export default async function ObavestenjePage({ params }: PageProps) {
         </div>
       )}
 
-      <div
-        className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: obavestenje.body }}
-      />
+      {/* 📄 OPIS */}
+      {!isEmptyHtml(obavestenje.body) && (
+        <div
+          className="prose max-w-none bg-white p-5 rounded-2xl border"
+          dangerouslySetInnerHTML={{ __html: obavestenje.body }}
+        />
+      )}
     </div>
   );
 }

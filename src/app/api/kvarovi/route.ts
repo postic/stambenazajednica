@@ -56,7 +56,6 @@ export async function GET(req: Request) {
         title: item.attributes.title ?? "",
         body: item.attributes.body?.value ?? "",
         created: item.attributes.created ?? "",
-        // Ovde koristimo .value iz JSON:API polja
         status: item.attributes.field_status_kvara ?? "",
         prioritet: item.attributes.field_prioritet_kvara ?? "",
         image: imageUrl,

@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     // Fetch svih obavestenja (bez count=true)
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_type,field_image`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_image`);
 
     if (!response.ok) {
       const text = await response.text();
@@ -54,19 +54,11 @@ export async function GET(req: Request) {
       }
     }
 
-      // Type taxonomy term
-    const typeRel = item.relationships?.field_type?.data;
-    const typeIncluded = typeRel && data.included?.find(
-      (i: any) => i.type === typeRel.type && i.id === typeRel.id
-    );
-    const type = typeIncluded?.attributes?.name || "Nepoznat";
-
       return {
         id: item.id,
         title: item.attributes.title,
         body: item.attributes.body?.value || "",
         created: item.attributes.created,
-        type,
       };
     });
 
