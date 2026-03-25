@@ -1,5 +1,4 @@
 "use client";
-import { Dokument } from "@/types/dokument";
 import { Column } from "@/components/table/DataTable";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
@@ -21,7 +20,7 @@ export const dokumentiColumns: Column<Dokument>[] = [
     width: "50%",
     render: (d) => (
       <Link
-        href={`/dokumenti/${d.type}/${d.id}`}
+        href={`/dokumenti/${d.tip}/${d.id}`}
         className="text-blue-600 hover:underline"
         title={d.title}
       >
@@ -41,14 +40,12 @@ export const dokumentiColumns: Column<Dokument>[] = [
           })
         : "-",
   },
-
   {
     key: "status",
     header: "Status",
     render: (d) =>
-      <StatusBadge status={d.status} />
+      <StatusBadge status={d.status ?? undefined} />
   },
-
   {
     key: "actions",
     header: "Akcije",
@@ -57,14 +54,14 @@ export const dokumentiColumns: Column<Dokument>[] = [
     render: (d) => (
       <div className="flex justify-center gap-2">
         <Link
-          href={`/dokumenti/${d.type}/${d.id}`}
+          href={`/dokumenti/${d.tip}/${d.id}`}
           className="text-blue-600 hover:text-blue-800"
           title="View"
         >
           <FaEye />
         </Link>
         <Link
-          href={`/dokumenti/${d.type}/${d.id}/edit`}
+          href={`/dokumenti/${d.tip}/${d.id}/edit`}
           className="text-yellow-600 hover:text-yellow-800"
           title="Edit"
         >

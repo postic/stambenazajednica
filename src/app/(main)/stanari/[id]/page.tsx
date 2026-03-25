@@ -43,8 +43,6 @@ async function getStanar(id: string): Promise<Stanar | null> {
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
-
-      tip: item.attributes.field_tip ?? "",
       telefon: item.attributes.field_telefon ?? "",
       email: item.attributes.field_email ?? "",
       status: item.attributes.field_status ?? "aktivan",
@@ -91,7 +89,7 @@ export default async function StanarPage({ params }: PageProps) {
         {/* INFO */}
         <div className="flex-1 space-y-2 text-center md:text-left">
           <h1 className="text-2xl font-semibold text-slate-800">{stanar.title}</h1>
-          <p className="text-sm text-gray-500">{stanar.tip || "—"}</p>
+          <p className="text-sm text-gray-500">{stanar.telefon || "—"}</p>
 
           <div className="flex justify-center md:justify-start mt-2">
             <StatusBadge status={stanar.status} />
@@ -119,7 +117,7 @@ export default async function StanarPage({ params }: PageProps) {
           <div className="space-y-4 text-sm">
             <div>
               <p className="text-gray-400">Tip</p>
-              <p className="font-medium text-slate-700">{stanar.tip || "-"}</p>
+              <p className="font-medium text-slate-700">{stanar.telefon || "-"}</p>
             </div>
 
             <div>

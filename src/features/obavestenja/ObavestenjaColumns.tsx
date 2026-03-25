@@ -4,9 +4,6 @@ import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 
-// Funkcija koja bira pravi status
-const getStatus = (o: Obavestenje) => o.type || "Nepoznat";
-
 export const obavestenjaColumns: Column<Obavestenje>[] = [
   {
     key: "title",

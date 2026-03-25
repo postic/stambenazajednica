@@ -5,15 +5,7 @@ import { getDokument } from "@/lib/drupal/getDokument";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt } from "react-icons/fa";
-
-const getFileIcon = (mime?: string): ReactNode => {
-  if (!mime) return <FaFileAlt className="text-gray-400" />;
-  if (mime.includes("pdf")) return <FaFilePdf className="text-red-500" />;
-  if (mime.includes("word")) return <FaFileWord className="text-blue-500" />;
-  if (mime.includes("excel")) return <FaFileExcel className="text-green-500" />;
-  return <FaFileAlt className="text-gray-400" />;
-};
-
+import { getFileIcon } from "@/features/dokumenti/utils";
 
 export default async function Page({ params }: { params: Promise<{ tip: string; id: string }> }) {
   const { tip, id } = await params;
