@@ -9,7 +9,13 @@ type Status =
   | "zatvoren"
   | "zakazana"
   | "otkazana"
-  | "odrzana";
+  | "odrzana"
+  // dokumenti
+  | "active"
+  | "pending"
+  | "accepted"
+  | "rejected"
+  | "archived";
 
 type Prioritet = "nizak" | "srednji" | "visok" | "hitno";
 
@@ -28,18 +34,32 @@ const statusStyles: Record<Status, string> = {
   zakazana: "bg-indigo-100 text-indigo-800",
   otkazana: "bg-red-200 text-red-900",
   odrzana: "bg-green-200 text-green-900",
+
+  // dokumenti
+  active: "bg-blue-100 text-blue-800",
+  pending: "bg-yellow-100 text-yellow-800",
+  accepted: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800",
+  archived: "bg-gray-100 text-gray-700",
 };
 
 const statusLabels: Record<Status, string> = {
   prijavljen: "prijavljen",
   u_obradi: "u obradi",
   na_cekanju: "na čekanju",
-  resen: "resen",
+  resen: "rešen",
   odbijen: "odbijen",
   zatvoren: "zatvoren",
   zakazana: "zakazana",
   otkazana: "otkazana",
-  odrzana: "odrzana",
+  odrzana: "održana",
+
+  // dokumenti
+  active: "aktivno",
+  pending: "na razmatranju",
+  accepted: "prihvaćeno",
+  rejected: "odbijeno",
+  archived: "arhivirano",
 };
 
 const prioritetStyles: Record<Prioritet, string> = {
@@ -58,25 +78,46 @@ const prioritetLabels: Record<Prioritet, string> = {
 
 function normalizeStatus(status?: string): Status | undefined {
   if (!status) return undefined;
-  return status.toLowerCase().replace(/\s/g, "_").replace(/[^\w_]/g, "") as Status;
+
+  return status
+    .toLowerCase()
+    .replace(/\s/g, "_")
+    .replace(/[^\w_]/g, "") as Status;
 }
 
 function normalizePrioritet(p?: string): Prioritet | undefined {
   if (!p) return undefined;
-  return p.toLowerCase().replace(/[^\w]/g, "") as Prioritet;
+
+  return p
+    .toLowerCase()
+    .replace(/[^\w]/g, "") as Prioritet;
 }
 
 export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
-  const statusValue = typeof status === "string" ? status : (status as any)?.value;
-  const prioritetValue = typeof prioritet === "string" ? prioritet : (prioritet as any)?.value;
+  const statusValue =
+    typeof status === "string" ? status : status?.value;
+
+  const prioritetValue =
+    typeof prioritet === "string" ? prioritet : prioritet?.value;
 
   const normalizedStatus = normalizeStatus(statusValue);
   const normalizedPrioritet = normalizePrioritet(prioritetValue);
 
-  const style = normalizedStatus ? statusStyles[normalizedStatus] : "bg-gray-100 text-gray-800";
-  const label = normalizedStatus ? statusLabels[normalizedStatus] : (statusValue ?? "-").toLowerCase();
-  const pStyle = normalizedPrioritet ? prioritetStyles[normalizedPrioritet] : undefined;
-  const pLabel = normalizedPrioritet ? prioritetLabels[normalizedPrioritet] : (prioritetValue ?? "-").toLowerCase();
+  const style = normalizedStatus
+    ? statusStyles[normalizedStatus]
+    : "bg-gray-100 text-gray-800";
+
+  const label = normalizedStatus
+    ? statusLabels[normalizedStatus]
+    : (statusValue ?? "-").toLowerCase();
+
+  const pStyle = normalizedPrioritet
+    ? prioritetStyles[normalizedPrioritet]
+    : undefined;
+
+  const pLabel = normalizedPrioritet
+    ? prioritetLabels[normalizedPrioritet]
+    : (prioritetValue ?? "-").toLowerCase();
 
   const isSednica =
     normalizedStatus === "zakazana" ||
@@ -84,11 +125,11 @@ export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
     normalizedStatus === "odrzana";
 
   return (
-    <div className="flex flex-col gap-1 w-max">
+    <div className="flex gap-2 items-center flex-wrap">
       {/* STATUS */}
       {normalizedStatus && (
         <span
-          className={`inline-block lowercase px-4 py-1 rounded-full ${style}`}
+          className={`inline-block lowercase px-3 py-1 rounded-full text-xs font-medium ${style}`}
           title={label}
         >
           {label}
@@ -98,7 +139,7 @@ export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
       {/* PRIORITET */}
       {normalizedPrioritet && pStyle && !isSednica && (
         <span
-          className={`inline-block lowercase px-4 py-1 rounded-full ${pStyle}`}
+          className={`inline-block lowercase px-3 py-1 rounded-full text-xs font-medium ${pStyle}`}
           title={pLabel}
         >
           {pLabel}

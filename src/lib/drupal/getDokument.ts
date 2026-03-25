@@ -28,8 +28,9 @@ export async function getDokument(id: string) {
   return {
     id: doc.id,
     title: doc.attributes.title,
+    body: doc.attributes.body?.value ?? "",
     date: doc.attributes.created,
-    status: doc.attributes.status?.value ?? null,
+    status: doc.attributes.field_status_dokumenta ?? null,
     files,
   };
 }

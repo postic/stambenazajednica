@@ -6,5 +6,5 @@ export const getFileIcon = (mime?: string): ReactNode => {
   if (mime.includes("pdf")) return <FaFilePdf className="text-red-500" />;
   if (mime.includes("word")) return <FaFileWord className="text-blue-500" />;
   if (mime.includes("excel")) return <FaFileExcel className="text-green-500" />;
-  return <FaFileAlt className="text-gray-400" />;
+  return <FaFileAlt className="inline mr-1 text-gray-600" />;
 };

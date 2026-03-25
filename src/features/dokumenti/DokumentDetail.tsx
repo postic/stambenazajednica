@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Dokument } from "./types";
-import { getFileIcon } from "./utils";
+import { getFileIcon } from "@/features/dokumenti/utils";
 
 interface DokumentDetailProps {
   dokument: Dokument;
@@ -26,7 +26,6 @@ export default function DokumentDetail({ dokument }: DokumentDetailProps) {
       <ul className="space-y-2">
         {dokument.files.map((file) => (
           <li key={file.id} className="flex items-center gap-3">
-            {getFileIcon(file.mimeType)}
             <a href={file.url} target="_blank" className="text-blue-600 underline">
               View
             </a>

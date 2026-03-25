@@ -40,19 +40,12 @@ export async function GET(req: Request) {
 
     const dokumenti: Dokument[] = currentPageData.map((item: any) => {
 
-    // Type taxonomy term
-    const typeRel = item.relationships?.field_tip_dokumenta?.data;
-    const typeIncluded = typeRel && data.included?.find(
-      (i: any) => i.type === typeRel.type && i.id === typeRel.id
-    );
-    const type = typeIncluded?.attributes?.name || "nepoznat";
-
       return {
         id: item.id,
         title: item.attributes.title,
         body: item.attributes.body?.value || "",
         created: item.attributes.created,
-        type,
+        status: item.attributes.field_status_dokumenta ?? "",
       };
     });
 

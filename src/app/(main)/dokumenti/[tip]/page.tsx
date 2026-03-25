@@ -16,7 +16,7 @@ export default async function DokumentiPage({ params }: PageProps) {
     id: doc.id,
     title: doc.title,
     created: doc.created,
-    type: tip,
+    status: doc.status,
     files: doc.files.map((file: any) => ({
       id: file.id,
       url: file.url,

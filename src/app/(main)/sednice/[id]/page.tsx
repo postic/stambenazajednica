@@ -5,6 +5,7 @@ import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt } from "react-icons/fa";
 import { Sednica, Dokument } from "@/features/sednice/types";
+import { getFileIcon } from "@/features/dokumenti/utils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -115,14 +116,6 @@ async function getSednica(id: string): Promise<Sednica | null> {
   }
 }
 
-// Ikone fajlova
-function getFileIcon(mimeType: string) {
-  if (mimeType.includes("pdf")) return <FaFilePdf className="inline mr-1 text-red-600" />;
-  if (mimeType.includes("word")) return <FaFileWord className="inline mr-1 text-blue-600" />;
-  if (mimeType.includes("excel")) return <FaFileExcel className="inline mr-1 text-green-600" />;
-  return <FaFileAlt className="inline mr-1 text-gray-600" />;
-}
-
 // Glavna stranica
 export default async function SednicaPage({ params }: PageProps) {
   const { id } = await params;
@@ -172,7 +165,7 @@ export default async function SednicaPage({ params }: PageProps) {
                 </a>
               </li>
             ))}
-        </ul>
+          </ul>
         </div>
       )}
     </div>

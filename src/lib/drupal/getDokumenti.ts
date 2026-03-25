@@ -10,38 +10,48 @@ const tipMap: Record<string, string> = {
 };
 
 export async function getDokumenti(tip: string) {
+  const uuid = tipMap[tip];
 
-const uuid = tipMap[tip];
+  if (!uuid) {
+    console.warn("Nepoznat tip dokumenta:", tip);
+    return [];
+  }
 
-const url =
-  `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/dokument` +
-  `?filter[field_tip_dokumenta.id]=${uuid}` + // <--- ovde ide UUID
-  `&include=field_dokument_file`;
+  const url =
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/dokument` +
+    `?filter[field_tip_dokumenta.id]=${uuid}` +
+    `&include=field_dokument_file`;
 
   const res = await fetch(url, { cache: "no-store" });
 
+  if (!res.ok) {
+    console.error("Greška pri fetch-u dokumenata:", res.status);
+    return [];
+  }
+
   const json = await res.json();
 
-  const files = json.included || [];
+  const files = Array.isArray(json.included) ? json.included : [];
 
-  return json.data.map((doc: any) => {
+  return (json.data || []).map((doc: any) => {
+    const fileRefs = doc?.relationships?.field_dokument_file?.data || [];
 
-    const fileRefs = doc.relationships.field_dokument_file?.data || [];
-
-    const dokumenti = fileRefs.map((ref: any) => {
-      const file = files.find((f: any) => f.id === ref.id);
-
-      return {
-        id: file?.id,
+    const dokumenti = fileRefs
+      .map((ref: any) =>
+        files.find((f: any) => f.id === ref.id)
+      )
+      .filter((file: any) => file && file.attributes)
+      .map((file: any) => ({
+        id: file.id,
         url: getDrupalFileUrl(file),
-        mime: file?.attributes?.filemime,
-      };
-    });
+        mime: file.attributes.filemime,
+      }));
 
     return {
       id: doc.id,
-      title: doc.attributes.title,
-      created: doc.attributes.created,
+      title: doc.attributes?.title || "",
+      created: doc.attributes?.created || "",
+      status: doc.attributes?.field_status_dokumenta || "active",
       files: dokumenti,
     };
   });

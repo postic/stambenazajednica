@@ -4,6 +4,7 @@ import { Column } from "@/components/table/DataTable";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import { Dokument } from "@/features/dokumenti/types";
 
 // Delete stub funkcija
 const handleDelete = (id: string) => {
@@ -31,7 +32,6 @@ export const dokumentiColumns: Column<Dokument>[] = [
   {
     key: "created",
     header: "Datum",
-    sortable: true,
     render: (d) =>
       d.created
         ? new Date(d.created).toLocaleDateString("sr-RS", {
@@ -41,6 +41,14 @@ export const dokumentiColumns: Column<Dokument>[] = [
           })
         : "-",
   },
+
+  {
+    key: "status",
+    header: "Status",
+    render: (d) =>
+      <StatusBadge status={d.status} />
+  },
+
   {
     key: "actions",
     header: "Akcije",
