@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { isEmptyHtml } from "@/lib/text";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
-import { FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt } from "react-icons/fa";
 import { Sednica, Dokument } from "@/features/sednice/types";
 import { getFileIcon } from "@/features/dokumenti/utils";
 
@@ -14,7 +13,7 @@ interface PageProps {
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888/web";
 
-// Kreira mapu top-level included entiteta
+// 🔹 Mapiranje included entiteta
 function indexIncluded(included: any[] = []) {
   const map = new Map();
   for (const item of included) {
@@ -23,9 +22,10 @@ function indexIncluded(included: any[] = []) {
   return map;
 }
 
-// Generiše pun URL fajla sa fallback-om
+// 🔹 Generisanje URL-a fajla
 function getDrupalFileUrl(fileEntity: any) {
   if (!fileEntity) return "";
+
   const rawUrl = fileEntity.attributes?.uri?.url;
   const filename = fileEntity.attributes?.filename;
   const base = NEXT_PUBLIC_DRUPAL_BASE_URL.replace(/\/web$/, "");
@@ -42,7 +42,7 @@ function getDrupalFileUrl(fileEntity: any) {
   return "";
 }
 
-// Fetch sednice i dokumenata
+// 🔹 Fetch sednice
 async function getSednica(id: string): Promise<Sednica | null> {
   try {
     const endpoint =
@@ -62,9 +62,11 @@ async function getSednica(id: string): Promise<Sednica | null> {
 
     const includedMap = indexIncluded(data.included);
 
-    // DOKUMENTI
     const dokumenti: Dokument[] = [];
-    const dokumentiRelRaw = item.relationships?.field_dokumenti_sednice?.data;
+
+    const dokumentiRelRaw =
+      item.relationships?.field_dokumenti_sednice?.data;
+
     const dokumentiRel = Array.isArray(dokumentiRelRaw)
       ? dokumentiRelRaw
       : dokumentiRelRaw
@@ -75,30 +77,27 @@ async function getSednica(id: string): Promise<Sednica | null> {
       const media = includedMap.get(`${rel.type}:${rel.id}`);
       if (!media) continue;
 
-      // media je tvoj MEDIA objekat
       const fileRel = media.relationships?.field_dokument_file?.data;
-
-      // može biti array ili single object
       const files = Array.isArray(fileRel) ? fileRel : [fileRel];
 
       for (const f of files) {
-      if (!f) continue;
+        if (!f) continue;
 
-      // dohvat file entity iz includedMap
-      const fileEntity = includedMap.get(`${f.type}:${f.id}`);
-      if (!fileEntity) continue;
+        const fileEntity = includedMap.get(`${f.type}:${f.id}`);
+        if (!fileEntity) continue;
 
-      // url fajla
-      const fileUrl = getDrupalFileUrl(fileEntity);
-      const fileMime = fileEntity.attributes?.filemime
+        const fileUrl = getDrupalFileUrl(fileEntity);
+        const fileMime = fileEntity.attributes?.filemime;
 
-      dokumenti.push({
-        id: rel.id,
-        title: media.attributes?.title || media.attributes?.name || "Dokument",
-        url: fileUrl,
-        mimeType: fileMime, // ostavljamo u objektu, ali ne prikazujemo
-      });
-
+        dokumenti.push({
+          id: f.id,
+          title:
+            media.attributes?.title ||
+            media.attributes?.name ||
+            "Dokument",
+          url: fileUrl,
+          mimeType: fileMime,
+        });
       }
     }
 
@@ -116,7 +115,7 @@ async function getSednica(id: string): Promise<Sednica | null> {
   }
 }
 
-// Glavna stranica
+// 🔥 PAGE
 export default async function SednicaPage({ params }: PageProps) {
   const { id } = await params;
   if (!id) notFound();
@@ -124,15 +123,22 @@ export default async function SednicaPage({ params }: PageProps) {
   const sednica = await getSednica(id);
   if (!sednica) notFound();
 
+  const docs = sednica.dokumenti || [];
+  const pdfDoc = docs.find((d) => d.mimeType?.includes("pdf"));
+
   return (
     <div className="max-w-4xl">
       <BackButton />
 
+      {/* NASLOV */}
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {sednica.title}
-        {sednica.status && <StatusBadge status={sednica.status} />}
+        {sednica.status && (
+          <StatusBadge status={sednica.status} />
+        )}
       </h1>
 
+      {/* DATUM */}
       <p className="text-gray-500 text-sm mb-6">
         {new Date(sednica.created).toLocaleDateString("sr-RS", {
           day: "numeric",
@@ -141,31 +147,50 @@ export default async function SednicaPage({ params }: PageProps) {
         })}
       </p>
 
-      {/* 📄 OPIS */}
+      {/* OPIS */}
       {!isEmptyHtml(sednica.body) && (
         <div
-          className="prose max-w-none bg-white p-5 rounded-2xl border"
+          className="prose max-w-none bg-white p-5 rounded-2xl border mb-6"
           dangerouslySetInnerHTML={{ __html: sednica.body }}
         />
       )}
 
-      {sednica.dokumenti && sednica.dokumenti.length > 0 && (
-        <div className="mt-8 prose max-w-none bg-white p-5 rounded-2xl border">
-          <ul className="list-none space-y-2">
-            {sednica.dokumenti.map((doc) => (
-              <li key={doc.id}>
-                <a
-                  href={doc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  {getFileIcon(doc.mimeType)}
-                  {doc.title} {/* NE prikazujemo MIME tip */}
-                </a>
-              </li>
-            ))}
-          </ul>
+      {/* 📎 DOKUMENTI */}
+      {docs.length > 0 && (
+        <div className="bg-white p-5 rounded-2xl border space-y-4">
+          {docs.map((doc) => (
+            <div
+              key={doc.id}
+              className="flex items-center gap-3 border rounded-xl p-4 hover:bg-gray-50 transition"
+            >
+              <span className="text-xl">
+                {getFileIcon(doc.mimeType)}
+              </span>
+
+              <div className="flex-1">
+                <div className="font-medium">{doc.title}</div>
+              </div>
+
+              <a
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Otvori
+              </a>
+            </div>
+          ))}
+
+          {/* 📄 PDF PREVIEW */}
+          {pdfDoc && (
+            <div className="mt-4 border rounded-xl overflow-hidden">
+              <iframe
+                src={pdfDoc.url}
+                className="w-full h-[600px]"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

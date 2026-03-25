@@ -1,5 +1,5 @@
 import { getDokumenti } from "@/lib/drupal/getDokumenti";
-import DokumentiTable from "./DokumentiTable";
+import DokumentiTable from "@/features/dokumenti/DokumentiTable";
 import { Dokument } from "@/features/dokumenti/types";
 
 interface PageProps {

@@ -3,7 +3,7 @@
 import React from "react";
 import { Dokument } from "@/features/dokumenti/types";
 import { DataTable } from "@/components/table/DataTable"; // named export
-import { dokumentiColumns } from "./DokumentiColumns"; // ako je fajl sa velikim D
+import { dokumentiColumns } from "@/features/dokumenti/DokumentiColumns"; // ako je fajl sa velikim D
 
 interface DokumentiTableProps {
   dokumenti: Dokument[];
