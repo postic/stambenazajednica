@@ -2,13 +2,12 @@ import { Column } from "@/components/table/DataTable";
 import { Stanar } from "./types";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
+import StatusBadge from "@/components/StatusBadge";
 
 export const stanariColumns: Column<Stanar>[] = [
   {
     key: "title",
     header: "Naziv",
-    width: "50%",
-    sortable: true,
     render: (stanar) => (
       <Link
         href={`/stanari/${stanar.id}`}
@@ -22,7 +21,6 @@ export const stanariColumns: Column<Stanar>[] = [
   {
     key: "date",
     header: "Datum prijave",
-    sortable: true,
     render: (stanar) =>
       stanar.created
         ? new Date(stanar.created).toLocaleDateString("sr-RS", {
@@ -35,18 +33,14 @@ export const stanariColumns: Column<Stanar>[] = [
   {
     key: "status",
     header: "Status",
-    sortable: true,
     render: (stanar) =>
-      stanar.statusName ? (
-        <span
-          className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded"
-          title={stanar.statusName}
-        >
-          {stanar.statusName}
-        </span>
-      ) : (
-        "-"
-      ),
+      <StatusBadge status={stanar.status} />
+  },
+  {
+    key: "tip",
+    header: "Tip",
+    render: (stanar) =>
+      <StatusBadge status={stanar.tip} />
   },
   {
     key: "actions",

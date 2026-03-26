@@ -3,6 +3,16 @@ interface Stanar {
   title: string;
   body: string;
   created: string;
+  image?: string[] | null;
+  licna_karta?: string;
+  email?: string;
+  ime_prezime?: string;
+  jmbg?: string;
+  hitni_kontakt?: string;
+  telefon?: string;
+  vozilo?: string;
+  status?: string;
+  tip?: string;
 }
 
 export async function GET(req: Request) {
@@ -44,6 +54,8 @@ export async function GET(req: Request) {
         title: item.attributes.title,
         body: item.attributes.body?.value || "",
         created: item.attributes.created,
+        status: item.attributes.field_status_stanara ?? "",
+        tip: item.attributes.field_tip_stanara ?? "",
       };
     });
 

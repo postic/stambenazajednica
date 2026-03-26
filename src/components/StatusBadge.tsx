@@ -15,6 +15,13 @@ type Status =
   | "pending"
   | "accepted"
   | "rejected"
+  | "aktivan"
+  | "pasivan"
+
+  | "vlasnik"
+  | "podstanar"
+  | "clan_domacinstva"
+
   | "archived";
 
 type Prioritet = "nizak" | "srednji" | "visok" | "hitno";
@@ -34,13 +41,18 @@ const statusStyles: Record<Status, string> = {
   zakazana: "bg-indigo-100 text-indigo-800",
   otkazana: "bg-red-200 text-red-900",
   odrzana: "bg-green-200 text-green-900",
-
   // dokumenti
   active: "bg-blue-100 text-blue-800",
   pending: "bg-yellow-100 text-yellow-800",
   accepted: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
+  pasivan: "bg-red-200 text-red-900",
+  aktivan: "bg-green-200 text-green-900",
   archived: "bg-gray-100 text-gray-700",
+
+  clan_domacinstva: "bg-indigo-100 text-indigo-800",
+  podstanar: "bg-red-200 text-red-900",
+  vlasnik: "bg-green-200 text-green-900",
 };
 
 const statusLabels: Record<Status, string> = {
@@ -60,6 +72,12 @@ const statusLabels: Record<Status, string> = {
   accepted: "prihvaćeno",
   rejected: "odbijeno",
   archived: "arhivirano",
+  aktivan: "aktivan",
+  pasivan: "pasivan",
+
+  vlasnik: "vlasnik",
+  podstanar: "podstanar",
+  clan_domacinstva: "član domaćinstva",
 };
 
 const prioritetStyles: Record<Prioritet, string> = {
