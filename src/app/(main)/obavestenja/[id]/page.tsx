@@ -55,7 +55,7 @@ export default async function ObavestenjePage({ params }: PageProps) {
   const images = obavestenje.images ?? [];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl">
       {/* 🔙 BACK BUTTON */}
       <BackButton />
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
