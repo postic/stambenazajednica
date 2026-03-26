@@ -36,12 +36,14 @@ export const stanariColumns: Column<Stanar>[] = [
     render: (stanar) =>
       <StatusBadge status={stanar.status} />
   },
+  /*
   {
     key: "tip",
     header: "Tip",
     render: (stanar) =>
       <StatusBadge status={stanar.tip} />
   },
+  */
   {
     key: "actions",
     header: "Akcije",
