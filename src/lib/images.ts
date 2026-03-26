@@ -6,9 +6,7 @@ export function extractImages(
   const imageData = node?.relationships?.[fieldName]?.data;
   if (!imageData) return [];
 
-  const imagesArray = Array.isArray(imageData)
-    ? imageData
-    : [imageData];
+  const imagesArray = Array.isArray(imageData) ? imageData : [imageData];
 
   const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "";
 
@@ -23,9 +21,7 @@ export function extractImages(
       // media
       if (img.type.startsWith("media--")) {
         const media = included.find((i) => i.id === img.id);
-        const fileRef =
-          media?.relationships?.field_media_image?.data;
-
+        const fileRef = media?.relationships?.field_media_image?.data;
         const file = included.find((i) => i.id === fileRef?.id);
         return formatUrl(file?.attributes?.uri?.url, base);
       }
@@ -35,13 +31,19 @@ export function extractImages(
     .filter((url): url is string => Boolean(url));
 }
 
+// Popravljena funkcija formatUrl
 function formatUrl(url: string | undefined, base: string) {
   if (!url) return null;
 
+  // Ako već počinje sa http, samo vrati
   if (url.startsWith("http")) return url;
 
-  let full = `${base}${url}`;
-  full = full.replace(/([^:]\/)\/+/g, "$1");
+  // Ukloni početni / sa Drupal URL-a
+  const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
 
-  return full;
+  // Ukloni završni / iz base-a
+  const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
+
+  // Spoji base + url, ovo garantuje da ne nastane web/web
+  return `${cleanBase}/${cleanUrl}`;
 }
