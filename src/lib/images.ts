@@ -31,19 +31,23 @@ export function extractImages(
     .filter((url): url is string => Boolean(url));
 }
 
-// Popravljena funkcija formatUrl
 function formatUrl(url: string | undefined, base: string) {
   if (!url) return null;
 
-  // Ako već počinje sa http, samo vrati
+  // Ako je već pun URL
   if (url.startsWith("http")) return url;
 
-  // Ukloni početni / sa Drupal URL-a
-  const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
+  let cleanUrl = url;
 
-  // Ukloni završni / iz base-a
+  // Ako Drupal vraća /web/... na serveru, ukloni taj prefix
+  if (cleanUrl.startsWith("/web/")) {
+    cleanUrl = cleanUrl.replace(/^\/web\//, ""); // uklanja samo početni /web/
+  } else if (cleanUrl.startsWith("/")) {
+    cleanUrl = cleanUrl.slice(1);
+  }
+
+  // Ukloni završni slash iz base URL-a
   const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
 
-  // Spoji base + url, ovo garantuje da ne nastane web/web
   return `${cleanBase}/${cleanUrl}`;
 }
