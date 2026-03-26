@@ -13,6 +13,7 @@ import {
   Megaphone,
   CalendarCheck,
   FileText,
+  Vote,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -43,6 +44,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         { title: "Kvarovi", icon: Wrench, href: "/kvarovi", badge: 3 },
         { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja", badge: 2 },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
+        { title: "Ankete", icon: Vote, href: "/ankete", badge: 3 },
       ],
     },
     {
