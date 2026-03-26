@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     // Fetch svih stanari (bez count=true)
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stanar`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stanar?include=field_user_image`);
 
     if (!response.ok) {
       const text = await response.text();
@@ -49,6 +49,23 @@ export async function GET(req: Request) {
 
     const stanari: Stanar[] = currentPageData.map((item: any) => {
 
+      // Image
+      let imageUrl: string | null = null;
+      const imageRel = item.relationships?.field_user_image?.data?.[0];
+      if (imageRel && data.included) {
+        const fileObj = data.included.find(
+          (i: any) => i.type === "file--file" && i.id === imageRel.id
+        );
+        const fileUriValue = fileObj?.attributes?.uri?.value;
+        if (fileUriValue) {
+          const filePath = fileUriValue.replace(
+            "public://",
+            "/sites/default/files/"
+          );
+          imageUrl = `${NEXT_PUBLIC_DRUPAL_BASE_URL}${filePath}`;
+        }
+      }
+
       return {
         id: item.id,
         title: item.attributes.title,
@@ -56,6 +73,7 @@ export async function GET(req: Request) {
         created: item.attributes.created,
         status: item.attributes.field_status_stanara ?? "",
         tip: item.attributes.field_tip_stanara ?? "",
+        image: imageUrl, // <-- pick first image,
       };
     });
 

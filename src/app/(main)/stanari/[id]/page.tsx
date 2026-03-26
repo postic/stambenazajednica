@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { extractImages } from "@/lib/images";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { Stanar } from "@/features/stanari/types";
@@ -21,17 +22,10 @@ async function getStanar(id: string): Promise<Stanar | null> {
 
     const data = await res.json();
     const item = data?.data;
-    const included = data?.included || [];
 
     if (!item) return null;
 
-    const mediaId = item.relationships?.field_user_image?.data?.id;
-
-    const media = included.find(
-      (i: any) => i.type === "file--file" && i.id === mediaId
-    );
-
-    const imageUrl = media?.attributes?.uri?.url;
+    const images: string[] = extractImages(item, data.included, "field_user_image") ?? [];
 
     return {
       id: item.id,
@@ -47,9 +41,7 @@ async function getStanar(id: string): Promise<Stanar | null> {
       vozilo: item.attributes.field_vozilo ?? "",
       tip: item.attributes.field_tip_stanara ?? "",
       status: item.attributes.field_status_stanara ?? "aktivan",
-      image: imageUrl
-        ? `${NEXT_PUBLIC_DRUPAL_BASE_URL}${imageUrl}`
-        : null,
+      image: images,
     };
   } catch (error) {
     console.error("Greška pri fetch-u:", error);
@@ -112,19 +104,24 @@ export default async function StanarPage({ params }: PageProps) {
       {/* 🧍 PROFIL */}
       <div className="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
         {/* AVATAR */}
-        <div className="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-          {stanar.image ? (
-            <img
-              src={stanar.image}
-              alt={stanar.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-gray-400 text-xl font-semibold">
-              {(stanar.ime_prezime || stanar.title)?.charAt(0)}
-            </span>
-          )}
-        </div>
+        <div className="w-32 h-32 rounded-lg bg-gray-200 flex items-center justify-center text-xl font-semibold text-gray-700 overflow-hidden">
+        {stanar.image && stanar.image.length > 0 ? (
+          <img
+            src={stanar.image[0]} // uzimamo prvu sliku iz niza
+            alt={stanar.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          // Ako nema slike, prikazujemo inicijale
+          <span>
+            {stanar.title
+              .split(" ")
+              .map((word) => word[0])
+              .join("")
+              .toUpperCase()}
+          </span>
+        )}
+      </div>
 
         {/* INFO */}
         <div className="flex-1 space-y-2 text-center md:text-left">
