@@ -5,7 +5,7 @@ import { DataTable } from "@/components/table/DataTable";
 import { anketeColumns } from "@/features/ankete/AnketeColumns";
 import { Anketa } from "@/features/ankete/types";
 
-export default function StanoviPage() {
+export default function AnketePage() {
   const [ankete, setAnkete] = useState<Anketa[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

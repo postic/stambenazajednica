@@ -58,7 +58,7 @@ export default async function KvarPage({ params }: PageProps) {
   const images = kvar.image ?? [];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl">
 
       {/* 🔙 BACK BUTTON */}
       <BackButton />

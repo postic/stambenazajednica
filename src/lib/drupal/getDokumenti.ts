@@ -1,6 +1,7 @@
 import { getDrupalFileUrl } from "./getDrupalFileUrl";
 
 const tipMap: Record<string, string> = {
+  placanja: "ad2742ba-15ac-4e7e-abaf-6c844faf885b",
   zapisnici: "f7a823b4-24e2-4edd-9ab1-e55e51f92d60",
   odluke: "1d3d870d-dddf-4c97-8c91-40fc1ce86409",
   ponude: "223a5875-daf1-4e9e-b0a3-d188b3b62497",
