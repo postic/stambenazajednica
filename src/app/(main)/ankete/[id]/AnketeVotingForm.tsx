@@ -1,72 +1,99 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Anketa, Opcija } from "../types";
 
-interface Props {
-  anketa: Anketa;
-}
+import { useState } from "react";
 
-export default function AnketeVotingForm({ anketa }: Props) {
-  const [options, setOptions] = useState<Opcija[]>(anketa.options || []);
-  const [selectedOption, setSelectedOption] = useState<string>("");
-  const [submitted, setSubmitted] = useState(false);
+export default function AnketeVotingForm({
+  anketaId,
+  opcije,
+}: {
+  anketaId: string;
+  opcije: { id: string; label: string }[];
+}) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [voted, setVoted] = useState(false);
 
-  // Fetch opcija, ali u slučaju greške ili praznog niza, options ostaju prazne
-  useEffect(() => {
-    if (options.length === 0) {
-      fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/opcija?filter[field_opcija_anketa.id][value]=${anketa.id}`, { cache: "no-store" })
-        .then(res => res.ok ? res.json() : { data: [] })
-        .then(data => {
-          const opts: Opcija[] = (data.data || []).map((opt: any, index: number) => ({
-            id: opt.id,
-            title: opt.attributes.title || "Bez naslova",
-            anketaId: anketa.id,
-            order: index,
-            votes: 0,
-          }));
-          setOptions(opts);
-        })
-        .catch(err => {
-          console.error("Greška pri učitavanju opcija:", err);
-          setOptions([]); // uvek prikazujemo, čak i ako je prazno
-        });
+  const handleVote = async () => {
+    if (!selected) return;
+
+    setLoading(true);
+
+    const res = await fetch("/api/vote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        anketaId,
+        opcijaId: selected,
+      }),
+    });
+
+    setLoading(false);
+
+    if (res.ok) {
+      setVoted(true);
+    } else {
+      alert("Greška pri glasanju!");
     }
-  }, [anketa.id, options.length]);
+  };
+
+  // ✅ nakon glasanja (Twitter-like feedback)
+  if (voted) {
+    return (
+      <div className="text-sm text-slate-600 mt-3">
+        Hvala na glasu!
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white p-5 rounded-2xl border mt-4">
-      <ul className="space-y-2">
-        {options.length > 0 ? (
-          options.map(opt => (
-            <li key={opt.id}>
-              <label className="flex items-center gap-2 cursor-pointer p-3 border rounded hover:bg-gray-100">
-                <input
-                  type="radio"
-                  name="anketaOption"
-                  value={opt.id}
-                  checked={selectedOption === opt.id}
-                  onChange={() => setSelectedOption(opt.id)}
-                  disabled={submitted}
-                />
-                <span>{opt.title}</span>
-              </label>
-            </li>
-          ))
-        ) : (
-          <li className="text-gray-500">Opcije trenutno nisu unete, ali možete glasati.</li>
-        )}
-      </ul>
+    <div className="space-y-2">
+      {/* OPCIJE */}
+      {opcije.map((o) => {
+        const isSelected = selected === o.id;
 
-      {!submitted ? (
-        <button
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={() => setSubmitted(true)}
-        >
-          Glasaj
-        </button>
-      ) : (
-        <p className="mt-4 text-green-600 font-semibold">Hvala na glasu!</p>
-      )}
+        return (
+          <button
+            key={o.id}
+            onClick={() => setSelected(o.id)}
+            className={`
+              w-full text-left px-4 py-3 rounded-full border transition
+              flex items-center justify-between
+              ${
+                isSelected
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:bg-gray-50"
+              }
+            `}
+          >
+            <span className="font-medium text-slate-800">
+              {o.label}
+            </span>
+
+            {/* SELECT INDICATOR */}
+            {isSelected && (
+              <span className="text-blue-500 text-sm font-semibold">
+                ✔
+              </span>
+            )}
+          </button>
+        );
+      })}
+
+      {/* BUTTON */}
+      <button
+        onClick={handleVote}
+        disabled={!selected || loading}
+        className="
+          mt-3 w-full bg-blue-500 text-white py-2 rounded-full
+          font-semibold transition
+          hover:bg-blue-600
+          disabled:opacity-50 disabled:cursor-not-allowed
+        "
+      >
+        {loading ? "Glasam..." : "Glasaj"}
+      </button>
     </div>
   );
 }
