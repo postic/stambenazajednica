@@ -46,10 +46,29 @@ async function getOpcije(anketaId: string) {
   }));
 }
 
-// za sada nema provere usera
-async function getUserVote() {
-  return null;
+async function getUserVoteForCurrentUser(anketaId?: string): Promise<string | null> {
+
+  if (!anketaId) return null;
+
+  try {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/glas?filter[field_glas_anketa.id]=${anketaId}`,
+    { credentials: "include" }
+  );
+
+  if (!res.ok) return null;
+
+    const data = await res.json();
+    if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+      // Vraća value prvog glasa, prilagodi ime polja po Drupal-u
+      return data.data;
+    }
+  } catch (err) {
+    //console.error("Greška pri dohvatanju glasova za korisnika:", err);
+    return null;
+  }
 }
+
 
 export default async function AnketeDetailPage(
   { params }: { params: Promise<{ id: string }> }
@@ -58,7 +77,7 @@ export default async function AnketeDetailPage(
 
   const anketa = await getAnketa(id);
   const opcije = await getOpcije(id);
-  const userVote = await getUserVote();
+  const userVote = await getUserVoteForCurrentUser(id);
 
   return (
     <div className="max-w-4xl">
@@ -82,11 +101,13 @@ export default async function AnketeDetailPage(
         {anketa.pitanje}
       </h1>
 
-      {!userVote ? (
-        <AnketeVotingForm anketaId={anketa.id} opcije={opcije} />
-      ) : (
+      <div>
+        {userVote ? (
         <AnketeResults opcije={opcije} userVote={userVote} />
-      )}
+        ) : (
+        <AnketeVotingForm anketaId={anketa.id} opcije={opcije} />
+        )}
+      </div>
     </div>
 
     {/* 📄 OPIS */}
