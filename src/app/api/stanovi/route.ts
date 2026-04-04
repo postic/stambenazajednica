@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL =
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?include=field_tip_stana,field_vlasnik`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?sort=field_sprat`);
 
     if (!response.ok) {
       const text = await response.text();
