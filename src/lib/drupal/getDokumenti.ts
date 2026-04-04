@@ -19,9 +19,10 @@ export async function getDokumenti(tip: string) {
   }
 
   const url =
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/dokument` +
-    `?filter[field_tip_dokumenta.id]=${uuid}` +
-    `&include=field_dokument_file`;
+  `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/dokument` +
+  `?filter[field_tip_dokumenta.id]=${uuid}` +
+  `&include=field_dokument_file` +
+  `&sort=-created`;
 
   const res = await fetch(url, { cache: "no-store" });
 
