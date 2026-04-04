@@ -5,6 +5,7 @@ interface Stan {
   created: string;
   sprat: number | null;
   kvadratura: number | null;
+  vlasnik: string | null; // dodato
 }
 
 export async function GET(req: Request) {
@@ -18,7 +19,9 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL =
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?sort=field_sprat`);
+    const response = await fetch(
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?include=field_vlasnik&sort=field_sprat`
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -29,25 +32,40 @@ export async function GET(req: Request) {
       );
     }
 
-    const data = await response.json();
+    const json = await response.json(); // promenjeno sa "data" na "json"
 
-    const total = (data.data || []).length;
+    const total = (json.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
     // uzmi samo tekuću stranu
-    const currentPageData = (data.data || []).slice(offset, offset + limit);
+    const currentPageData = (json.data || []).slice(offset, offset + limit);
 
+    // ✅ 1. Napravi mapu vlasnika (id -> entity)
+    const vlasniciMap = new Map(
+      (json.included || []).map((item: any) => [item.id, item])
+    );
+
+    // ✅ 2. Mapiraj stanove
     const stanovi: Stan[] = currentPageData.map((item: any) => {
+      const vlasnikId = item.relationships.field_vlasnik?.data?.id;
+      const vlasnikEntity = vlasniciMap.get(vlasnikId);
 
-    return {
-      id: item.id,
-      title: item.attributes.title,
-      created: item.attributes.created,
-      sprat: item.attributes?.field_sprat ?? null,
-      kvadratura: item.attributes?.field_kvadratura ?? null,
-      vlasnik: 'qqqq',
-    };
-  });
+      return {
+        id: item.id,
+        title: item.attributes.title,
+        body: item.attributes.body?.value || "",
+        created: item.attributes.created,
+        sprat: item.attributes?.field_sprat ?? null,
+        kvadratura: item.attributes?.field_kvadratura ?? null,
+
+        // ⚠️ ako je node → title
+        // ⚠️ ako je taxonomy → name
+        vlasnik:
+          vlasnikEntity?.attributes?.title ??
+          vlasnikEntity?.attributes?.name ??
+          null,
+      };
+    });
 
     return new Response(
       JSON.stringify({

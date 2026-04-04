@@ -7,7 +7,7 @@ export const stanoviColumns: Column<Stan>[] = [
   {
     key: "title",
     header: "Naziv",
-    width: "50%",
+    //width: "50%",
     sortable: false,
     render: (stan) => (
       <Link
