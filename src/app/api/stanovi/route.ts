@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 
     const data = await response.json();
 
-    const total = data.meta?.count || 0;
+    const total = (data.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
     // uzmi samo tekuću stranu
@@ -45,6 +45,7 @@ export async function GET(req: Request) {
       created: item.attributes.created,
       sprat: item.attributes?.field_sprat ?? null,
       kvadratura: item.attributes?.field_kvadratura ?? null,
+      vlasnik: 'qqqq',
     };
   });
 

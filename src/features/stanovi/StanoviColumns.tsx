@@ -20,6 +20,13 @@ export const stanoviColumns: Column<Stan>[] = [
     ),
   },
   {
+    key: "vlasnik",
+    header: "Vlasnik",
+    render: (stan) => (
+      <span>{stan.vlasnik ?? "-"}</span>
+    )
+  },
+  {
     key: "sprat",
     header: "Sprat",
     render: (stan) => (
