@@ -37,9 +37,8 @@ async function getStanar(id: string): Promise<Stanar | null> {
       telefon: item.attributes.field_telefon ?? "",
       jmbg: item.attributes.field_jmbg ?? "",
       licna_karta: item.attributes.field_licna_karta ?? "",
-      hitni_kontakt: item.attributes.field_hitni_kontakt ?? "",
       vozilo: item.attributes.field_vozilo ?? "",
-      tip: item.attributes.field_tip_stanara ?? "",
+      tip: item.attributes.field_podstanar ?? "",
       status: item.attributes.field_status_stanara ?? "aktivan",
       image: images,
     };
@@ -95,7 +94,7 @@ export default async function StanarPage({ params }: PageProps) {
     zakupac: "bg-orange-100 text-orange-700",
   };
 
-  const normalizedTip = stanar.tip?.toLowerCase();
+  const normalizedTip = 'xxxxxx';//stanar.tip?.toLowerCase();
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -175,12 +174,6 @@ export default async function StanarPage({ params }: PageProps) {
               </p>
             </div>
 
-            <div>
-              <p className="text-gray-400">Status</p>
-              <div className="mt-1">
-                <StatusBadge status={stanar.status} />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -199,11 +192,6 @@ export default async function StanarPage({ params }: PageProps) {
             <div>
               <p className="text-gray-400">Email</p>
               <p className="font-medium">{stanar.email || "-"}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-400">Hitni kontakt</p>
-              <p className="font-medium">{stanar.hitni_kontakt || "-"}</p>
             </div>
 
             <div>

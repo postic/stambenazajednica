@@ -8,7 +8,6 @@ interface Stanar {
   email?: string;
   ime_prezime?: string;
   jmbg?: string;
-  hitni_kontakt?: string;
   telefon?: string;
   vozilo?: string;
   status?: string;
@@ -71,8 +70,8 @@ export async function GET(req: Request) {
         title: item.attributes.title,
         body: item.attributes.body?.value || "",
         created: item.attributes.created,
-        status: item.attributes.field_status_stanara ?? "",
-        tip: item.attributes.field_tip_stanara ?? "",
+        status: Boolean(item.attributes.field_status_stanara),
+        tip: Boolean(item.attributes.field_podstanar),
         image: imageUrl, // <-- pick first image,
       };
     });

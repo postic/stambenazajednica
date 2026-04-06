@@ -8,10 +8,9 @@ export interface Stanar {
   email?: string;
   ime_prezime?: string;
   jmbg?: string;
-  hitni_kontakt?: string;
   telefon?: string;
   vozilo?: string;
-  status?: string;
-  tip?: string;
+  status?: boolean;
+  tip?: boolean;
 }
 

@@ -19,31 +19,17 @@ export const stanariColumns: Column<Stanar>[] = [
     ),
   },
   {
-    key: "date",
-    header: "Datum prijave",
-    render: (stanar) =>
-      stanar.created
-        ? new Date(stanar.created).toLocaleDateString("sr-RS", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
-        : "-",
-  },
-  {
     key: "status",
     header: "Status",
     render: (stanar) =>
-      <StatusBadge status={stanar.status} />
+      {stanar.title}
   },
-  /*
   {
     key: "tip",
     header: "Tip",
     render: (stanar) =>
-      <StatusBadge status={stanar.tip} />
+      {stanar.tip ? "Aktivan" : "Neaktivan"}
   },
-  */
   {
     key: "actions",
     header: "Akcije",
