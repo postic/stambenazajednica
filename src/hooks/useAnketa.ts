@@ -1,6 +1,6 @@
 // hooks/useAnketa.ts
 import { useState, useEffect } from "react";
-import { Anketa } from "@/types/anketa";
+import { Anketa } from "@/features/ankete/types";
 import { fetchAnketa, fetchRezultati } from "@/lib/api";
 
 export function useAnketa(id: string) {
