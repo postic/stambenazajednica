@@ -20,13 +20,35 @@ interface SidebarProps {
   setMobileOpen: (open: boolean) => void;
 }
 
+// Tip za submenu item
+interface SubItem {
+  title: string;
+  href: string;
+  badge?: number;
+}
+
+// Tip za sidebar item
+interface SidebarItem {
+  title: string;
+  href?: string;
+  icon?: any;
+  badge?: number;
+  submenu?: SubItem[];
+}
+
+// Tip za sekciju
+interface MenuSection {
+  title: string;
+  items: SidebarItem[];
+}
+
 export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const { user } = useAuth();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  const menuSections = [
+  const menuSections: MenuSection[] = [
     {
       title: "ZGRADA",
       items: [
@@ -69,9 +91,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     menuSections.forEach((section) =>
       section.items.forEach((item) => {
         if (item.submenu) {
-          const activeSub = item.submenu.find((sub) =>
-            pathname.startsWith(sub.href)
-          );
+          const activeSub = item.submenu.find((sub) => pathname.startsWith(sub.href));
           if (activeSub) setOpenMenu(item.title);
         }
       })
@@ -80,11 +100,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
 
   const itemBase =
     "group relative w-full flex items-center px-3 py-2 text-[15px] rounded-lg transition hover:bg-slate-700";
-
   const iconClass = "w-5 h-5 shrink-0";
 
   const Badge = ({ value }: { value?: number }) =>
-    value ? (
+    value !== undefined ? (
       <span className="ml-auto text-[11px] bg-slate-600 text-white px-1.5 py-0.5 rounded-full">
         {value}
       </span>
@@ -116,7 +135,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
               {user?.name}
             </span>
           )}
-
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="p-2 hover:bg-slate-700 rounded-lg transition"
@@ -134,16 +152,13 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                   {section.title}
                 </div>
               )}
-
               <ul className="space-y-1 px-2">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isOpen = openMenu === item.title;
                   const isParentActive =
                     item.submenu &&
-                    item.submenu.some((sub) =>
-                      pathname.startsWith(sub.href)
-                    );
+                    item.submenu.some((sub) => pathname.startsWith(sub.href));
 
                   return (
                     <li key={item.title}>
@@ -151,10 +166,12 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                         <>
                           <button
                             onClick={() => setOpenMenu(isOpen ? null : item.title)}
-                            className={`${itemBase} ${collapsed ? "justify-center" : "justify-between"} ${isParentActive ? "bg-slate-700" : ""}`}
+                            className={`${itemBase} ${
+                              collapsed ? "justify-center" : "justify-between"
+                            } ${isParentActive ? "bg-slate-700" : ""}`}
                           >
                             <div className="flex items-center gap-3">
-                              <Icon className={iconClass} />
+                              {Icon && <Icon className={iconClass} />}
                               {!collapsed && <span>{item.title}</span>}
                             </div>
 
@@ -183,10 +200,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                             {!collapsed && (
                               <ul
                                 className="mt-1 space-y-1 border-l border-slate-700"
-                                style={{
-                                  marginLeft: "24px",
-                                  paddingLeft: "10px",
-                                }}
+                                style={{ marginLeft: "24px", paddingLeft: "10px" }}
                               >
                                 {item.submenu.map((sub) => (
                                   <li key={sub.href}>
@@ -194,7 +208,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                                       href={sub.href}
                                       onClick={() => {
                                         setMobileOpen(false);
-                                        setOpenMenu(null); // <-- zatvara sve open menije
+                                        setOpenMenu(null);
                                       }}
                                       className={`flex items-center px-3 py-2 text-[15px] rounded-lg hover:bg-slate-700 ${
                                         pathname === sub.href
@@ -203,7 +217,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                                       }`}
                                     >
                                       <span className="flex-1">{sub.title}</span>
-                                      <Badge value={sub.badge} />
+                                      {sub.badge !== undefined && <Badge value={sub.badge} />}
                                     </Link>
                                   </li>
                                 ))}
@@ -213,19 +227,18 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                         </>
                       ) : (
                         <Link
-                          href={item.href}
+                          href={item.href || "#"}
                           onClick={() => {
                             setMobileOpen(false);
-                            setOpenMenu(null); // <-- zatvara sve open menije kada klikneš leaf link
+                            setOpenMenu(null);
                           }}
-                          className={`${itemBase} ${collapsed ? "justify-center" : "gap-3"} ${
-                            pathname === item.href ? "bg-slate-700" : ""
-                          }`}
+                          className={`${itemBase} ${
+                            collapsed ? "justify-center" : "gap-3"
+                          } ${pathname === item.href ? "bg-slate-700" : ""}`}
                         >
-                          <Icon className={iconClass} />
+                          {Icon && <Icon className={iconClass} />}
                           {!collapsed && <span className="flex-1">{item.title}</span>}
-                          {!collapsed && <Badge value={item.badge} />}
-
+                          {!collapsed && item.badge !== undefined && <Badge value={item.badge} />}
                           {collapsed && (
                             <span className="absolute left-full ml-2 px-2 py-1 text-xs bg-black text-white rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
                               {item.title}

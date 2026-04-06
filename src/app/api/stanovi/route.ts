@@ -1,3 +1,5 @@
+// src/app/api/stanovi/route.ts
+
 interface Stan {
   id: string;
   title: string;
@@ -5,8 +7,18 @@ interface Stan {
   created: string;
   sprat: number | null;
   kvadratura: number | null;
-  vlasnik: string | null; // dodato
+  vlasnik: string | null;
 }
+
+// Tip za JSON:API entity vlasnika
+type VlasnikEntity = {
+  id: string;
+  type: string;
+  attributes?: {
+    title?: string;
+    name?: string;
+  };
+};
 
 export async function GET(req: Request) {
   try {
@@ -32,34 +44,32 @@ export async function GET(req: Request) {
       );
     }
 
-    const json = await response.json(); // promenjeno sa "data" na "json"
+    const json = await response.json();
 
     const total = (json.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
-    // uzmi samo tekuću stranu
     const currentPageData = (json.data || []).slice(offset, offset + limit);
 
-    // ✅ 1. Napravi mapu vlasnika (id -> entity)
-    const vlasniciMap = new Map(
-      (json.included || []).map((item: any) => [item.id, item])
+    // ✅ Napravi mapu vlasnika sa tipom
+    const vlasniciMap: Map<string, VlasnikEntity> = new Map(
+      (json.included || []).map((item: any) => [item.id, item as VlasnikEntity])
     );
 
-    // ✅ 2. Mapiraj stanove
+    // ✅ Mapiraj stanove
     const stanovi: Stan[] = currentPageData.map((item: any) => {
-      const vlasnikId = item.relationships.field_vlasnik?.data?.id;
+      const vlasnikId = item.relationships?.field_vlasnik?.data?.id;
       const vlasnikEntity = vlasniciMap.get(vlasnikId);
 
       return {
         id: item.id,
-        title: item.attributes.title,
-        body: item.attributes.body?.value || "",
-        created: item.attributes.created,
+        title: item.attributes?.title || "",
+        body: item.attributes?.body?.value || "",
+        created: item.attributes?.created || "",
         sprat: item.attributes?.field_sprat ?? null,
         kvadratura: item.attributes?.field_kvadratura ?? null,
 
-        // ⚠️ ako je node → title
-        // ⚠️ ako je taxonomy → name
+        // Ako je node → title, ako je taxonomy → name
         vlasnik:
           vlasnikEntity?.attributes?.title ??
           vlasnikEntity?.attributes?.name ??

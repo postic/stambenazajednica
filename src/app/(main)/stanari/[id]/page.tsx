@@ -209,9 +209,9 @@ export default async function StanarPage({ params }: PageProps) {
               >
                 <div>
                   <p className="font-medium text-slate-800 inline-flex items-center gap-2">
-  Stan {stan.title || "-"}
-  {stanar.tip && <StatusBadge status={stanar.tip} />}
-</p>
+                    Stan {stan.title || "-"}
+                    {stanar.tip !== undefined && ( <StatusBadge status={stanar.tip ? "Podstanar" : "Stanar"} /> )}
+                  </p>
                   <p className="text-xs text-gray-500">
                     Sprat: {stan.sprat || "-"}
                   </p>

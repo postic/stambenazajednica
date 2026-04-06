@@ -67,6 +67,9 @@ async function getUserVoteForCurrentUser(anketaId?: string): Promise<string | nu
     //console.error("Greška pri dohvatanju glasova za korisnika:", err);
     return null;
   }
+
+  // 🔴 Fallback (ako nešto promakne)
+  return null;
 }
 
 

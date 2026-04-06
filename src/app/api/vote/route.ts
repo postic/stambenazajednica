@@ -52,9 +52,8 @@ export async function POST(req: Request) {
       }),
     });
 
-    //const text = await res.text();
-
     if (!res.ok) {
+      const text = await res.text(); // <-- ovde dohvatamo odgovor
       console.error("Drupal error:", text);
       return NextResponse.json({ error: "Drupal error", details: text }, { status: 500 });
     }
