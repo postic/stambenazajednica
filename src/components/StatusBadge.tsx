@@ -22,6 +22,7 @@ type Status =
   | "zatvorena_anketa"
   // stan
   | "vlasnik"
+  | "stanar"
   | "podstanar"
   | "clan_domacinstva"
   | "archived";
@@ -56,7 +57,8 @@ const statusStyles: Record<Status, string> = {
   zatvorena_anketa: "bg-red-200 text-red-900",
   // stan
   clan_domacinstva: "bg-indigo-100 text-indigo-800",
-  podstanar: "bg-red-200 text-red-900",
+  podstanar: "bg-yellow-200 text-yellow-900",
+  stanar: "bg-indigo-200 text-indigo-900",
   vlasnik: "bg-green-200 text-green-900",
 };
 
@@ -80,6 +82,7 @@ const statusLabels: Record<Status, string> = {
   pasivan: "pasivan",
   // stan
   vlasnik: "vlasnik",
+  stanar: "stanar",
   podstanar: "podstanar",
   clan_domacinstva: "član domaćinstva",
   // anketa

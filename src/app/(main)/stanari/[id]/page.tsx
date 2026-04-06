@@ -38,8 +38,8 @@ async function getStanar(id: string): Promise<Stanar | null> {
       jmbg: item.attributes.field_jmbg ?? "",
       licna_karta: item.attributes.field_licna_karta ?? "",
       vozilo: item.attributes.field_vozilo ?? "",
-      tip: item.attributes.field_podstanar ?? "",
-      status: item.attributes.field_status_stanara ?? "aktivan",
+      status: Boolean(item.attributes.field_status_stanara),
+      tip: Boolean(item.attributes.field_podstanar),
       image: images,
     };
   } catch (error) {
@@ -87,15 +87,6 @@ export default async function StanarPage({ params }: PageProps) {
 
   const stanovi = await getStanoviZaStanar(id);
 
-  // 🎨 TIP BOJE
-  const tipColor: Record<string, string> = {
-    vlasnik: "bg-blue-100 text-blue-700",
-    stanar: "bg-green-100 text-green-700",
-    zakupac: "bg-orange-100 text-orange-700",
-  };
-
-  const normalizedTip = 'xxxxxx';//stanar.tip?.toLowerCase();
-
   return (
     <div className="max-w-5xl space-y-6">
       <BackButton />
@@ -130,7 +121,8 @@ export default async function StanarPage({ params }: PageProps) {
 
           {/* 🟢 STATUS + TIP */}
           <div className="flex gap-2 mt-2 justify-center md:justify-start flex-wrap">
-            <StatusBadge status={stanar.status} />
+            <StatusBadge status={stanar.status ? "aktivan" : "pasivan"} />
+            <StatusBadge status={stanar.tip ? "podstanar" : "stanar"} />
           </div>
 
           <p className="text-gray-400 text-xs mt-2">

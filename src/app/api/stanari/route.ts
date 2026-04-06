@@ -10,8 +10,8 @@ interface Stanar {
   jmbg?: string;
   telefon?: string;
   vozilo?: string;
-  status?: string;
-  tip?: string;
+  status?: boolean;
+  tip?: boolean;
 }
 
 export async function GET(req: Request) {

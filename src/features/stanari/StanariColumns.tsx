@@ -22,13 +22,13 @@ export const stanariColumns: Column<Stanar>[] = [
     key: "status",
     header: "Status",
     render: (stanar) =>
-      {stanar.title}
+      <StatusBadge status={stanar.status ? "aktivan" : "pasivan"} />
   },
   {
     key: "tip",
     header: "Tip",
     render: (stanar) =>
-      {stanar.tip ? "Aktivan" : "Neaktivan"}
+      <StatusBadge status={stanar.tip ? "podstanar" : "stanar"} />
   },
   {
     key: "actions",
