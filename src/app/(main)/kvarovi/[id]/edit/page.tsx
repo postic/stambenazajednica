@@ -8,6 +8,7 @@ interface Option {
   label: string;
 }
 
+// ✅ Params je Promise u latest Next.js App Router
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -17,20 +18,21 @@ export const metadata = {
 };
 
 export default async function EditKvarPage({ params }: PageProps) {
+  // ✅ Unwrap Promise odmah
   const { id } = await params;
 
-  // 1️⃣ kvar
+  // 1️⃣ Fetch kvara
   const kvar: Kvar | null = await getKvar(id);
   if (!kvar) return notFound();
 
-  // 2️⃣ OPCIJE IZ DRUPALA 🔥
+  // 2️⃣ Fetch opcija iz Drupala sa catch fallback
   const [statusOptions, prioritetOptions] = await Promise.all([
-    getFieldOptions("field_status_kvara"),
-    getFieldOptions("field_prioritet_kvara"),
+    getFieldOptions("field_status_kvara").catch(() => []),
+    getFieldOptions("field_prioritet_kvara").catch(() => []),
   ]);
 
-  // 🔥 fallback (da UI nikad ne pukne)
-  const safeStatus =
+  // 3️⃣ Fallback opcije da UI nikad ne pukne
+  const safeStatus: Option[] =
     statusOptions.length > 0
       ? statusOptions
       : [
@@ -40,7 +42,7 @@ export default async function EditKvarPage({ params }: PageProps) {
           { value: "resen", label: "Rešen" },
         ];
 
-  const safePriority =
+  const safePriority: Option[] =
     prioritetOptions.length > 0
       ? prioritetOptions
       : [
@@ -48,9 +50,9 @@ export default async function EditKvarPage({ params }: PageProps) {
           { value: "srednji", label: "Srednji" },
           { value: "visok", label: "Visok" },
           { value: "hitno", label: "Hitno" },
-
         ];
 
+  // 4️⃣ Render forme
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="mb-4">
