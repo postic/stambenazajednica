@@ -25,8 +25,8 @@ export default async function EditKvarPage({ params }: PageProps) {
 
   // 2️⃣ OPCIJE IZ DRUPALA 🔥
   const [statusOptions, prioritetOptions] = await Promise.all([
-    getFieldOptions("field_status"),
-    getFieldOptions("field_priority"),
+    getFieldOptions("field_status_kvara"),
+    getFieldOptions("field_prioritet_kvara"),
   ]);
 
   // 🔥 fallback (da UI nikad ne pukne)
@@ -34,9 +34,10 @@ export default async function EditKvarPage({ params }: PageProps) {
     statusOptions.length > 0
       ? statusOptions
       : [
-          { value: "novo", label: "Novo" },
-          { value: "u_toku", label: "U toku" },
-          { value: "reseno", label: "Rešeno" },
+          { value: "prijavljen", label: "Prijavljen" },
+          { value: "u_obradi", label: "U obradi" },
+          { value: "na_cekanju", label: "Na čekanju" },
+          { value: "resen", label: "Rešen" },
         ];
 
   const safePriority =
@@ -46,6 +47,8 @@ export default async function EditKvarPage({ params }: PageProps) {
           { value: "nizak", label: "Nizak" },
           { value: "srednji", label: "Srednji" },
           { value: "visok", label: "Visok" },
+          { value: "hitno", label: "Hitno" },
+
         ];
 
   return (

@@ -30,56 +30,59 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const username = process.env.DRUPAL_USER!;
-      const password = process.env.DRUPAL_PASS!;
-      const auth = "Basic " + btoa(`${username}:${password}`);
+  try {
+    const username = process.env.DRUPAL_USER!;
+    const password = process.env.DRUPAL_PASS!;
+    const auth = "Basic " + btoa(`${username}:${password}`);
 
-      console.log('AUTH',auth);
+    // ⚠️ Važno: šaljemo tačne vrednosti iz allowed options
+    const payload = {
+      data: {
+        id: kvar.id,
+        type: "node--kvar",
+        attributes: {
+          title,
+          body: {
+            value: description,
+            format: "plain_text",
+          },
+          field_prioritet_kvara: priority, // vrednost mora biti tačno iz prioritetOptions.value
+          field_status_kvara: status,      // vrednost mora biti tačno iz statusOptions.value
+        },
+      },
+    };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${kvar.id}`, {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${kvar.id}`,
+      {
         method: "PATCH",
         headers: {
           "Content-Type": "application/vnd.api+json",
           "Authorization": auth,
+          "Accept": "application/vnd.api+json",
         },
-        body: JSON.stringify({
-          data: {
-            id: kvar.id,
-            type: "node--kvar",
-            attributes: {
-              title,
-              body: {
-                value: description,
-                format: "basic_html", // ili text_plain, zavisi od Drupala
-              },
-              field_priority: priority,
-              field_status: status,
-            },
-          },
-        }),
-      });
-
-      // Debug i error handling
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Drupal error:", res.status, text);
-        alert(`Greška pri update-u! Status: ${res.status}`);
-      } else {
-        const data = await res.json();
-        console.log("Update uspešan:", data);
-        alert("Kvar uspešno ažuriran!");
+        body: JSON.stringify(payload),
       }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      alert("Greška pri update-u!");
-    } finally {
-      setLoading(false);
+    );
+
+    const text = await res.text();
+    console.log("Drupal response:", res.status, text);
+
+    if (!res.ok) {
+      alert(`Greška pri update-u! Status: ${res.status}\n${text}`);
+    } else {
+      alert("Kvar uspešno ažuriran!");
     }
-  };
+  } catch (err) {
+    console.error("Fetch error:", err);
+    alert("Greška pri update-u!");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
