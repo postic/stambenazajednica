@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Option {
   value: string;
@@ -28,6 +30,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
   const [priority, setPriority] = useState(kvar.priority || "");
   const [status, setStatus] = useState(kvar.status || "");
   const [loading, setLoading] = useState(false);
+  const router = useRouter(); // Next.js router
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -72,13 +75,16 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
     console.log("Drupal response:", res.status, text);
 
     if (!res.ok) {
-      alert(`Greška pri update-u! Status: ${res.status}\n${text}`);
+      toast.error(`Greška pri update-u! Status: ${res.status}\n${text}`);
     } else {
-      alert("Kvar uspešno ažuriran!");
+      toast.success("Kvar uspešno ažuriran!");
+      setTimeout(() => {
+        router.push(`/kvarovi`); // ili `/kvarovi` za listu svih kvarova
+      }, 1500);
     }
   } catch (err) {
     console.error("Fetch error:", err);
-    alert("Greška pri update-u!");
+    toast.error("Greška pri update-u!");
   } finally {
     setLoading(false);
   }

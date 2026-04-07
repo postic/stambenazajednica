@@ -91,7 +91,7 @@ const statusLabels: Record<Status, string> = {
 };
 
 const prioritetStyles: Record<Prioritet, string> = {
-  nizak: "bg-gray-100 text-gray-700",
+  nizak: "bg-blue-100 text-gray-700",
   srednji: "bg-blue-100 text-blue-700",
   visok: "bg-orange-100 text-orange-700",
   hitno: "bg-red-600 text-white",

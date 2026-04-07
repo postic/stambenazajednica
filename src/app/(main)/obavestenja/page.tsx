@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
 import { Obavestenje } from "@/features/obavestenja/types";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
 export default function ObavestenjaPage() {
   const [obavestenja, setObavestenja] = useState<Obavestenje[]>([]);
@@ -24,9 +26,16 @@ export default function ObavestenjaPage() {
 
   return (
     <div>
-      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Obaveštenja
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700">
+          Obavestenja
+        </h1>
+        <Link
+          href="/kvarovi/new" className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition"
+        >
+        <Plus className="w-4 h-4" />Dodaj obaveštenje
+        </Link>
+      </div>
 
       {/* Koristimo generički DataTable */}
       <DataTable
