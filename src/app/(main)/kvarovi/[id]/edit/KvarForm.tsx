@@ -1,32 +1,84 @@
 // src/app/(main)/kvarovi/[id]/edit/KvarForm.tsx
-"use client"; // OBAVEZNO za useState
+"use client";
+
 import { useState } from "react";
-import { Kvar } from "@/lib/kvar";
 
 interface Option {
   value: string;
   label: string;
 }
 
-export default function KvarForm({
-  kvar,
-  prioritetOptions,
-  statusOptions,
-}: {
+export interface Kvar {
+  id: string;              // UUID node-a
+  title: string;
+  description: string;
+  priority: string;         // vrednost mora odgovarati field_option
+  status: string;           // vrednost mora odgovarati field_option
+}
+
+interface Props {
   kvar: Kvar;
   prioritetOptions: Option[];
   statusOptions: Option[];
-}) {
+}
+
+export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Props) {
   const [title, setTitle] = useState(kvar.title || "");
   const [description, setDescription] = useState(kvar.description || "");
   const [priority, setPriority] = useState(kvar.priority || "");
   const [status, setStatus] = useState(kvar.status || "");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: update kvar u Drupalu preko API-ja
-    console.log({ title, description, priority, status });
-    // Ovde možeš dodati toast notifikaciju za uspešan update
+    setLoading(true);
+
+    try {
+      const username = process.env.DRUPAL_USER!;
+      const password = process.env.DRUPAL_PASS!;
+      const auth = "Basic " + btoa(`${username}:${password}`);
+
+      console.log('AUTH',auth);
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${kvar.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/vnd.api+json",
+          "Authorization": auth,
+        },
+        body: JSON.stringify({
+          data: {
+            id: kvar.id,
+            type: "node--kvar",
+            attributes: {
+              title,
+              body: {
+                value: description,
+                format: "basic_html", // ili text_plain, zavisi od Drupala
+              },
+              field_priority: priority,
+              field_status: status,
+            },
+          },
+        }),
+      });
+
+      // Debug i error handling
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Drupal error:", res.status, text);
+        alert(`Greška pri update-u! Status: ${res.status}`);
+      } else {
+        const data = await res.json();
+        console.log("Update uspešan:", data);
+        alert("Kvar uspešno ažuriran!");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("Greška pri update-u!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,9 +140,10 @@ export default function KvarForm({
       {/* Submit */}
       <button
         type="submit"
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        disabled={loading}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
       >
-        Save
+        {loading ? "Saving..." : "Save"}
       </button>
     </form>
   );
