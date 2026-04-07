@@ -94,7 +94,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
     <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
       {/* Title */}
       <div>
-        <label className="block text-sm text-slate-600 mb-1">Title</label>
+        <label className="block text-sm text-slate-600 mb-1">Naslov</label>
         <input
           type="text"
           value={title}
@@ -105,7 +105,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
 
       {/* Description */}
       <div>
-        <label className="block text-sm text-slate-600 mb-1">Description</label>
+        <label className="block text-sm text-slate-600 mb-1">Opis</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -116,7 +116,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
 
       {/* Priority */}
       <div>
-        <label className="block text-sm text-slate-600 mb-1">Priority</label>
+        <label className="block text-sm text-slate-600 mb-1">Prioritet</label>
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}

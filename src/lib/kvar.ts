@@ -100,3 +100,33 @@ export async function updateKvar(kvar: Kvar): Promise<boolean> {
 
   return res.ok;
 }
+
+const username = process.env.DRUPAL_USER!;
+const password = process.env.DRUPAL_PASS!;
+const auth = "Basic " + btoa(`${username}:${password}`);
+
+export async function createKvar(data: { title: string; body: string; status?: string }) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/vnd.api+json",
+      "Accept": "application/vnd.api+json",
+      "Authorization": auth,
+    },
+    body: JSON.stringify({
+      data: {
+        type: "node--kvar",
+        attributes: data,
+      },
+    }),
+  });
+
+  alert(data);
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error?.errors?.[0]?.detail || "Failed to create kvar");
+  }
+
+  return res.json();
+}
