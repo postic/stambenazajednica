@@ -116,14 +116,23 @@ export async function createKvar(data: { title: string; body: string; status?: s
     body: JSON.stringify({
       data: {
         type: "node--kvar",
-        attributes: data,
+        attributes: {
+          title: data.title,
+          body: {
+            value: data.description,
+            format: "plain_text",
+          },
+          field_status_kvara: data.status,
+          field_prioritet_kvara: data.priority,
+        },
       },
     }),
   });
 
-  alert(data);
 
   if (!res.ok) {
+    const text = await res.text();
+    alert(text);
     const error = await res.json();
     throw new Error(error?.errors?.[0]?.detail || "Failed to create kvar");
   }

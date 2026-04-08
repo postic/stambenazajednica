@@ -17,7 +17,7 @@ export default function KvarForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createKvar({ title, description });
+      await createKvar({ title, description, priority, status });
       toast.success("Kvar je uspešno kreiran!");
       router.push("/kvarovi");
     } catch (err: any) {
@@ -35,6 +35,7 @@ export default function KvarForm() {
         <input
           type="text"
           value={title}
+          required
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         />
@@ -45,6 +46,7 @@ export default function KvarForm() {
         <label className="block text-sm text-slate-600 mb-1">Opis</label>
         <textarea
           value={description}
+          required
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           className="w-full border-b py-2 outline-none resize-none border-slate-300 focus:border-blue-500 bg-transparent"
@@ -56,10 +58,15 @@ export default function KvarForm() {
         <label className="block text-sm text-slate-600 mb-1">Prioritet</label>
         <select
           value={priority}
+          required
           onChange={(e) => setPriority(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         >
-
+          <option value="">Izaberi prioritet</option>
+          <option value="nizak">Nizak</option>
+          <option value="srednji">Srednji</option>
+          <option value="visok">Visok</option>
+          <option value="hitno">Hitno</option>
         </select>
       </div>
 
@@ -68,10 +75,15 @@ export default function KvarForm() {
         <label className="block text-sm text-slate-600 mb-1">Status</label>
         <select
           value={status}
+          required
           onChange={(e) => setStatus(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         >
-
+          <option value="">Izaberi status</option>
+          <option value="prijavljen">Prijavljen</option>
+          <option value="u_obradi">U obradi</option>
+          <option value="na_cekanju">Na čekanju</option>
+          <option value="resen">Rešen</option>
         </select>
       </div>
       <button

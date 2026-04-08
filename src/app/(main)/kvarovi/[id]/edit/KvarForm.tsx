@@ -72,7 +72,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
     );
 
     const text = await res.text();
-    console.log("Drupal response:", res.status, text);
+    //console.log("Drupal response:", res.status, text);
 
     if (!res.ok) {
       toast.error(`Greška pri update-u! Status: ${res.status}\n${text}`);
@@ -98,6 +98,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
         <input
           type="text"
           value={title}
+          required
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         />
@@ -108,6 +109,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
         <label className="block text-sm text-slate-600 mb-1">Opis</label>
         <textarea
           value={description}
+          required
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           className="w-full border-b py-2 outline-none resize-none border-slate-300 focus:border-blue-500 bg-transparent"
@@ -119,6 +121,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
         <label className="block text-sm text-slate-600 mb-1">Prioritet</label>
         <select
           value={priority}
+          required
           onChange={(e) => setPriority(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         >
@@ -135,6 +138,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
         <label className="block text-sm text-slate-600 mb-1">Status</label>
         <select
           value={status}
+          required
           onChange={(e) => setStatus(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         >
