@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
     // page i limit iz query-ja (default: 1 i 5)
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "5");
+    const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
     const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";

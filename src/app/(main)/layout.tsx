@@ -5,7 +5,7 @@ import { ReactNode, useState } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import RightSidebar from "@/components/RightSidebar";
+import TelefoniSidebar from "@/components/TelefoniSidebar";
 import AlertBanner from "@/components/AlertBanner";
 import { Toaster } from "sonner";
 
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
                 {/* RIGHT SIDEBAR */}
                 <div className="hidden lg:block">
-                  <RightSidebar />
+                  <TelefoniSidebar />
                 </div>
 
               </main>

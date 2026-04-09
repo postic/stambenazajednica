@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 
     // Fetch kvarova sa paging parametrima
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar?include=field_image&page[limit]=${limit}&page[offset]=${offset}`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar?include=field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
       }
@@ -40,10 +40,14 @@ export async function GET(req: Request) {
     const data = await response.json();
 
     // ukupno kvarova (ako JSON:API vraća meta)
-    const total = data.meta?.count ?? (data.data || []).length;
+    const total = (data.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
-    const kvarovi: Kvar[] = (data.data || []).map((item: any) => {
+    // uzmi samo tekuću stranu
+    const currentPageData = (data.data || []).slice(offset, offset + limit);
+
+    const kvarovi: Kvar[] = currentPageData.map((item: any) => {
+
       // Image
       let imageUrl: string | null = null;
       const imageRel = item.relationships?.field_image?.data?.[0];
