@@ -1,41 +1,85 @@
 "use client";
 
-import Sidebar from "@/components/Sidebar";
-import Navbar from "@/components/Navbar";
-import AlertBanner from "@/components/AlertBanner";
-import Card from "@/components/Card";
-import ChartCard from "@/components/ChartCard";
+import Link from "next/link";
+import {
+  AlertTriangle,
+  Megaphone,
+  ClipboardList,
+  Users,
+  Home,
+  FileText,
+} from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 
 export default function DashboardPage() {
-  const chartData = [
-    { name: "Jan", value: 30 },
-    { name: "Feb", value: 50 },
-    { name: "Mar", value: 70 },
-    { name: "Apr", value: 40 },
+  const { stats, loading } = useDashboardStats();
+
+  const items = [
+    {
+      title: "Otvoreni kvarovi",
+      value: stats.kvarovi,
+      icon: AlertTriangle,
+      href: "/kvarovi",
+    },
+    {
+      title: "Obaveštenja",
+      value: stats.obavestenja,
+      icon: Megaphone,
+      href: "/obavestenja",
+    },
+    {
+      title: "Aktivne ankete",
+      value: stats.ankete,
+      icon: ClipboardList,
+      href: "/ankete",
+    },
+    {
+      title: "Stanari",
+      value: stats.stanari,
+      icon: Users,
+      href: "/stanari",
+    },
+    {
+      title: "Stanovi",
+      value: stats.stanovi,
+      icon: Home,
+      href: "/stanovi",
+    },
+    {
+      title: "Dokumenta",
+      value: 0,
+      icon: FileText,
+      href: "/dokumenta",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Glavni sadržaj */}
-      <main className="flex-1 overflow-auto">
+    <div className="space-y-6">
+      {/* TITLE */}
+      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">Dashboard</h1>
 
-          {/* Sadržaj sa padding-om */}
-          <div className="space-y-6">
-            {/* Kartice */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card title="Users" value={1200} description="Total users" />
-              <Card title="Posts" value={350} description="Published posts" />
-              <Card title="Revenue" value="$12,500" description="Monthly revenue" />
-            </div>
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {items.map((s, i) => (
+          <Link key={i} href={s.href} className="block">
+            <Card className="cursor-pointer hover:shadow-md transition">
+              <CardContent className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">{s.title}</p>
 
-            {/* Grafikoni */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ChartCard title="Monthly Users" data={chartData} />
-              <ChartCard title="Revenue Trend" data={chartData} />
-            </div>
+                  <p className="text-2xl font-bold">
+                    {loading ? "..." : s.value}
+                  </p>
+                </div>
 
-          </div>
-        </main>
+                <s.icon className="w-6 h-6 text-slate-600" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

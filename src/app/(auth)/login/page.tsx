@@ -43,7 +43,7 @@ export default function LoginPage() {
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
   useEffect(() => {
-    if (user) router.push("/stanari");
+    if (user) router.push("/dashboard");
   }, [user, router]);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function LoginPage() {
         toast.success("Uspešno ste prijavljeni");
         await login();
 
-        router.push(role === "upravnik" ? "/admin" : "/stanari");
+        router.push(role === "upravnik" ? "/admin" : "/dashboard");
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);

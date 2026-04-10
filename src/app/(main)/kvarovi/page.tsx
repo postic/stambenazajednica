@@ -31,6 +31,7 @@ export default function KvaroviPage() {
         <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700">
           Kvarovi
         </h1>
+
         <Link
           href="/kvarovi/new" className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition"
         >
