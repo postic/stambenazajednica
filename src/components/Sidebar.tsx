@@ -13,6 +13,7 @@ import {
   FileText,
   Vote,
   ChevronDown,
+  Wallet,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -52,6 +53,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     {
       title: "ZGRADA",
       items: [
+        { title: "Transakcije", icon: Wallet, href: "/transakcije" },
         {
           title: "Stanari",
           icon: Users,
