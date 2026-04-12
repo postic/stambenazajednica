@@ -1,17 +1,23 @@
 import { DataTable } from "@/components/table/DataTable";
-import { stanoviColumns } from "./StanoviColumns";
-import { Stan } from "./types";
+import { transakcijeColumns } from "./TransakcijeColumns";
+import { Transakcija } from "./types";
+import { addRunningBalance } from "@/lib/transactions";
 
-interface StanoviTableProps {
-  stanovi?: Stan[];
-}
+export default function TransakcijeTable({
+  transakcije = [],
+  initialBalance = 0,
+}: {
+  transakcije?: Transakcija[];
+  initialBalance?: number;
+}) {
 
-export default function StanoviTable({ stanovi = [] }: StanoviTableProps) {
+  const data = addRunningBalance(transakcije, initialBalance);
+
   return (
     <DataTable
-      data={stanovi}
-      columns={stanoviColumns}
-      emptyMessage="Nema stanova."
+      data={data}
+      columns={transakcijeColumns}
+      emptyMessage="Nema transakcija."
     />
   );
 }

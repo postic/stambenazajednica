@@ -20,6 +20,9 @@ type Status =
   // anketa
   | "otvorena_anketa"
   | "zatvorena_anketa"
+  // transakcija
+  | "uplata"
+  | "isplata"
   // stan
   | "vlasnik"
   | "stanar"
@@ -55,6 +58,9 @@ const statusStyles: Record<Status, string> = {
   // anketa
   otvorena_anketa: "bg-green-100 text-green-800",
   zatvorena_anketa: "bg-red-200 text-red-900",
+  // transakcija
+  uplata: "bg-green-100 text-green-800",
+  isplata: "bg-red-200 text-red-900",
   // stan
   clan_domacinstva: "bg-indigo-100 text-indigo-800",
   podstanar: "bg-yellow-200 text-yellow-900",
@@ -88,6 +94,9 @@ const statusLabels: Record<Status, string> = {
   // anketa
   otvorena_anketa: "otvorena",
   zatvorena_anketa: "zatvorena",
+  // transakcija
+  uplata: "uplata",
+  isplata: "isplata",
 };
 
 const prioritetStyles: Record<Prioritet, string> = {

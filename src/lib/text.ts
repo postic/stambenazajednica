@@ -47,3 +47,10 @@ export function isEmptyHtml(html?: string): boolean {
 
   return clean.length === 0;
 }
+
+export function formatRSD(amount: number) {
+  return new Intl.NumberFormat("sr-RS", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}

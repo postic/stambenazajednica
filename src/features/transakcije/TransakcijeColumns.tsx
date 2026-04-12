@@ -1,58 +1,56 @@
 import { Column } from "@/components/table/DataTable";
-import { Stan } from "./types";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { TransakcijaWithBalance } from "./types";
 import Link from "next/link";
+import StatusBadge from "@/components/StatusBadge";
+import { formatRSD } from "@/lib/text";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
-export const transakcijeColumns: Column<Stan>[] = [
+export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
   {
     key: "title",
     header: "Naziv",
-    //width: "50%",
-    sortable: false,
-    render: (transakcija) => (
-      <Link
-        href={`/transakcije/${transakcija.id}`}
-        className="text-blue-600 hover:underline"
-        title={transakcija.title}
-      >
-        {transakcija.title}
+    width: "40%",
+    render: (t) => (
+      <Link href={`/transakcije/${t.id}`} className="text-blue-600 hover:underline">
+        {t.title}
       </Link>
     ),
   },
   {
-    key: "sprat",
-    header: "Sprat",
-    render: (stan) => (
-      <span>{stan.sprat ?? "-"}</span>
-    )
+    key: "created",
+    header: "Datum",
+    render: (t) =>
+      new Date(t.created).toLocaleDateString("sr-RS", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+  },
+  {
+    key: "type",
+    header: "Tip",
+    render: (t) => <StatusBadge status={t.type ?? "unknown"} />,
+  },
+  {
+    key: "amount",
+    header: "Iznos",
+    render: (t) => formatRSD(t.amount),
+  },
+  {
+    key: "balance",
+    header: "Stanje",
+    render: (t) => formatRSD(t.balance),
   },
   {
     key: "actions",
     header: "Akcije",
-    width: "90px", // 👈 KLJUČNO
+    width: "90px",
     isAction: true,
-    render: (stan) => (
-      <div className="flex justify-center gap-2">
-        <Link
-          href={`/transakcije/${transakcija.id}`}
-          className="text-blue-600 hover:text-blue-800"
-          title="View"
-        >
-          <FaEye />
-        </Link>
-        <Link
-          href={`/z/${stan.id}/edit`}
-          className="text-yellow-600 hover:text-yellow-800"
-          title="Edit"
-        >
-          <FaEdit />
-        </Link>
-        <button
-          className="text-red-600 hover:text-red-800"
-          title="Delete"
-        >
-          <FaTrash />
-        </button>
+    render: (t) => (
+      <div className="flex gap-2 justify-center">
+        <Link href={`/transakcije/${t.id}`}><FaEye /></Link>
+        <Link href={`/transakcije/${t.id}/edit`}><FaEdit /></Link>
+        <button className="text-red-600"><FaTrash /></button>
       </div>
     ),
   },

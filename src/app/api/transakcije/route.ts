@@ -40,13 +40,13 @@ export async function GET(req: Request) {
     const currentPageData = (json.data || []).slice(offset, offset + limit);
 
     const transakcije: Transakcija[] = currentPageData.map((item: any) => {
-
       return {
         id: item.id,
         title: item.attributes.title,
         body: item.attributes.body?.value || "",
         created: item.attributes.created,
         type: item.attributes.field_tip ?? "",
+        amount: item.attributes.field_iznos,
       };
     });
 
