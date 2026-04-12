@@ -20,7 +20,7 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
     key: "created",
     header: "Datum",
     render: (t) =>
-      new Date(t.created).toLocaleDateString("sr-RS", {
+      new Date(t.created).toLocaleDateString("sr-Latn-RS", {
         day: "numeric",
         month: "short",
         year: "numeric",

@@ -1,28 +1,34 @@
-import { Transakcija, TransakcijaWithBalance } from "./types";
-
 export function addRunningBalance(
   transactions: Transakcija[],
   initialBalance = 0
 ): TransakcijaWithBalance[] {
-  const sorted = [...transactions].sort(
-    (a, b) =>
-      new Date(a.created).getTime() - new Date(b.created).getTime()
+
+  const toTime = (d?: string) => {
+    if (!d) return 0;
+    const t = new Date(d.replace(" ", "T")).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
+  // 1. ASC za ispravan balans
+  const sortedAsc = [...transactions].sort(
+    (a, b) => toTime(a.created) - toTime(b.created)
   );
 
   let balance = initialBalance;
 
-  return sorted.map((t) => {
+  const withBalanceAsc = sortedAsc.map((t) => {
     const amount = Number(t.amount ?? 0);
+    const type = (t.type || "").toLowerCase();
 
-    if (t.type === "uplata") {
+    if (type.includes("uplata")) {
       balance += amount;
     } else {
       balance -= amount;
     }
 
-    return {
-      ...t,
-      balance,
-    };
+    return { ...t, balance };
   });
+
+  // 2. vrati DESC za UI
+  return withBalanceAsc.reverse();
 }
