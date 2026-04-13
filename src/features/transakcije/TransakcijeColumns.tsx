@@ -9,7 +9,7 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
   {
     key: "title",
     header: "Naziv",
-    width: "40%",
+    width: "25%",
     render: (t) => (
       <Link href={`/transakcije/${t.id}`} className="text-blue-600 hover:underline">
         {t.title}

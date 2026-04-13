@@ -14,6 +14,9 @@ import {
   Vote,
   ChevronDown,
   Wallet,
+  CircleEllipsis,
+  Package,
+  Grid
 } from "lucide-react";
 
 interface SidebarProps {
@@ -86,6 +89,20 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         },
       ],
     },
+
+    {
+      title: "OSTALO",
+      items: [
+        {
+          title: "Ostalo",
+          icon: Grid,
+          submenu: [
+            { title: "Telefoni", href: "/telefoni" },
+          ],
+        },
+      ],
+    },
+
   ];
 
   // Automatski otvara meni ako je aktivan URL

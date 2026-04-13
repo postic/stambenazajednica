@@ -7,7 +7,11 @@ import {
   ClipboardList,
   Users,
   Home,
+  Wallet,
   FileText,
+  CircleEllipsis,
+  Grid,
+  Phone
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +21,12 @@ export default function DashboardPage() {
   const { stats, loading } = useDashboardStats();
 
   const items = [
+    {
+      title: "Transakcije",
+      value: stats.transakcije,
+      icon: Wallet,
+      href: "/transakcije",
+    },
     {
       title: "Otvoreni kvarovi",
       value: stats.kvarovi,
@@ -52,6 +62,12 @@ export default function DashboardPage() {
       value: 0,
       icon: FileText,
       href: "/dokumenta",
+    },
+    {
+      title: "Telefoni",
+      value: stats.telefoni,
+      icon: Phone,
+      href: "/telefoni",
     },
   ];
 

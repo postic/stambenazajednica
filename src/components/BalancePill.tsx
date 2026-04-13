@@ -13,22 +13,10 @@ export default function BalancePill({ balance }: Props) {
   return (
     <button
       onClick={() => router.push("/transakcije")}
-      className="
-        fixed bottom-5 right-5
-        z-50
-        flex items-center gap-2
-        px-4 py-2
-        rounded-full
-        bg-red-600 text-white
-        shadow-lg
-        active:scale-95
-        transition
-      "
+      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-red-600 text-white shadow-lg"
     >
-      <span><Wallet className="w-4 h-4" /></span>
-      <span className="font-semibold">
-        {balance.toLocaleString("sr-RS")} RSD
-      </span>
+      <Wallet className="w-4 h-4" />
+      <span>{balance.toLocaleString("sr-RS")} RSD</span>
     </button>
   );
 }
