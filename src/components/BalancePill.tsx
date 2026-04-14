@@ -1,14 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Wallet } from "lucide-react";
 
-type Props = {
-  balance: number;
-};
-
-export default function BalancePill({ balance }: Props) {
+export default function BalancePill() {
+  const [balance, setBalance] = useState<number | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/balance");
+
+        if (!res.ok) {
+          console.error("API ERROR:", res.status);
+          return;
+        }
+
+        const data = await res.json();
+
+        console.log("BALANCE API RESPONSE:", data);
+
+        setBalance(data.balance ?? 0);
+      } catch (err) {
+        console.error("FETCH ERROR:", err);
+      }
+    }
+
+    load();
+  }, []);
+
+  if (balance === null) {
+    return (
+      <div className="fixed bottom-5 right-5 px-4 py-2 rounded-full bg-gray-300 animate-pulse">
+        ...
+      </div>
+    );
+  }
 
   return (
     <button

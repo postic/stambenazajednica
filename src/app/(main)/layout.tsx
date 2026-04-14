@@ -8,6 +8,7 @@ import Sidebar from "@/components/Sidebar";
 import TelefoniSidebar from "@/components/TelefoniSidebar";
 import AlertBanner from "@/components/AlertBanner";
 import { Toaster } from "sonner";
+import BalancePill from "@/components/BalancePill";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,6 +41,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 {/* RIGHT SIDEBAR */}
                 <div className="hidden lg:block">
                   <TelefoniSidebar />
+                </div>
+
+                {/* BADGE */}
+                <div className="absolute right-4 top-3">
+                  <BalancePill />
                 </div>
 
               </main>
