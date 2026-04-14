@@ -1,57 +1,73 @@
 export interface Telefon {
   id: string;
   title: string;
-  body: string;
+  phone: string;
   created: string;
+}
+
+// CORS helper
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+}
+
+// OPTIONS (preflight request)
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(),
+  });
 }
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // page i limit iz query-ja (default: 1 i 10)
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
-    const NEXT_PUBLIC_DRUPAL_BASE_URL =
+    const baseUrl =
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
-    // Fetch telefoni sa paging parametrima
-    const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/telefon`,
-      {
-        headers: { Accept: "application/vnd.api+json" },
-      }
-    );
+    const response = await fetch(`${baseUrl}/jsonapi/node/telefon`, {
+      headers: {
+        Accept: "application/vnd.api+json",
+      },
+    });
 
     if (!response.ok) {
-      const text = await response.text();
-      console.error("Drupal API error:", response.status, text);
       return new Response(
-        JSON.stringify({ error: "Greška pri dohvaćanju telefona" }),
-        { status: 502, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Drupal error" }),
+        {
+          status: 502,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(),
+          },
+        }
       );
     }
 
-    const data = await response.json();
+    const json = await response.json();
 
-    // ukupno telefona (ako JSON:API vraća meta)
-    const total = (data.data || []).length;
+    const total = json.data?.length || 0;
     const totalPages = Math.ceil(total / limit);
 
-    // uzmi samo tekuću stranu
-    const currentPageData = (data.data || []).slice(offset, offset + limit);
+    const slice = (json.data || []).slice(offset, offset + limit);
 
-    const telefoni: Telefon[] = currentPageData.map((item: any) => {
-
-      return {
-        id: item.id,
-        title: item.attributes.title ?? "",
-        body: item.attributes.body?.value ?? "",
-        created: item.attributes.created ?? "",
-      };
-    });
+    const telefoni: Telefon[] = slice.map((item: any) => ({
+      id: item.id,
+      title: item.attributes?.title ?? "",
+      phone:
+        item.attributes?.field_phone?.value ??
+        item.attributes?.field_phone ??
+        "",
+      created: item.attributes?.created ?? "",
+    }));
 
     return new Response(
       JSON.stringify({
@@ -61,15 +77,22 @@ export async function GET(req: Request) {
         totalPages,
       }),
       {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders(),
+        },
       }
     );
-  } catch (error) {
-    console.error("Server error fetching telefoni:", error);
+  } catch (e) {
     return new Response(
-      JSON.stringify({ error: "Interna greška servera" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Server error" }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders(),
+        },
+      }
     );
   }
 }

@@ -1,6 +1,7 @@
-export interface Telefon {
+
+export type Telefon = {
   id: string;
   title: string;
-  body: string;
+  phone: string;
   created: string;
-}
+};
