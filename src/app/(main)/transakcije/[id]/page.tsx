@@ -4,6 +4,7 @@ import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { formatRSD } from "@/lib/text";
 import { TransakcijaWithBalance } from "./types";
+import { addRunningBalance } from "@/lib/transactions";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
@@ -53,7 +54,7 @@ export default async function TransakcijaPage({
   const isIncome = tx.type === "uplata";
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-4xl">
 
       <BackButton />
 
