@@ -1,9 +1,4 @@
-export interface Telefon {
-  id: string;
-  title: string;
-  phone: string;
-  created: string;
-}
+import type { Telefon } from "@/types/telefon";
 
 // CORS helper
 function corsHeaders() {

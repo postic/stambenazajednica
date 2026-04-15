@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Wallet } from "lucide-react";
 
 export default function BalancePill() {
+
   const [balance, setBalance] = useState<number | null>(null);
   const router = useRouter();
 

@@ -9,6 +9,7 @@ type Stats = {
   stanari: number;
   stanovi: number;
   telefoni: number;
+  transakcije: number;
 };
 
 export function useDashboardStats() {
@@ -19,6 +20,7 @@ export function useDashboardStats() {
     stanari: 0,
     stanovi: 0,
     telefoni: 0,
+    transakcije: 0,
   });
 
   const [loading, setLoading] = useState(true);

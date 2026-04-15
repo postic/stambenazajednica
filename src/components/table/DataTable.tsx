@@ -1,163 +1,112 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 
 export interface Column<T> {
   key: string;
   header: string;
   render: (row: T) => React.ReactNode;
-  sortable?: boolean;
-  isAction?: boolean;
-  width?: string;
+  align?: "left" | "right" | "center";
 }
 
-interface DataTableProps<T> {
+interface HasId {
+  id: string | number;
+}
+
+interface DataTableProps<T extends HasId> {
   data: T[];
   columns: Column<T>[];
-  emptyMessage?: string; // 👈 MORA da postoji
+  emptyMessage?: string;
+  loading?: boolean;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends HasId>({
   data,
   columns,
+  emptyMessage = "Nema podataka.",
+  loading = false,
 }: DataTableProps<T>) {
-  const [sortKey, setSortKey] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  // =========================
+  // LOADING
+  // =========================
+  if (loading) {
+    return (
+      <div className="w-full py-6 text-sm text-gray-500 text-center">
+        <span className="animate-pulse">Podaci se učitavaju...</span>
+      </div>
+    );
+  }
 
-  const handleSort = (col: Column<T>) => {
-    if (!col.sortable) return;
+  // =========================
+  // EMPTY
+  // =========================
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full border p-6 text-sm text-gray-500 text-center">
+        {emptyMessage}
+      </div>
+    );
+  }
 
-    if (sortKey === col.key) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(col.key);
-      setSortDirection("asc");
+  const getAlignClass = (align?: string) => {
+    switch (align) {
+      case "right":
+        return "text-right";
+      case "center":
+        return "text-center";
+      default:
+        return "text-left";
     }
   };
 
-  const sortedData = React.useMemo(() => {
-    if (!sortKey) return data;
-
-    const sorted = [...data].sort((a, b) => {
-      const valA = a[sortKey];
-      const valB = b[sortKey];
-
-      if (valA == null) return 1;
-      if (valB == null) return -1;
-
-      if (typeof valA === "number" && typeof valB === "number") {
-        return valA - valB;
-      }
-
-      return String(valA).localeCompare(String(valB), undefined, {
-        numeric: true,
-      });
-    });
-
-    return sortDirection === "desc" ? sorted.reverse() : sorted;
-  }, [data, sortKey, sortDirection]);
-
+  // =========================
+  // TABLE
+  // =========================
   return (
-    <>
-      {/* ✅ DESKTOP TABLE */}
-      <div className="hidden md:block">
-        <table className="border-collapse border w-full text-sm table-fixed">
-          <colgroup>
+    <div className="w-full overflow-x-auto border">
+      <table className="w-full text-sm border-collapse">
+
+        {/* HEADER */}
+        <thead className="bg-white">
+          <tr>
             {columns.map((col) => (
-              <col
+              <th
                 key={col.key}
-                style={{
-                  width: col.width || (col.isAction ? "90px" : "auto"),
-                }}
-              />
+                className={`
+                  px-4 py-3 font-medium text-gray-700
+                  border border-gray-200
+                  ${getAlignClass(col.align)}
+                `}
+              >
+                {col.header}
+              </th>
             ))}
-          </colgroup>
+          </tr>
+        </thead>
 
-          <thead className="bg-gray-100">
-            <tr>
-              {columns.map((col) => {
-                const isSorted = sortKey === col.key;
-
-                return (
-                  <th
-                    key={col.key}
-                    onClick={() => handleSort(col)}
-                    className={`border py-2 text-left select-none ${
-                      col.sortable ? "cursor-pointer px-4" : "px-4"
-                    } ${col.isAction ? "text-center px-2" : ""}`}
-                  >
-                    {col.header}{" "}
-                    {col.sortable &&
-                      (isSorted
-                        ? sortDirection === "asc"
-                          ? "▲"
-                          : "▼"
-                        : "⇅")}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-
-          <tbody>
-            {sortedData.map((row, i) => (
-              <tr key={i} className="hover:bg-gray-100 even:bg-gray-50">
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className={`border py-2 ${
-                      col.isAction
-                        ? "text-center px-2 whitespace-nowrap"
-                        : "px-4"
-                    }`}
-                  >
-                    {col.isAction ? (
-                      <div className="flex items-center justify-center gap-1">
-                        {col.render(row)}
-                      </div>
-                    ) : (
-                      col.render(row)
-                    )}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ✅ MOBILE CARDS */}
-      <div className="md:hidden space-y-3">
-        {sortedData.map((row, i) => (
-          <div
-            key={i}
-            className="border rounded-lg p-3 bg-white shadow-sm"
-          >
-            {columns.map((col) =>
-              col.isAction ? null : (
-                <div
+        {/* BODY */}
+        <tbody>
+          {data.map((row) => (
+            <tr
+              key={row.id}
+              className="hover:bg-gray-50 even:bg-gray-50/40"
+            >
+              {columns.map((col) => (
+                <td
                   key={col.key}
-                  className="flex justify-between py-1"
+                  className={`
+                    px-4 py-3 border border-gray-200
+                    ${getAlignClass(col.align)}
+                  `}
                 >
-                  <span className="text-gray-500 text-sm">
-                    {col.header}
-                  </span>
-                  <span className="font-medium text-right">
-                    {col.render(row)}
-                  </span>
-                </div>
-              )
-            )}
+                  {col.render(row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
 
-            {/* akcije dole */}
-            <div className="flex justify-end gap-2 mt-3 pt-2 border-t">
-              {columns
-                .filter((c) => c.isAction)
-                .map((col) => col.render(row))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+      </table>
+    </div>
   );
 }

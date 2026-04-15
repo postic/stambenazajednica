@@ -3,23 +3,40 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { telefoniColumns } from "@/features/telefoni/TelefoniColumns";
-import { Telefon } from "@/features/telefoni/types";
+import type { Telefon } from "@/types/telefon";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function TelefoniPage() {
+  const [loading, setLoading] = useState(true);
   const [telefoni, setTelefoni] = useState<Telefon[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+
+    let ignore = false;
+    setLoading(true);
+
     fetch(`/api/telefoni?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
         setTelefoni(data.data);
         setTotalPages(data.totalPages);
       })
-      .catch((err) => console.error("Greška pri učitavanju telefona:", err));
+      .catch((err) => {
+        if (ignore) return;
+
+        console.error("Greška pri učitavanju kvarova:", err);
+        setTelefoni([]);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -39,10 +56,11 @@ export default function TelefoniPage() {
         </Link>
       </div>
 
-      {/* Generički DataTable */}
-      <DataTable
+      {/* TABLE */}
+      <DataTable<Telefon>
         data={telefoni}
         columns={telefoniColumns}
+        loading={loading}
         emptyMessage="Nema telefona."
       />
 

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { transakcijeColumns } from "@/features/transakcije/TransakcijeColumns";
-import { Transakcija } from "@/features/transakcije/types";
+import type { Transakcija } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +12,7 @@ export default function TransakcijePage() {
   const [transakcije, setTransakcije] = useState<Transakcija[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,16 +58,12 @@ export default function TransakcijePage() {
         </Link>
       </div>
 
-      {/* LOADING */}
-      {loading ? (
-        <div className="text-sm text-gray-500">Učitavanje...</div>
-      ) : (
-        <DataTable
-          data={data}
-          columns={transakcijeColumns}
-          emptyMessage="Nema transakcija."
-        />
-      )}
+      <DataTable
+        data={data}
+        columns={transakcijeColumns}
+        loading={loading}
+        emptyMessage="Nema transakcija."
+      />
 
       {/* PAGINATION */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">

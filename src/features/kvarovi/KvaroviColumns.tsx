@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/DataTable";
-import { Kvar } from "./types";
+import type { Kvar } from "@/types/kvar";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
@@ -40,6 +40,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "actions",
     header: "Akcije",
+    align: "center",
     width: "90px",
     isAction: true,
     render: (kvar) => (

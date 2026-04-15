@@ -1,21 +1,29 @@
-// src/components/KvaroviTable.tsx
 "use client";
 
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
-import { Kvar } from "@/features/kvarovi/types";
+import type { Kvar } from "@/types/kvar";
 
 interface KvaroviTableProps {
-  kvarovi?: Kvar[];
+  kvarovi?: Kvar[] | null;
+  loading?: boolean;
 }
 
-export default function KvaroviTable({ kvarovi = [] }: KvaroviTableProps) {
+export default function KvaroviTable({
+  kvarovi,
+  loading = false,
+}: KvaroviTableProps) {
+  const safeData = kvarovi ?? [];
+
   return (
-    <DataTable
-      data={kvarovi}
+    <DataTable<Kvar>
+      loading={loading}
+      data={safeData}
       columns={kvaroviColumns}
-      emptyMessage="Nema prijavljenih kvarova."
+      emptyMessage={
+        loading ? "Učitavanje..." : "Nema prijavljenih kvarova."
+      }
     />
   );
 }

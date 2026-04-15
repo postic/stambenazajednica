@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ObavestenjeForm from "./ObavestenjeForm;
+import ObavestenjeForm from "./ObavestenjeForm";
 import { getObavestenje, Obavestenje } from "@/lib/kvar";
 import BackButton from "@/components/BackButton";
 
@@ -11,10 +11,10 @@ export default function NewObavestenjePage() {
       </div>
 
       <h1 className="text-base uppercase tracking-wide font-semibold mb-6 text-slate-700">
-        Novi Kvar
+        Novo Obaveštenje
       </h1>
 
-      <KvarForm />
+      <ObavestenjeForm />
     </div>
   );
 }

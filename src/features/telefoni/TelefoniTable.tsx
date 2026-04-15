@@ -1,18 +1,29 @@
+"use client";
+
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { telefoniColumns } from "@/features/telefoni/TelefoniColumns";
-import { Telefon } from "@/features/telefoni/types";
+import type { Telefon } from "@/types/telefon";
 
 interface TelefoniTableProps {
-  telefoni?: Telefon[];
+  telefoni?: Telefon[] | null;
+  loading?: boolean;
 }
 
-export default function TelefoniTable({ telefoni = [] }: TelefoniTableProps) {
+export default function TelefoniTable({
+  telefoni,
+  loading = false,
+}: TelefoniTableProps) {
+  const safeData = telefoni ?? [];
+
   return (
-    <DataTable
-      data={telefoni}
+    <DataTable<Telefon>
+      loading={loading}
+      data={safeData}
       columns={telefoniColumns}
-      emptyMessage="Nema prijavljenih telefona."
+      emptyMessage={
+        loading ? "Učitavanje..." : "Nema telefona."
+      }
     />
   );
 }

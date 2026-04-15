@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/DataTable";
-import { Telefon } from "./types";
+import type { Telefon } from "@/types/telefon";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
@@ -8,7 +8,6 @@ export const telefoniColumns: Column<Telefon>[] = [
   {
     key: "title",
     header: "Naziv",
-    //width: "35%",
     render: (telefon) => (
       <Link href={`/telefoni/${telefon.id}`} className="text-blue-600 hover:underline" title={telefon.title}>
         {telefon.title}
@@ -19,6 +18,7 @@ export const telefoniColumns: Column<Telefon>[] = [
     key: "actions",
     header: "Akcije",
     width: "90px",
+    align: "center",
     isAction: true,
     render: (telefon) => (
       <div className="flex justify-center gap-2">

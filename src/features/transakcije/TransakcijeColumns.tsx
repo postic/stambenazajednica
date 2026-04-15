@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/DataTable";
-import { TransakcijaWithBalance } from "./types";
+import type { TransakcijaWithBalance } from "@/types/transakcija";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import { formatRSD } from "@/lib/text";
@@ -34,22 +34,25 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
   {
     key: "amount",
     header: "Iznos",
+    align: "right",
     render: (t) => formatRSD(t.amount),
   },
   {
     key: "balance",
     header: "Stanje",
+    align: "right",
     render: (t) => formatRSD(t.balance),
   },
   {
     key: "actions",
     header: "Akcije",
+    align: "center",
     width: "90px",
     isAction: true,
     render: (t) => (
       <div className="flex gap-2 justify-center">
-        <Link href={`/transakcije/${t.id}`}><FaEye /></Link>
-        <Link href={`/transakcije/${t.id}/edit`}><FaEdit /></Link>
+        <Link href={`/transakcije/${t.id}`} className="text-blue-600 hover:text-blue-800" title="View"><FaEye /></Link>
+        <Link href={`/transakcije/${t.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit"><FaEdit /></Link>
         <button className="text-red-600"><FaTrash /></button>
       </div>
     ),
