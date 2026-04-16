@@ -1,17 +1,26 @@
 import { DataTable } from "@/components/table/DataTable";
 import { anketeColumns } from "./AnketeColumns";
-import { Anketa } from "./types";
+import type { Anketa } from "@/types/anketa";
 
 interface AnketeTableProps {
-  ankete?: Anketa[];
+  ankete?: Anketa[] | null;
+  loading?: boolean;
 }
 
-export default function AnketeTable({ ankete = [] }: AnketeTableProps) {
+export default function AnketeTable({
+  ankete,
+  loading = false,
+}: AnketeTableProps) {
+  const safeData = ankete ?? [];
+
   return (
-    <DataTable
-      data={ankete}
+    <DataTable<Anketa>
+      loading={loading}
+      data={safeData}
       columns={anketeColumns}
-      emptyMessage="Nema anketa."
+      emptyMessage={
+        loading ? "Učitavanje..." : "Nema podataka."
+      }
     />
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Anketa, Opcija } from "@/features/ankete/types";
+import type { Anketa, Opcija } from "@/types/anketa";
 
 const DRUPAL_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 

@@ -3,21 +3,39 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { anketeColumns } from "@/features/ankete/AnketeColumns";
-import { Anketa } from "@/features/ankete/types";
+import type { Anketa } from "@/types/anketa";
 
 export default function AnketePage() {
+  const [loading, setLoading] = useState(true);
   const [ankete, setAnkete] = useState<Anketa[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+
     fetch(`/api/ankete?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
-        setAnkete(data.data);
-        setTotalPages(data.totalPages);
+        if (ignore) return;
+
+        setAnkete(data.data ?? []);
+        setTotalPages(data.totalPages ?? 1);
       })
-      .catch((err) => console.error("Greška pri učitavanju stanova:", err));
+      .catch((err) => {
+        if (ignore) return;
+
+        console.error("Greška pri učitavanju kvarova:", err);
+        setAnkete([]);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -29,11 +47,12 @@ export default function AnketePage() {
         Ankete
       </h1>
 
-      {/* Generički DataTable */}
-      <DataTable
+      {/* TABLE */}
+      <DataTable<Anketa>
         data={ankete}
         columns={anketeColumns}
-        emptyMessage="Nema prijavljenih anketa."
+        loading={loading}
+        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

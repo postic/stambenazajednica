@@ -4,18 +4,27 @@
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { sedniceColumns } from "@/features/sednice/SedniceColumns";
-import { Sednica } from "@/features/sednice/types";
+import type { Sednica } from "@/types/sednica";
 
 interface SedniceTableProps {
-  sednice?: Sednica[];
+  sednice?: Sednica[] | null;
+  oading?: boolean;
 }
 
-export default function SedniceTable({ sednice = [] }: SedniceTableProps) {
+export default function SednicaTable({
+  sednice,
+  loading = false,
+}: SednicaTableProps) {
+  const safeData =sednice ?? [];
+
   return (
-    <DataTable
-      data={sednice}
-      columns={sedniceColumns}
-      emptyMessage="Nema sednica."
+    <DataTable<Sednica>
+      loading={loading}
+      data={safeData}
+      columns={sednicaColumns}
+      emptyMessage={
+        loading ? "Učitavanje..." : "Nema podataka."
+      }
     />
   );
 }

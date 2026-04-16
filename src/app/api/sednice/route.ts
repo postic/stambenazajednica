@@ -1,18 +1,4 @@
-export interface Dokument {
-  id: string;
-  title: string;
-  url: string;
-  mimeType: string;
-}
-
-export interface Sednica {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  status?: string;
-  dokumenti?: Dokument[];
-}
+import type { Sednica } from "@/types/sednica";
 
 export async function GET(req: Request) {
   try {

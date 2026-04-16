@@ -3,21 +3,39 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { sedniceColumns } from "@/features/sednice/SedniceColumns";
-import { Sednica } from "@/features/sednice/types";
+import type { Sednica } from "@/types/sednica";
 
 export default function SednicePage() {
+  const [loading, setLoading] = useState(true);
   const [sednice, setSednice] = useState<Sednica[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+
     fetch(`/api/sednice?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
-        setSednice(data.data);
-        setTotalPages(data.totalPages);
+        if (ignore) return;
+
+        setSednice(data.data ?? []);
+        setTotalPages(data.totalPages ?? 1);
       })
-      .catch((err) => console.error("Greška pri učitavanju sednica:", err));
+      .catch((err) => {
+        if (ignore) return;
+
+        console.error("Greška pri učitavanju kvarova:", err);
+        setSednice([]);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -29,11 +47,12 @@ export default function SednicePage() {
         Sednice
       </h1>
 
-      {/* Generički DataTable */}
-      <DataTable
+      {/* TABLE */}
+      <DataTable<Sednice>
         data={sednice}
         columns={sedniceColumns}
-        emptyMessage="Nema sednica."
+        loading={loading}
+        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

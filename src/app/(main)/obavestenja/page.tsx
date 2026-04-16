@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
-import type { Obavestenje } from "@/types/oavestenja";
+import type { Obavestenje } from "@/types/obavestenje";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 

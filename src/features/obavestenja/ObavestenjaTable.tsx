@@ -1,4 +1,3 @@
-// src/components/ObavestenjaTable.tsx
 "use client";
 
 import React from "react";
