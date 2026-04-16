@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/DataTable";
-import { Obavestenje } from "./types";
+import type { Obavestenje } from "@/types/obavestenje";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
@@ -8,7 +8,6 @@ export const obavestenjaColumns: Column<Obavestenje>[] = [
   {
     key: "title",
     header: "Naslov",
-    width: "70%",
     render: (o) => (
       <Link
         href={`/obavestenja/${o.id}`}
@@ -22,7 +21,6 @@ export const obavestenjaColumns: Column<Obavestenje>[] = [
   {
     key: "date",
     header: "Datum",
-    sortable: true,
     render: (o) =>
       new Date(o.created).toLocaleDateString("sr-RS", {
         day: "numeric",

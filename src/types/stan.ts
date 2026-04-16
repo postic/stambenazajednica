@@ -17,7 +17,7 @@ export interface Osoba {
   isVlasnik?: boolean; // true ako je vlasnik
 }
 
-type VlasnikEntity = {
+export interface VlasnikEntity {
   id: string;
   type: string;
   attributes?: {

@@ -4,18 +4,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { Kvar } from "@/types/kvar";
 
 interface Option {
   value: string;
   label: string;
-}
-
-export interface Kvar {
-  id: string;              // UUID node-a
-  title: string;
-  description: string;
-  priority: string;         // vrednost mora odgovarati field_option
-  status: string;           // vrednost mora odgovarati field_option
 }
 
 interface Props {

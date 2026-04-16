@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/DataTable";
-import { Stanar } from "./types";
+import type { Stanar } from "@/types/stanar";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";

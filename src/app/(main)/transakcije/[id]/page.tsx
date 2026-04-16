@@ -3,7 +3,7 @@ import { isEmptyHtml } from "@/lib/text";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { formatRSD } from "@/lib/text";
-import { TransakcijaWithBalance } from "./types";
+import type { TransakcijaWithBalance } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =

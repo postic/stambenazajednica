@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import ObavestenjeForm from "./ObavestenjeForm";
-import { getObavestenje, Obavestenje } from "@/lib/kvar";
+//import { getObavestenje, Obavestenje } from "@/lib/kvar";
 import BackButton from "@/components/BackButton";
 
 export default function NewObavestenjePage() {
@@ -18,4 +18,3 @@ export default function NewObavestenjePage() {
     </div>
   );
 }
-ss

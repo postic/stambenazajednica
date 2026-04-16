@@ -1,4 +1,5 @@
 import type { Stan } from "@/types/stan";
+import type { VlasnikEntity } from "@/types/stan";
 
 export async function GET(req: Request) {
   try {

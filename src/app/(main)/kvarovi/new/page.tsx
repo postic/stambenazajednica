@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import KvarForm from "./KvarForm";
-import { getKvar, Kvar, getFieldOptions } from "@/lib/kvar";
+import type { Kvar } from "@/types/kvar";
+import { getKvar, getFieldOptions } from "@/lib/kvar";
 import BackButton from "@/components/BackButton";
 
 export default function NewKvarPage() {

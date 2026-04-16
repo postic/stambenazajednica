@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import KvarForm from "./KvarForm";
-import { getKvar, Kvar, getFieldOptions } from "@/lib/kvar";
 import BackButton from "@/components/BackButton";
+import { getKvar, getFieldOptions } from "@/lib/kvar";
+import type { Kvar } from "@/types/kvar";
 
 interface Option {
   value: string;

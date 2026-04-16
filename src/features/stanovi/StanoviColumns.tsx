@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/DataTable";
-import { Stan } from "./types";
+import type { Stan } from "@/types/stan";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 
@@ -8,7 +8,7 @@ export const stanoviColumns: Column<Stan>[] = [
     key: "title",
     header: "Naziv",
     //width: "50%",
-    sortable: false,
+    //sortable: false,
     render: (stan) => (
       <Link
         href={`/stanovi/${stan.id}`}

@@ -48,7 +48,7 @@ export default function SednicePage() {
       </h1>
 
       {/* TABLE */}
-      <DataTable<Sednice>
+      <DataTable<Sednica>
         data={sednice}
         columns={sedniceColumns}
         loading={loading}

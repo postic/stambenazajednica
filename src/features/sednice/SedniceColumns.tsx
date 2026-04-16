@@ -1,7 +1,6 @@
 "use client";
-
 import { Column } from "@/components/table/DataTable";
-import { Sednica } from "./types";
+import type { Sednica } from "@/types/sednica";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
@@ -16,7 +15,6 @@ export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "title",
     header: "Naslov",
-    width: "55%",
     render: (s) => (
       <Link
         href={`/sednice/${s.id}`}
