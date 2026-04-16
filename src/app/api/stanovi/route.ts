@@ -1,24 +1,4 @@
-// src/app/api/stanovi/route.ts
-
-interface Stan {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  sprat: number | null;
-  kvadratura: number | null;
-  vlasnik: string | null;
-}
-
-// Tip za JSON:API entity vlasnika
-type VlasnikEntity = {
-  id: string;
-  type: string;
-  attributes?: {
-    title?: string;
-    name?: string;
-  };
-};
+import type { Stan } from "@/types/stan";
 
 export async function GET(req: Request) {
   try {

@@ -3,21 +3,40 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { stanoviColumns } from "@/features/stanovi/StanoviColumns";
-import { Stan } from "@/features/stanovi/types";
+import type { Stan } from "@/types/stan";
+
 
 export default function StanoviPage() {
+  const [loading, setLoading] = useState(true);
   const [stanovi, setStanovi] = useState<Stan[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+
     fetch(`/api/stanovi?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
-        setStanovi(data.data);
-        setTotalPages(data.totalPages);
+        if (ignore) return;
+
+        setStanovi(data.data ?? []);
+        setTotalPages(data.totalPages ?? 1);
       })
-      .catch((err) => console.error("Greška pri učitavanju stanova:", err));
+      .catch((err) => {
+        if (ignore) return;
+
+        console.error("Greška pri učitavanju kvarova:", err);
+        setStanovi([]);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -29,11 +48,12 @@ export default function StanoviPage() {
         Stanovi
       </h1>
 
-      {/* Generički DataTable */}
-      <DataTable
+      {/* TABLE */}
+      <DataTable<Kvar>
         data={stanovi}
         columns={stanoviColumns}
-        emptyMessage="Nema prijavljenih stanova."
+        loading={loading}
+        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

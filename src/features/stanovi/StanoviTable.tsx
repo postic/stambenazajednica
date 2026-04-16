@@ -1,17 +1,28 @@
+"use client";
+
 import { DataTable } from "@/components/table/DataTable";
 import { stanoviColumns } from "./StanoviColumns";
-import { Stan } from "./types";
+import type { Stan } from "@/types/stan";
 
 interface StanoviTableProps {
   stanovi?: Stan[];
+  loading?: boolean;
 }
 
-export default function StanoviTable({ stanovi = [] }: StanoviTableProps) {
+export default function StanoviTable({
+  stanovi,
+  loading = false,
+}: StanoviTableProps) {
+  const safeData = stanovi ?? [];
+
   return (
-    <DataTable
-      data={stanovi}
+    <DataTable<Stan>
+      loading={loading}
+      data={safeData}
       columns={stanoviColumns}
-      emptyMessage="Nema stanova."
+      emptyMessage={
+        loading ? "Učitavanje..." : "Nema podataka."
+      }
     />
   );
 }
