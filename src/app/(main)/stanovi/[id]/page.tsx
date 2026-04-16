@@ -3,7 +3,7 @@ import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import BackButton from "@/components/BackButton";
-import { Stan } from "@/features/stanovi/types";
+import type { Stan } from "@/types/stan";
 import { parseStan } from "@/lib/drupal/getStan";
 
 const BASE_URL =

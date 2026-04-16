@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
-import { Stanar } from "@/features/stanari/types";
+import type { Stanar } from "@/types/stanar";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";

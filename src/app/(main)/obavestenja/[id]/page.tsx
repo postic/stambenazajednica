@@ -4,7 +4,7 @@ import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
-import { Obavestenje } from "@/features/obavestenja/types";
+import type { Obavestenje } from "@/types/obavestenje";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { isEmptyHtml } from "@/lib/text";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
-import { Sednica, Dokument } from "@/features/sednice/types";
+import type { Sednica, Dokument } from "@/types/sednica";
 import { getFileIcon } from "@/features/dokumenti/utils";
 
 interface PageProps {
