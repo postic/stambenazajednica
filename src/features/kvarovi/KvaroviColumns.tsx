@@ -1,8 +1,8 @@
-import { Column } from "@/components/table/DataTable";
-import type { Kvar } from "@/types/kvar";
+import { Column } from "@/components/table/types";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import type { Kvar } from "@/types/kvar";
 
 export const kvaroviColumns: Column<Kvar>[] = [
   {
@@ -30,7 +30,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "prioritet",
     header: "Prioritet",
-    render: (kvar) => <StatusBadge prioritet={kvar.prioritet} />,
+    render: (kvar) => <StatusBadge prioritet={kvar.priority} />,
   },
   {
     key: "status",

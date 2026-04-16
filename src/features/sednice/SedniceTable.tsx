@@ -8,20 +8,20 @@ import type { Sednica } from "@/types/sednica";
 
 interface SedniceTableProps {
   sednice?: Sednica[] | null;
-  oading?: boolean;
+  loading?: boolean;
 }
 
-export default function SednicaTable({
+export default function SedniceTable({
   sednice,
   loading = false,
-}: SednicaTableProps) {
+}: SedniceTableProps) {
   const safeData =sednice ?? [];
 
   return (
     <DataTable<Sednica>
       loading={loading}
       data={safeData}
-      columns={sednicaColumns}
+      columns={sedniceColumns}
       emptyMessage={
         loading ? "Učitavanje..." : "Nema podataka."
       }

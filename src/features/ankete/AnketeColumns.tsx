@@ -1,4 +1,4 @@
-import { Column } from "@/components/table/DataTable";
+import { Column } from "@/components/table/types";
 import type { Anketa } from "@/types/anketa";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
@@ -8,6 +8,8 @@ export const anketeColumns: Column<Anketa>[] = [
   {
     key: "title",
     header: "Naziv",
+    width: "40%",
+    align: "left",
     render: (anketa) => (
       <Link
         href={`/ankete/${anketa.id}`}

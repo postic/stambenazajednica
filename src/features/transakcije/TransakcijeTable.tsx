@@ -3,6 +3,7 @@
 import { DataTable } from "@/components/table/DataTable";
 import { transakcijeColumns } from "./TransakcijeColumns";
 import type { Transakcija } from "@/types/transakcija";
+import type { TransakcijaWithBalance } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
 
 interface Props {
@@ -16,10 +17,10 @@ export default function TransakcijeTable({
   initialBalance = 0,
   loading = false,
 }: Props) {
-  const data = addRunningBalance(transakcije, initialBalance);
+  const safeData = addRunningBalance(transakcije, initialBalance);
 
   return (
-    <DataTable<Transakcija>
+    <DataTable<TransakcijaWithBalance>
       loading={loading}
       data={safeData}
       columns={transakcijeColumns}

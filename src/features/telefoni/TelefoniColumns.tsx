@@ -1,4 +1,4 @@
-import { Column } from "@/components/table/DataTable";
+import { Column } from "@/components/table/types";
 import type { Telefon } from "@/types/telefon";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";

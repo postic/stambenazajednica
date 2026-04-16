@@ -1,6 +1,9 @@
 export interface Column<T> {
-  key: string
-  label: string
-  sortable?: boolean
-  render?: (row: T) => React.ReactNode
+  key: string;
+  header: string;
+  render: (row: T) => React.ReactNode;
+  sortable?: boolean;
+  isAction?: boolean;
+  width?: string;
+  align?: "left" | "center" | "right"; // 👈 dodaj ovo
 }
