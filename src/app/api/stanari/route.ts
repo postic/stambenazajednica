@@ -1,18 +1,4 @@
-interface Stanar {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  image?: string[] | null;
-  licna_karta?: string;
-  email?: string;
-  ime_prezime?: string;
-  jmbg?: string;
-  telefon?: string;
-  vozilo?: string;
-  status?: boolean;
-  tip?: boolean;
-}
+import type { Stanar } from "@/types/stanar";
 
 export async function GET(req: Request) {
   try {

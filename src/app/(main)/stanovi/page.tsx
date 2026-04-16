@@ -49,7 +49,7 @@ export default function StanoviPage() {
       </h1>
 
       {/* TABLE */}
-      <DataTable<Kvar>
+      <DataTable<Stan>
         data={stanovi}
         columns={stanoviColumns}
         loading={loading}

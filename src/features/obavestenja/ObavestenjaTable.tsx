@@ -4,18 +4,27 @@
 import React from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
-import { Obavestenje } from "@/features/obavestenja/types";
+import type { Obavestenje } from "@/types/obavestenje";
 
 interface ObavestenjaTableProps {
-  obavestenja?: Obavestenje[];
+  obavestenja?: Obavestenje[] | null;
+  loading?: boolean;
 }
 
-export default function ObavestenjaTable({ obavestenja = [] }: ObavestenjaTableProps) {
+export default function ObavestenjaTable({
+  obavestenja,
+  loading = false,
+}: ObavestenjaTableProps) {
+  const safeData = obavestenja ?? [];
+
   return (
-    <DataTable
-      data={obavestenja}
+    <DataTable<Obavestenje>
+      loading={loading}
+      data={safeData}
       columns={obavestenjaColumns}
-      emptyMessage="Nema obaveštenja."
+      emptyMessage={
+        loading ? "Učitavanje..." : "Nema podataka."
+      }
     />
   );
 }

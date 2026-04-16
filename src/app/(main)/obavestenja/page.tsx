@@ -3,22 +3,41 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
-import { Obavestenje } from "@/features/obavestenja/types";
+import type { Obavestenje } from "@/types/oavestenja";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function ObavestenjaPage() {
+  const [loading, setLoading] = useState(true);
   const [obavestenja, setObavestenja] = useState<Obavestenje[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+
     fetch(`/api/obavestenja?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
-        setObavestenja(data.data);
-        setTotalPages(data.totalPages);
+        if (ignore) return;
+
+        setObavestenja(data.data ?? []);
+        setTotalPages(data.totalPages ?? 1);
+      })
+      .catch((err) => {
+        if (ignore) return;
+
+        console.error("Greška pri učitavanju kvarova:", err);
+        setObavestenja([]);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
       });
+
+    return () => {
+      ignore = true;
+    };
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -37,11 +56,12 @@ export default function ObavestenjaPage() {
         </Link>
       </div>
 
-      {/* Koristimo generički DataTable */}
-      <DataTable
+      {/* TABLE */}
+      <DataTable<Obavestenje>
         data={obavestenja}
         columns={obavestenjaColumns}
-        emptyMessage="Nema obaveštenja."
+        loading={loading}
+        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

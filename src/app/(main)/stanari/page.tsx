@@ -3,21 +3,39 @@
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { stanariColumns } from "@/features/stanari/StanariColumns";
-import { Stanar } from "@/features/stanari/types";
+import type { Stanar } from "@/types/stanar";
 
 export default function StanariPage() {
+  const [loading, setLoading] = useState(true);
   const [stanari, setStanari] = useState<Stanar[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+
     fetch(`/api/stanari?page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
-        setStanari(data.data);
-        setTotalPages(data.totalPages);
+        if (ignore) return;
+
+        setStanari(data.data ?? []);
+        setTotalPages(data.totalPages ?? 1);
       })
-      .catch((err) => console.error("Greška pri učitavanju stanara:", err));
+      .catch((err) => {
+        if (ignore) return;
+
+        console.error("Greška pri učitavanju kvarova:", err);
+        setStanari([]);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [page]);
 
   // generiše niz brojeva [1, 2, 3, ... totalPages]
@@ -29,11 +47,12 @@ export default function StanariPage() {
         Stanari
       </h1>
 
-      {/* Generički DataTable */}
-      <DataTable
+      {/* TABLE */}
+      <DataTable<Stanar>
         data={stanari}
         columns={stanariColumns}
-        emptyMessage="Nema prijavljenih stanara."
+        loading={loading}
+        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}
