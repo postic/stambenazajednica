@@ -70,7 +70,7 @@ export default function LoginPage() {
         role === "stanar"
           ? {
               role,
-              brojStana,
+              identifier: brojStana,
               pin: stanarPin,
               remember,
             }
@@ -92,9 +92,25 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success("Uspešno ste prijavljeni");
-        await login();
+        //await login();
 
-        router.push(role === "upravnik" ? "/admin" : "/dashboard");
+
+        await fetch("/api/me", {
+  credentials: "include",
+  cache: "no-store",
+});
+
+
+        if (role === "upravnik") {
+          router.push("/admin");
+        }
+        else if (role === "stanar") {
+          router.push("/kvarovi");
+        }
+        else {
+          router.push("/dashboard");
+        }
+
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);

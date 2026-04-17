@@ -6,14 +6,14 @@ type User = {
   uid: string;
   name: string;
   mail: string;
-  picture?: string; // opcionalno polje za sliku korisnika
-  created?: string;    // opcionalno polje za datum registracije
+  picture?: string;
+  created?: string;
+  role?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: () => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -31,15 +31,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         cache: "no-store",
       });
 
-      if (!res.ok) {
-        setUser(null);
-        return;
-      }
-
       const data = await res.json();
+
       setUser(data.user ?? null);
-    } catch (error) {
-      console.error("Auth fetch error:", error);
+    } catch (err) {
+      console.error("Auth error:", err);
       setUser(null);
     }
   };
@@ -48,15 +44,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUser().finally(() => setLoading(false));
   }, []);
 
-  const login = async () => {
-    await fetchUser(); // odmah povuče user nakon login-a
-  };
-
   const logout = async () => {
     await fetch("/api/logout", {
       method: "POST",
       credentials: "include",
     });
+
     setUser(null);
   };
 
@@ -65,14 +58,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used inside AuthProvider");
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 }
