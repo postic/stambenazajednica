@@ -92,17 +92,10 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success("Uspešno ste prijavljeni");
-        //await login();
-
-
-        await fetch("/api/me", {
-  credentials: "include",
-  cache: "no-store",
-});
-
+        await login();
 
         if (role === "upravnik") {
-          router.push("/admin");
+          router.push("/transakcije");
         }
         else if (role === "stanar") {
           router.push("/kvarovi");

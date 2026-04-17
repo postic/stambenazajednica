@@ -4,8 +4,6 @@ import type { NextRequest } from "next/server";
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("access_token")?.value;
 
-  console.error('TOKEN',token);
-
   const publicPaths = ["/login", "/register", "/forgot-password"];
   const isPublic = publicPaths.some(path =>
     req.nextUrl.pathname.startsWith(path)

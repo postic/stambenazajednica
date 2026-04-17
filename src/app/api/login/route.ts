@@ -13,7 +13,8 @@ export async function POST(req: Request) {
       // - ili provera field "field_pin"
       // - ili external service
 
-//console.error('identifier',identifier);
+      console.log('identifier',identifier);
+      console.log('pin',pin);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/stan-login`,
