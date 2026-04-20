@@ -1,7 +1,9 @@
+// app/api/me/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-// 🔵 decode OAuth JWT payload (bez verify)
+// 🔵 decode OAuth JWT (bez verify)
 function decodeOAuth(token: string) {
   try {
     return JSON.parse(
@@ -28,18 +30,24 @@ export async function GET(request: NextRequest) {
       process.env.JWT_SECRET!
     );
 
-    return NextResponse.json({
-      user: {
-        uid: String(decoded.uid),
-        name: decoded.name || "Stanar",
-        role: decoded.roles?.[0] || "stanar",
-        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          decoded.name || "Stanar"
-        )}`,
+    return NextResponse.json(
+      {
+        user: {
+          uid: String(decoded.uid),
+          name: decoded.name || "Stanar",
+          role: decoded.roles?.[0] || "stanar",
+          picture: decoded.picture,
+        },
       },
-    });
-  } catch {
-    // nije JWT → ide OAuth
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store", // 🔥 bez cache → nema bugova u navbaru
+        },
+      }
+    );
+  } catch (e) {
+    // nije tvoj JWT → pokušaj OAuth
   }
 
   // 🔵 =========================
@@ -52,7 +60,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 🔥 NAJSTABILNIJE: Drupal custom endpoint /api/me
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/me`,
       {
@@ -72,18 +79,26 @@ export async function GET(request: NextRequest) {
 
     const data = await res.json();
 
-    return NextResponse.json({
-      user: {
-        uid: String(data.uid),
-        name: data.name || "Upravnik",
-        role: "upravnik",
-        picture:
-          data.avatar ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            data.name || "Upravnik"
-          )}`,
+    return NextResponse.json(
+      {
+        user: {
+          uid: String(data.uid),
+          name: data.name || "Upravnik",
+          role: "upravnik",
+          picture:
+            data.picture ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              data.name || "Upravnik"
+            )}`,
+        },
       },
-    });
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
   } catch (err) {
     console.error("UPRAVNIK ERROR:", err);
 
