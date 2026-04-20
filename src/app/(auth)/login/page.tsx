@@ -92,7 +92,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success("Uspešno ste prijavljeni");
-        await login();
+        //await login();
 
         if (role === "upravnik") {
           router.push("/transakcije");

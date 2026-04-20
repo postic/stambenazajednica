@@ -5,9 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 type User = {
   uid: string;
   name: string;
-  mail: string;
   picture?: string;
-  created?: string;
   role?: string;
 };
 
@@ -30,6 +28,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         credentials: "include",
         cache: "no-store",
       });
+
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
 
       const data = await res.json();
 

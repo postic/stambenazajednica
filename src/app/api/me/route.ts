@@ -1,67 +1,92 @@
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
-export async function GET() {
-  const token = (await cookies()).get("access_token")?.value;
+// 🔵 decode OAuth JWT payload (bez verify)
+function decodeOAuth(token: string) {
+  try {
+    return JSON.parse(
+      Buffer.from(token.split(".")[1], "base64").toString()
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function GET(request: NextRequest) {
+  const token = request.cookies.get("access_token")?.value;
 
   if (!token) {
-    return Response.json({ user: null });
+    return NextResponse.json({ user: null }, { status: 401 });
   }
 
-  // 1️⃣ Ko je user
-  const userinfoRes = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/userinfo`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    }
-  );
-
-  if (!userinfoRes.ok) {
-    return Response.json({ user: null });
-  }
-
-  const userinfo = await userinfoRes.json();
-  const uid = userinfo.sub;
-
-  // 2️⃣ Uzmi user preko JSON:API
-  const userRes = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user?filter[uid]=${uid}&include=user_picture`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    }
-  );
-
-  if (!userRes.ok) {
-    return Response.json({ user: null });
-  }
-
-  const userData = await userRes.json();
-  const user = userData.data[0];
-
-  // 3️⃣ Izvuci sliku iz include sekcije
-  let pictureUrl = null;
-
-  if (userData.included) {
-    const file = userData.included.find(
-      (item: any) => item.type === "file--file"
+  // 🟢 =========================
+  // 1. STANAR (tvoj JWT)
+  // =========================
+  try {
+    const decoded: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
     );
 
-    if (file?.attributes?.uri?.url) {
-      pictureUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL + file.attributes.uri.url;
-    }
+    return NextResponse.json({
+      user: {
+        uid: String(decoded.uid),
+        name: decoded.name || "Stanar",
+        role: decoded.roles?.[0] || "stanar",
+        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          decoded.name || "Stanar"
+        )}`,
+      },
+    });
+  } catch {
+    // nije JWT → ide OAuth
   }
 
-  return Response.json({
-    user: {
-      uid: user.id,
-      name: user.attributes.display_name,
-      mail: user.attributes.mail,
-      picture: pictureUrl,
-    },
-  });
+  // 🔵 =========================
+  // 2. UPRAVNIK (OAuth)
+  // =========================
+  const oauth = decodeOAuth(token);
+
+  if (!oauth?.sub) {
+    return NextResponse.json({ user: null }, { status: 401 });
+  }
+
+  try {
+    // 🔥 NAJSTABILNIJE: Drupal custom endpoint /api/me
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("UPRAVNIK /api/me ERROR:", text);
+
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    const data = await res.json();
+
+    return NextResponse.json({
+      user: {
+        uid: String(data.uid),
+        name: data.name || "Upravnik",
+        role: "upravnik",
+        picture:
+          data.avatar ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            data.name || "Upravnik"
+          )}`,
+      },
+    });
+  } catch (err) {
+    console.error("UPRAVNIK ERROR:", err);
+
+    return NextResponse.json({ user: null }, { status: 401 });
+  }
 }

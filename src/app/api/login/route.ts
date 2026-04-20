@@ -1,105 +1,117 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  const { identifier, password, role, pin } = await req.json();
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
 
-  // 🏢 =========================
-  // STAN LOGIN (PIN varijanta)
-  // 🏢 =========================
-  if (role === "stanar") {
-    try {
-      // 👉 OVDE ide tvoja logika:
-      // - Drupal custom endpoint
-      // - ili provera field "field_pin"
-      // - ili external service
+    const { role } = body;
 
-      console.log('identifier',identifier);
-      console.log('pin',pin);
+    let res: Response;
+    let data: any;
 
-      const res = await fetch(
+    // 🏢 =========================
+    // STANAR LOGIN (PIN)
+    // =========================
+    if (role === "stanar") {
+      res = await fetch(
         `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/stan-login`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
-            identifier,
-            pin,
+            identifier: body.identifier,
+            pin: body.pin,
           }),
         }
       );
+    }
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        return NextResponse.json(
-          { error: "Neispravan PIN ili stan nalog" },
-          { status: 401 }
-        );
-      }
-
-      const response = NextResponse.json({ success: true });
-
-      response.cookies.set("access_token", data.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
+    // 🏛 =========================
+    // UPRAVNIK LOGIN (OAuth)
+    // =========================
+    else if (role === "upravnik") {
+      const oauthBody = new URLSearchParams({
+        grant_type: "password",
+        client_id: process.env.DRUPAL_CLIENT_ID!,
+        client_secret: process.env.DRUPAL_CLIENT_SECRET!,
+        username: body.identifier,
+        password: body.password,
       });
 
-      return response;
-    } catch (err) {
-      console.error(err);
+      res = await fetch(
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/token`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: oauthBody,
+        }
+      );
+    }
+
+    // ❌ invalid role
+    else {
       return NextResponse.json(
-        { error: "Greška pri stan login-u" },
+        { error: "Invalid role" },
+        { status: 400 }
+      );
+    }
+
+    const text = await res.text();
+
+    //console.log("ROLE:", role);
+    //console.log("STATUS:", res.status);
+    //console.log("RESPONSE:", text);
+
+    if (!res.ok) {
+      return NextResponse.json(
+        {
+          error: "Login failed",
+          details: text,
+        },
+        { status: res.status }
+      );
+    }
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid server response" },
         { status: 500 }
       );
     }
-  }
 
-  // 🏢 =========================
-  // DRUPAL OAUTH LOGIN (default)
-  // 🏢 =========================
-  const body = new URLSearchParams({
-    grant_type: "password",
-    client_id: process.env.DRUPAL_CLIENT_ID!,
-    client_secret: process.env.DRUPAL_CLIENT_SECRET!,
-    username: identifier,
-    password,
-  });
-
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/token`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok || !data.access_token) {
+    if (!data?.access_token) {
       return NextResponse.json(
-        { error: "Neispravno korisničko ime/email ili lozinka" },
+        { error: "Missing token" },
         { status: 401 }
       );
     }
 
-    const response = NextResponse.json({ success: true });
+    const response = NextResponse.json({
+      success: true,
+      user: data.user ?? null,
+      role,
+    });
+
+    console.log("RESPONSE:", text);
 
     response.cookies.set("access_token", data.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
+      maxAge: 60 * 60 * 24,
     });
 
     return response;
   } catch (err) {
-    console.error(err);
     return NextResponse.json(
-      { error: "Greška pri povezivanju sa Drupal-om" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
