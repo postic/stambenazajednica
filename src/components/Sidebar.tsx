@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import InstallPWAButton from "@/components/InstallPWAButton";
 import {
   Menu,
   Users,
@@ -272,6 +273,9 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             </div>
           ))}
         </nav>
+        <div className="p-3 border-t border-slate-700">
+          <InstallPWAButton />
+        </div>
       </aside>
     </>
   );
