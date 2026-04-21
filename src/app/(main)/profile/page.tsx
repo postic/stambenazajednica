@@ -36,12 +36,6 @@ export default function ProfilePage() {
                 size={150}
               />
               <p className="text-lg font-semibold">{authUser.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {authUser.mail}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Član od {authUser.created}
-              </p>
             </div>
           </Card>
 

@@ -1,3 +1,9 @@
+import type {
+  Transakcija,
+  TransakcijaWithBalance,
+} from "@/types/transakcija";
+
+
 export function addRunningBalance(
   transactions: Transakcija[],
   initialBalance = 0

@@ -92,6 +92,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success("Uspešno ste prijavljeni");
+
         //await login();
 
         if (role === "upravnik") {

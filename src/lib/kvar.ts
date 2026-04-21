@@ -1,35 +1,59 @@
 import type { Kvar } from "@/types/kvar";
-
-// 🔐 AUTH helper (radi server-side)
-function getAuthHeader() {
-  const username = process.env.DRUPAL_USER!;
-  const password = process.env.DRUPAL_PASS!;
-  return "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
-}
+import { getAuthHeader } from "@/lib/auth";
 
 // ===============================
-// 🔹 GET ONE
+// 🔹 DRUPAL RESPONSE
 // ===============================
-export async function getKvar(id: string): Promise<Kvar | null> {
-  if (!id) return null;
+type DrupalKvarResponse = {
+  data: {
+    id: string;
+    attributes: {
+      title?: string;
+      body?: {
+        value?: string;
+      };
+      field_status_kvara?: string;
+      field_prioritet_kvara?: string;
+      created?: string;
+    };
+  };
+};
 
+// ===============================
+// 🔹 FETCH SINGLE
+// ===============================
+export async function fetchKvar(id: string): Promise<Kvar> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar/${id}`,
-    { cache: "no-store" }
+    {
+      cache: "no-store",
+      headers: {
+        Accept: "application/vnd.api+json",
+      },
+    }
   );
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    throw new Error("Greška pri učitavanju kvara");
+  }
 
-  const json = await res.json();
+  const json: DrupalKvarResponse = await res.json();
+  const data = json.data;
 
   return {
-    id: json.data.id,
-    title: json.data.attributes.title,
-    description: json.data.attributes.body?.value ?? "",
-    status: json.data.attributes.field_status_kvara ?? undefined,
-    priority: json.data.attributes.field_prioritet_kvara ?? undefined,
+    id: data.id,
+    title: data.attributes.title ?? "",
+    description: data.attributes.body?.value ?? "",
+    status: data.attributes.field_status_kvara ?? "unknown",
+    priority: data.attributes.field_prioritet_kvara ?? "normal",
+
+    body: data.attributes.body?.value ?? "",
+    created: data.attributes.created ?? "",
   };
 }
+
+// 🔥 ALIAS (fix za stare import-e)
+export const getKvar = fetchKvar;
 
 // ===============================
 // 🔹 FIELD OPTIONS
@@ -39,11 +63,10 @@ export async function getFieldOptions(
 ) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar?fields[node--kvar]=${fieldName}`,
+      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar`,
       {
         cache: "no-store",
         headers: {
-          Authorization: getAuthHeader(),
           Accept: "application/vnd.api+json",
         },
       }
@@ -96,8 +119,8 @@ export async function updateKvar(kvar: Kvar): Promise<boolean> {
               value: kvar.description,
               format: "plain_text",
             },
-            field_status_kvara: kvar.status ?? null,
-            field_prioritet_kvara: kvar.priority ?? null,
+            field_status_kvara: kvar.status,
+            field_prioritet_kvara: kvar.priority,
           },
         },
       }),

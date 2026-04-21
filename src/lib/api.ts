@@ -1,64 +1,119 @@
-// lib/api.ts
-import { Anketa, Opcija } from "@/types/anketa";
+// src/lib/api.ts
 
-// Fetch anketa sa opcijama
-export async function fetchAnketa(id: string): Promise<Anketa> {
+// --------------------
+// TYPES
+// --------------------
+
+export type DrupalItem = {
+  id: string;
+  attributes: {
+    title?: string;
+    field_redosled?: number;
+    field_boja?: string;
+  };
+};
+
+export type MappedItem = {
+  id: string;
+  title?: string;
+  order?: number;
+  color?: string;
+};
+
+export type ApiResponse<T> = {
+  data: T[];
+};
+
+// --------------------
+// BASIC NODES
+// --------------------
+
+export async function fetchNodes(): Promise<MappedItem[]> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_URL}/jsonapi/node/anketa/${id}?include=field_opcije`
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan`,
+    { cache: "no-store" }
   );
-  const json = await res.json();
-  return mapAnketaFromDrupal(json);
-}
 
-// Mapper Drupal JSON:API -> Anketa
-export function mapAnketaFromDrupal(data: any): Anketa {
-  const node = data.data;
-  const included = data.included || [];
+  if (!res.ok) {
+    throw new Error("Greška pri učitavanju stanova");
+  }
 
-  const options: Opcija[] = included
-    .filter((item: any) => item.type === "node--opcija")
-    .map((item: any) => ({
+  const json: ApiResponse<DrupalItem> = await res.json();
+
+  return json.data
+    .map((item): MappedItem => ({
       id: item.id,
       title: item.attributes.title,
-      anketaId: node.id,
-      order: item.attributes.field_redosled || 0,
+      order: item.attributes.field_redosled,
       color: item.attributes.field_boja,
     }))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
+// --------------------
+// ANKETA
+// --------------------
+
+export type DrupalAnketa = {
+  id: string;
+  attributes: {
+    title?: string;
+    body?: {
+      value: string;
+    };
+  };
+};
+
+export type AnketaResponse = {
+  data: DrupalAnketa;
+};
+
+export async function fetchAnketa(id: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URLs}/jsonapi/node/anketa/${id}`,
+    { cache: "no-store" }
+  );
+
+  if (!res.ok) {
+    throw new Error("Anketa nije pronađena");
+  }
+
+  const json: AnketaResponse = await res.json();
 
   return {
-    id: node.id,
-    title: node.attributes.title,
-    body: node.attributes.body?.value,
-    created: node.attributes.created,
-    status: node.attributes.status,
-    options,
+    id: json.data.id,
+    title: json.data.attributes.title,
+    body: json.data.attributes.body?.value,
   };
 }
 
-// Fetch glasove za anketu
-export async function fetchRezultati(anketaId: string): Promise<Record<string, number>> {
+// --------------------
+// REZULTATI
+// --------------------
+
+export type DrupalRezultat = {
+  id: string;
+  attributes: {
+    title?: string;
+    field_votes?: number;
+  };
+};
+
+export async function fetchRezultati(anketaId: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_URL}/jsonapi/node/glas?filter[field_anketa.id]=${anketaId}`
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/odgovor?filter[field_anketa.id]=${anketaId}`,
+    { cache: "no-store" }
   );
-  const json = await res.json();
 
-  const counts: Record<string, number> = {};
-  json.data.forEach((glas: any) => {
-    const opcijaId = glas.relationships.field_opcija.data.id;
-    counts[opcijaId] = (counts[opcijaId] || 0) + 1;
-  });
+  if (!res.ok) {
+    throw new Error("Greška pri učitavanju rezultata");
+  }
 
-  return counts;
-}
+  const json: ApiResponse<DrupalRezultat> = await res.json();
 
-// Pošalji glas
-export async function submitGlas(anketaId: string, opcijaId: string): Promise<void> {
-  await fetch(`${process.env.NEXT_PUBLIC_DRUPAL_URL}/api/glasaj`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ anketaId, opcijaId }),
-  });
+  return json.data.map((item) => ({
+    id: item.id,
+    title: item.attributes.title,
+    votes: item.attributes.field_votes ?? 0,
+  }));
 }

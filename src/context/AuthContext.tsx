@@ -9,9 +9,15 @@ type User = {
   role?: string;
 };
 
+type LoginPayload = {
+  identifier: string;
+  pin: string;
+};
+
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  login: (data: LoginPayload) => Promise<boolean>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -35,7 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const data = await res.json();
-
       setUser(data.user ?? null);
     } catch (err) {
       console.error("Auth error:", err);
@@ -47,6 +52,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUser().finally(() => setLoading(false));
   }, []);
 
+  // ✅ LOGIN (PIN → JWT cookie)
+  const login = async (data: LoginPayload): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/pin-login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        return false;
+      }
+
+      // Nakon login-a povuci user-a iz /api/me
+      await fetchUser();
+
+      return true;
+    } catch (err) {
+      console.error("Login error:", err);
+      return false;
+    }
+  };
+
+  // 🚪 LOGOUT
   const logout = async () => {
     await fetch("/api/logout", {
       method: "POST",
@@ -56,12 +88,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  // 🔄 REFRESH USER
   const refresh = async () => {
     await fetchUser();
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );
