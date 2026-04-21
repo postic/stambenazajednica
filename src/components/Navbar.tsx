@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-import { Sun, Moon, Menu } from "lucide-react";
+import { Sun, Moon, Menu, Download } from "lucide-react";
 
 interface NavbarProps {
   setMobileOpen: (open: boolean) => void;
@@ -24,7 +24,9 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
   const router = useRouter();
 
   const [darkMode, setDarkMode] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
+  // 🌙 Dark mode
   useEffect(() => {
     const root = window.document.documentElement;
 
@@ -34,6 +36,31 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
       root.classList.remove("dark");
     }
   }, [darkMode]);
+
+  // 📲 PWA install detection
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+
+    console.log("PWA install result:", choice);
+
+    setDeferredPrompt(null);
+  };
 
   const handleLogout = async () => {
     try {
@@ -51,7 +78,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
       {/* LEFT SIDE */}
       <div className="flex items-center gap-3">
 
-        {/* Mobile sidebar button */}
+        {/* Mobile sidebar */}
         <button
           className="md:hidden p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
           onClick={() => setMobileOpen(true)}
@@ -59,17 +86,27 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
           <Menu size={22} />
         </button>
 
-        {/* Title */}
         <h1 className="font-bold text-lg md:text-2xl text-gray-900 dark:text-white">
           Stambena zajednica
         </h1>
-
       </div>
 
       {/* RIGHT SIDE */}
       <div className="flex items-center gap-3 md:gap-4">
 
-        {/* Dark mode toggle */}
+        {/* 📲 Install App (PWA) */}
+        {deferredPrompt && (
+          <button
+            onClick={handleInstallApp}
+            className="flex items-center gap-1 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+            title="Install App"
+          >
+            <Download size={18} />
+            <span className="hidden md:block text-sm">Install</span>
+          </button>
+        )}
+
+        {/* Dark mode */}
         <button
           className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           onClick={() => setDarkMode(!darkMode)}
@@ -81,7 +118,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
         {/* Notifications */}
         <NotificationsPanel />
 
-        {/* Loading skeleton */}
+        {/* Loading */}
         {loading && (
           <div className="h-10 w-10 rounded-full bg-gray-300 animate-pulse" />
         )}
