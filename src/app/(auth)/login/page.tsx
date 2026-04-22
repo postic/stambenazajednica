@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -17,26 +16,20 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert, Home, Shield } from "lucide-react";
 
 type Role = "stanar" | "upravnik";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, login } = useAuth();
+  const { user } = useAuth();
 
   const [role, setRole] = useState<Role>("stanar");
 
-  // STANAR
-  const [brojStana, setBrojStana] = useState("");
   const [stanarPin, setStanarPin] = useState("");
-
-  // UPRAVNIK
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
-  const [remember, setRemember] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [attempts, setAttempts] = useState(0);
@@ -46,40 +39,28 @@ export default function LoginPage() {
     if (user) router.push("/dashboard");
   }, [user, router]);
 
-  useEffect(() => {
-    if (!lockedUntil) return;
+  const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
 
-    const interval = setInterval(() => {
-      if (Date.now() > lockedUntil) {
-        setLockedUntil(null);
-        setAttempts(0);
-      }
-    }, 1000);
+  const remainingSeconds = lockedUntil
+    ? Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000))
+    : 0;
 
-    return () => clearInterval(interval);
-  }, [lockedUntil]);
+  const isDisabled =
+    loading ||
+    isLocked ||
+    (role === "stanar" ? !stanarPin : !identifier || !password);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (lockedUntil) return;
+    if (isLocked) return;
 
     setLoading(true);
 
     try {
       const payload =
         role === "stanar"
-          ? {
-              role,
-              identifier: brojStana,
-              pin: stanarPin,
-              remember,
-            }
-          : {
-              role,
-              identifier,
-              password,
-              remember,
-            };
+          ? { role, pin: stanarPin }
+          : { role, identifier, password };
 
       const res = await fetch("/api/login", {
         method: "POST",
@@ -93,18 +74,7 @@ export default function LoginPage() {
       if (res.ok) {
         toast.success("Uspešno ste prijavljeni");
 
-        //await login();
-
-        if (role === "upravnik") {
-          router.push("/transakcije");
-        }
-        else if (role === "stanar") {
-          router.push("/kvarovi");
-        }
-        else {
-          router.push("/dashboard");
-        }
-
+        router.push(role === "upravnik" ? "/transakcije" : "/kvarovi");
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
@@ -112,185 +82,146 @@ export default function LoginPage() {
         toast.error(data.error || "Neispravni podaci.");
 
         if (newAttempts >= 3) {
-          const lockTime = Date.now() + 30_000;
-          setLockedUntil(lockTime);
-          toast.warning("Previše pokušaja. Pokušajte ponovo za 30s.");
+          setLockedUntil(Date.now() + 30000);
         }
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Greška pri povezivanju sa serverom.");
     } finally {
       setLoading(false);
     }
   }
 
-  const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
-
-  const isDisabled =
-    loading ||
-    isLocked ||
-    (role === "stanar"
-      ? !brojStana || !stanarPin
-      : !identifier || !password);
-
-  const remainingSeconds = lockedUntil
-    ? Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000))
-    : 0;
-
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
-      <Card className="w-full max-w-xl shadow-lg rounded-2xl border-0">
-        <CardHeader className="pb-3 pt-8">
-          <CardTitle className="text-2xl font-bold text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-3">
+
+      <Card className="w-[340px] max-w-[92vw] shadow-xl rounded-2xl border-0 bg-white">
+
+        {/* HEADER */}
+        <CardHeader className="text-center pt-6 pb-3">
+
+          <CardTitle className="text-2xl font-bold text-gray-800">
             Prijava
           </CardTitle>
-          <CardDescription className="text-center text-sm mt-1">
+
+          <CardDescription className="text-sm text-gray-500 mt-1">
             Izaberite tip pristupa
           </CardDescription>
 
           {/* SWITCH */}
-          <div className="flex bg-gray-100 rounded-lg p-1 mt-4">
+          <div className="flex bg-gray-100 rounded-xl p-1 mt-4">
+
             <button
               type="button"
               onClick={() => setRole("stanar")}
-              className={`flex-1 py-2 text-sm rounded-md transition ${
-                role === "stanar" ? "bg-white shadow" : ""
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm rounded-lg transition font-medium ${
+                role === "stanar"
+                  ? "bg-white shadow text-gray-900"
+                  : "text-gray-500"
               }`}
             >
+              <Home size={16} />
               Stanar
             </button>
 
             <button
               type="button"
               onClick={() => setRole("upravnik")}
-              className={`flex-1 py-2 text-sm rounded-md transition ${
-                role === "upravnik" ? "bg-white shadow" : ""
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm rounded-lg transition font-medium ${
+                role === "upravnik"
+                  ? "bg-white shadow text-gray-900"
+                  : "text-gray-500"
               }`}
             >
+              <Shield size={16} />
               Upravnik
             </button>
+
           </div>
         </CardHeader>
 
-        <CardContent className="px-10 pb-10">
-          <form
-            className="flex flex-col gap-4 max-w-md mx-auto w-full"
-            onSubmit={handleLogin}
-          >
-            {/* STANAR FORM */}
-            {role === "stanar" && (
-              <>
-                <div className="space-y-1">
-                  <Label>Broj stana</Label>
-                  <Input
-                    value={brojStana}
-                    onChange={(e) => setBrojStana(e.target.value)}
-                    type="text"
-                    placeholder="npr. 12"
-                    className="h-12 text-sm"
-                  />
-                </div>
+        {/* FORM */}
+        <CardContent className="px-5 pb-7">
 
-                <div className="space-y-1">
-                  <Label>PIN</Label>
-                  <Input
-                    value={stanarPin}
-                    onChange={(e) => setStanarPin(e.target.value)}
-                    type="password"
-                    placeholder="••••"
-                    className="h-12 text-sm"
-                  />
-                </div>
-              </>
+          <form className="flex flex-col gap-3 text-center" onSubmit={handleLogin}>
+
+            {/* STANAR */}
+            {role === "stanar" && (
+              <div className="space-y-2 text-center">
+
+                <Label className="text-gray-600 text-sm block">
+                  PIN
+                </Label>
+
+                <Input
+                  value={stanarPin}
+                  onChange={(e) => setStanarPin(e.target.value)}
+                  type="password"
+                  className="h-11 text-sm text-center"
+                />
+              </div>
             )}
 
-            {/* UPRAVNIK FORM */}
+            {/* UPRAVNIK */}
             {role === "upravnik" && (
               <>
-                <div className="space-y-1">
-                  <Label>Korisničko ime ili email</Label>
+                <div className="space-y-2 text-center">
+                  <Label className="text-gray-600 text-sm block">
+                    Korisničko ime ili email
+                  </Label>
+
                   <Input
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     type="text"
-                    placeholder="Unesite korisničko ime ili email"
-                    className="h-12 text-sm"
+                    className="h-11 text-sm text-center"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Lozinka</Label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="h-12 text-sm pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    >
-                      {showPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-                  </div>
+                <div className="space-y-2 text-center">
+                  <Label className="text-gray-600 text-sm block">
+                    Lozinka
+                  </Label>
+
+                  <Input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    type="password"
+                    className="h-11 text-sm text-center"
+                  />
                 </div>
               </>
             )}
 
-            {/* REMEMBER */}
-            <div className="flex items-center justify-between text-xs mt-1">
-              <label className="flex items-center gap-2 cursor-pointer flex-1">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={() => setRemember(!remember)}
-                  className="h-3 w-3"
-                />
-                Zapamti me
-              </label>
-
-              <Link
-                href="/forgot-password"
-                className="text-muted-foreground hover:text-primary ml-6"
-              >
-                Zaboravili ste lozinku?
-              </Link>
-            </div>
-
             {/* LOCK */}
             {isLocked && (
-              <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 p-2 rounded-md">
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-600 bg-gray-100 p-2 rounded-lg">
                 <ShieldAlert size={16} />
-                Pokušajte ponovo za {remainingSeconds}s
+                Sačekajte {remainingSeconds}s
               </div>
             )}
 
-            {/* SUBMIT */}
+            {/* BUTTON */}
             <Button
               type="submit"
               disabled={isDisabled}
-              className="w-full h-12 text-sm font-semibold mt-2"
+              className="w-full h-11 rounded-xl bg-gray-800 hover:bg-gray-900 text-white font-semibold mt-1"
             >
-              {loading && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Prijavljivanje...
+                </>
+              ) : (
+                "Prijava"
               )}
-              {loading
-                ? "Prijavljivanje..."
-                : isLocked
-                ? "Zaključano"
-                : "Prijava"}
             </Button>
+
           </form>
+
         </CardContent>
       </Card>
+
     </div>
   );
 }

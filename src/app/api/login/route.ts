@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     // =========================
     if (role === "stanar") {
       res = await fetch(
-        `https://dev-stambena-zajednica.pantheonsite.io/api/stan-login`,
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/stan-login`,
         {
           method: "POST",
           headers: {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       });
 
       res = await fetch(
-        `https://dev-stambena-zajednica.pantheonsite.io/oauth/token`,
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/token`,
         {
           method: "POST",
           headers: {
