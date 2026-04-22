@@ -2,13 +2,20 @@
 
 import { useEffect, useState } from "react";
 
-export default function InstallPWAButton() {
+export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    const ua = window.navigator.userAgent.toLowerCase();
+    const ios = /iphone|ipad|ipod/.test(ua);
+    setIsIOS(ios);
+
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      setIsInstallable(true);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
@@ -18,21 +25,19 @@ export default function InstallPWAButton() {
     };
   }, []);
 
-  const handleInstall = async () => {
+  const install = async () => {
     if (!deferredPrompt) return;
 
     deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+    await deferredPrompt.userChoice;
 
-    console.log("Install result:", choice);
     setDeferredPrompt(null);
+    setIsInstallable(false);
   };
 
-  if (!deferredPrompt) return null;
-
-  return (
-    <button onClick={handleInstall}>
-      Install Komšija App
-    </button>
-  );
+  return {
+    install,
+    isInstallable,
+    isIOS,
+  };
 }
