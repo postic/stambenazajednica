@@ -1,34 +1,24 @@
 "use client";
 
-import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
-export default function InstallBanner() {
-  const { install, isInstallable, isIOS } = useInstallPrompt();
+export default function InstallButton() {
+  const { canInstall, install } = usePWAInstall();
 
-  if (!isInstallable && !isIOS) return null;
+  // 🚫 ako Chrome ne daje signal → ništa ne prikazuj
+  if (!canInstall) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50">
-      <div className="bg-black text-white p-4 rounded-2xl shadow-lg flex justify-between items-center">
-        <span>
-          Instaliraj Komšija aplikaciju
-        </span>
-
-        {isInstallable && (
-          <button
-            onClick={install}
-            className="bg-blue-500 px-3 py-1 rounded"
-          >
-            Instaliraj
-          </button>
-        )}
-
-        {isIOS && (
-          <span className="text-sm">
-            Share → Add to Home Screen
-          </span>
-        )}
-      </div>
-    </div>
+    <button
+      onClick={install}
+      className="
+        fixed bottom-4 right-4
+        bg-blue-600 text-white
+        px-4 py-2 rounded-xl
+        shadow-lg
+      "
+    >
+      📲 Install App
+    </button>
   );
 }

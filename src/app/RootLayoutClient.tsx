@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
-// 🔧 NProgress konfiguracija (globalno)
+// 🔧 NProgress konfiguracija
 NProgress.configure({
   minimum: 0.08,
   easing: "ease-out",
@@ -15,18 +15,35 @@ NProgress.configure({
   showSpinner: false,
 });
 
-export default function RootLayoutClient({ children }: { children: ReactNode }) {
+export default function RootLayoutClient({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const pathname = usePathname();
 
+  // 🚀 SERVICE WORKER REGISTRATION
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          console.log("✅ SW registered:", reg.scope);
+        })
+        .catch((err) => {
+          console.error("❌ SW registration failed:", err);
+        });
+    }
+  }, []);
+
+  // ⏳ NProgress routing effect
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
-    // ⏳ delay da se ne prikazuje za ultra brze rute
     const startDelay = setTimeout(() => {
       NProgress.start();
     }, 150);
 
-    // ⏱ minimalno trajanje + smooth finish
     timeout = setTimeout(() => {
       NProgress.done();
     }, 500);
@@ -35,7 +52,6 @@ export default function RootLayoutClient({ children }: { children: ReactNode }) 
       clearTimeout(startDelay);
       clearTimeout(timeout);
 
-      // mali delay za lep završetak
       setTimeout(() => {
         NProgress.done();
       }, 100);
