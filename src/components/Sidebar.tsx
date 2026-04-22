@@ -273,9 +273,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             </div>
           ))}
         </nav>
-        <div className="p-3 border-t border-slate-700">
-          <InstallBanner />
-        </div>
       </aside>
     </>
   );
