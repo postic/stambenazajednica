@@ -57,7 +57,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
     deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
 
-    console.log("PWA install result:", choice);
+    //console.log("PWA install result:", choice);
 
     setDeferredPrompt(null);
   };
@@ -106,17 +106,17 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
           </button>
         )}
 
-        {/* Dark mode */}
-        <button
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          onClick={() => setDarkMode(!darkMode)}
-          title="Toggle Dark Mode"
-        >
-          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+{/*
+  <button
+    className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+    onClick={() => setDarkMode(!darkMode)}
+    title="Toggle Dark Mode"
+  >
+    {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+  </button>
 
-        {/* Notifications */}
-        <NotificationsPanel />
+  <NotificationsPanel />
+*/}
 
         {/* Loading */}
         {loading && (
