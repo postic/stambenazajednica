@@ -160,7 +160,6 @@ export default function LoginPage() {
                   className="h-11 text-sm text-center"
                   required
                   maxLength={4}
-                  placeholder="Unesite PIN"
                 />
               </div>
             )}
@@ -179,7 +178,6 @@ export default function LoginPage() {
                     type="text"
                     className="h-11 text-sm text-center"
                     required
-                    placeholder="Unesite korisničko ime ili email"
                   />
                 </div>
 
@@ -194,7 +192,6 @@ export default function LoginPage() {
                     type="password"
                     className="h-11 text-sm text-center"
                     required
-                    placeholder="Unesite lozinku"
                   />
                 </div>
               </>
