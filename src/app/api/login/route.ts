@@ -3,33 +3,31 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const { role } = body;
 
     let res: Response;
     let data: any;
 
     // 🏢 =========================
-    // STANAR LOGIN (PIN)
+    // STANAR LOGIN (ONLY PIN)
     // =========================
     if (role === "stanar") {
       res = await fetch(
-        `https://dev-stambena-zajednica.pantheonsite.io/api/stan-login`,
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/stan-login`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            identifier: body.identifier,
-            pin: body.pin,
+            pin: body.pin, // ✅ samo PIN
           }),
         }
       );
     }
 
     // 🏛 =========================
-    // UPRAVNIK LOGIN (OAuth)
+    // UPRAVNIK LOGIN (OAuth - NE MENJA SE)
     // =========================
     else if (role === "upravnik") {
       const oauthBody = new URLSearchParams({
@@ -41,7 +39,7 @@ export async function POST(req: NextRequest) {
       });
 
       res = await fetch(
-        `https://dev-stambena-zajednica.pantheonsite.io/oauth/token`,
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/oauth/token`,
         {
           method: "POST",
           headers: {
@@ -61,10 +59,6 @@ export async function POST(req: NextRequest) {
     }
 
     const text = await res.text();
-
-    //console.log("ROLE:", role);
-    //console.log("STATUS:", res.status);
-    //console.log("RESPONSE:", text);
 
     if (!res.ok) {
       return NextResponse.json(
@@ -97,8 +91,6 @@ export async function POST(req: NextRequest) {
       user: data.user ?? null,
       role,
     });
-
-    console.log("RESPONSE:", text);
 
     response.cookies.set("access_token", data.access_token, {
       httpOnly: true,

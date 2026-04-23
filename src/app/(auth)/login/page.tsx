@@ -26,7 +26,10 @@ export default function LoginPage() {
 
   const [role, setRole] = useState<Role>("stanar");
 
+  // STANAR
   const [stanarPin, setStanarPin] = useState("");
+
+  // UPRAVNIK (OSTAJE KAO PRE)
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
@@ -48,7 +51,9 @@ export default function LoginPage() {
   const isDisabled =
     loading ||
     isLocked ||
-    (role === "stanar" ? !stanarPin : !identifier || !password);
+    (role === "stanar"
+      ? !stanarPin
+      : !identifier || !password);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -97,7 +102,6 @@ export default function LoginPage() {
 
       <Card className="w-[340px] max-w-[92vw] shadow-xl rounded-2xl border-0 bg-white">
 
-        {/* HEADER */}
         <CardHeader className="text-center pt-6 pb-3">
 
           <CardTitle className="text-2xl font-bold text-gray-800">
@@ -108,7 +112,6 @@ export default function LoginPage() {
             Izaberite tip pristupa
           </CardDescription>
 
-          {/* SWITCH */}
           <div className="flex bg-gray-100 rounded-xl p-1 mt-4">
 
             <button
@@ -140,7 +143,6 @@ export default function LoginPage() {
           </div>
         </CardHeader>
 
-        {/* FORM */}
         <CardContent className="px-5 pb-7">
 
           <form className="flex flex-col gap-3 text-center" onSubmit={handleLogin}>
@@ -164,10 +166,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* UPRAVNIK */}
+            {/* UPRAVNIK (NE MENJA SE) */}
             {role === "upravnik" && (
               <>
                 <div className="space-y-2 text-center">
+
                   <Label className="text-gray-600 text-sm block">
                     Korisničko ime ili email <span className="text-red-500">*</span>
                   </Label>
@@ -182,6 +185,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-2 text-center">
+
                   <Label className="text-gray-600 text-sm block">
                     Lozinka <span className="text-red-500">*</span>
                   </Label>
@@ -197,7 +201,6 @@ export default function LoginPage() {
               </>
             )}
 
-            {/* LOCK */}
             {isLocked && (
               <div className="flex items-center justify-center gap-2 text-xs text-gray-600 bg-gray-100 p-2 rounded-lg">
                 <ShieldAlert size={16} />
@@ -205,7 +208,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* BUTTON */}
             <Button
               type="submit"
               disabled={isDisabled}
