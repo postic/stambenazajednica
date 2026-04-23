@@ -150,7 +150,7 @@ export default function LoginPage() {
               <div className="space-y-2 text-center">
 
                 <Label className="text-gray-600 text-sm block">
-                  PIN
+                  PIN <span className="text-red-500">*</span>
                 </Label>
 
                 <Input
@@ -158,6 +158,9 @@ export default function LoginPage() {
                   onChange={(e) => setStanarPin(e.target.value)}
                   type="password"
                   className="h-11 text-sm text-center"
+                  required
+                  maxLength={4}
+                  placeholder="Unesite PIN"
                 />
               </div>
             )}
@@ -167,7 +170,7 @@ export default function LoginPage() {
               <>
                 <div className="space-y-2 text-center">
                   <Label className="text-gray-600 text-sm block">
-                    Korisničko ime ili email
+                    Korisničko ime ili email <span className="text-red-500">*</span>
                   </Label>
 
                   <Input
@@ -175,12 +178,14 @@ export default function LoginPage() {
                     onChange={(e) => setIdentifier(e.target.value)}
                     type="text"
                     className="h-11 text-sm text-center"
+                    required
+                    placeholder="Unesite korisničko ime ili email"
                   />
                 </div>
 
                 <div className="space-y-2 text-center">
                   <Label className="text-gray-600 text-sm block">
-                    Lozinka
+                    Lozinka <span className="text-red-500">*</span>
                   </Label>
 
                   <Input
@@ -188,6 +193,8 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
                     className="h-11 text-sm text-center"
+                    required
+                    placeholder="Unesite lozinku"
                   />
                 </div>
               </>
