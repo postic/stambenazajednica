@@ -79,12 +79,11 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           title: "Dokumenti",
           icon: FileText,
           submenu: [
-            { title: "Plaćanja", href: "/dokumenti/placanja" },
+            { title: "Finansijski izveštaji", href: "/dokumenti/finansijski-izvestaji" },
             { title: "Zapisnici", href: "/dokumenti/zapisnici" },
             { title: "Odluke", href: "/dokumenti/odluke" },
             { title: "Ponude", href: "/dokumenti/ponude" },
             { title: "Ugovori", href: "/dokumenti/ugovori" },
-            { title: "Finansijski izveštaji", href: "/dokumenti/finansijski-izvestaji" },
             { title: "Ostalo", href: "/dokumenti/ostalo" },
           ],
         },
