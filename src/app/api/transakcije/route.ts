@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/transakcija`
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/transakcija?sort=-created`
     );
 
     if (!response.ok) {
@@ -37,9 +37,9 @@ export async function GET(req: Request) {
     const total = (json.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
-    const currentPageData = (json.data || []).slice(offset, offset + limit);
+    const slice = (json.data || []).slice(offset, offset + limit);
 
-    const transakcije: Transakcija[] = currentPageData.map((item: any) => {
+    const transakcije: Transakcija[] = slice.map((item: any) => {
       return {
         id: item.id,
         title: item.attributes.title,

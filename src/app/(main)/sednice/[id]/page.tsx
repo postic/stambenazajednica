@@ -1,121 +1,121 @@
 // src/app/(main)/sednice/[id]/page.tsx
+
 import { notFound } from "next/navigation";
 import { isEmptyHtml } from "@/lib/text";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
-import type { Sednica, Dokument } from "@/types/sednica";
-import { getFileIcon } from "@/features/dokumenti/utils";
+
+import {
+  FileText,
+  Image,
+  File,
+  FileSpreadsheet,
+  FileType,
+} from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
-  process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888/web";
+  process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
+  "http://localhost:8888";
 
-// 🔹 Mapiranje included entiteta
-function indexIncluded(included: any[] = []) {
-  const map = new Map();
-  for (const item of included) {
-    map.set(`${item.type}:${item.id}`, item);
-  }
-  return map;
-}
+type FileItem = {
+  url: string;
+  filename?: string;
+  mime?: string;
+  description?: string;
+  size?: number;
+};
 
-// 🔹 Generisanje URL-a fajla
-function getDrupalFileUrl(fileEntity: any) {
-  if (!fileEntity) return "";
+// -------------------- FILE SIZE --------------------
+const formatFileSize = (bytes?: number) => {
+  if (!bytes) return "";
 
-  const rawUrl = fileEntity.attributes?.uri?.url;
-  const filename = fileEntity.attributes?.filename;
-  const base = NEXT_PUBLIC_DRUPAL_BASE_URL.replace(/\/web$/, "");
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(0)} KB`;
 
-  if (rawUrl) {
-    const url = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
-    return `${base}${url}`;
-  }
+  const mb = kb / 1024;
+  return `${mb.toFixed(1)} MB`;
+};
 
-  if (filename) {
-    return `${base}/sites/default/files/${filename}`;
-  }
-
-  return "";
-}
-
-// 🔹 Fetch sednice
-async function getSednica(id: string): Promise<Sednica | null> {
+// -------------------- FETCH --------------------
+async function getSednica(id: string) {
   try {
-    const endpoint =
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}` +
-      `?include=field_dokumenti_sednice,field_dokumenti_sednice.field_dokument_file`;
-
-    const res = await fetch(endpoint, {
-      headers: { Accept: "application/vnd.api+json" },
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/sednica/${id}?include=field_dokumenti_sednice`,
+      { cache: "no-store" }
+    );
 
     if (!res.ok) return null;
 
-    const data = await res.json();
-    const item = data.data;
+    const json = await res.json();
+    const item = json.data;
     if (!item) return null;
 
-    const includedMap = indexIncluded(data.included);
+    const included = json.included || [];
 
-    const dokumenti: Dokument[] = [];
+    const getFile = (fileId: string) => {
+      const file = included.find((i: any) => i.id === fileId);
+      if (!file) return null;
 
-    const dokumentiRelRaw =
-      item.relationships?.field_dokumenti_sednice?.data;
+      const url = file.attributes?.uri?.url
+        ? `${NEXT_PUBLIC_DRUPAL_BASE_URL}${file.attributes.uri.url}`
+        : null;
 
-    const dokumentiRel = Array.isArray(dokumentiRelRaw)
-      ? dokumentiRelRaw
-      : dokumentiRelRaw
-      ? [dokumentiRelRaw]
+      if (!url) return null;
+
+      return {
+        url,
+        filename: file.attributes?.filename,
+        mime: file.attributes?.filemime,
+        size: file.attributes?.filesize ?? 0,
+      };
+    };
+
+    const fileRel =
+      item.relationships?.field_dokumenti_sednice?.data || [];
+
+    const files: FileItem[] = Array.isArray(fileRel)
+      ? fileRel
+          .map((f: any) => {
+            const base = getFile(f.id);
+            if (!base) return null;
+
+            return {
+              ...base,
+              description: f.meta?.description || base.filename,
+            };
+          })
+          .filter(Boolean)
       : [];
-
-    for (const rel of dokumentiRel) {
-      const media = includedMap.get(`${rel.type}:${rel.id}`);
-      if (!media) continue;
-
-      const fileRel = media.relationships?.field_dokument_file?.data;
-      const files = Array.isArray(fileRel) ? fileRel : [fileRel];
-
-      for (const f of files) {
-        if (!f) continue;
-
-        const fileEntity = includedMap.get(`${f.type}:${f.id}`);
-        if (!fileEntity) continue;
-
-        const fileUrl = getDrupalFileUrl(fileEntity);
-        const fileMime = fileEntity.attributes?.filemime;
-
-        dokumenti.push({
-          id: f.id,
-          title:
-            media.attributes?.title ||
-            media.attributes?.name ||
-            "Dokument",
-          url: fileUrl,
-          mimeType: fileMime,
-        });
-      }
-    }
 
     return {
       id: item.id,
-      title: item.attributes.title,
-      body: item.attributes.body?.value ?? "",
-      created: item.attributes.created,
-      status: item.attributes.field_status_sednice,
-      dokumenti,
+      title: item.attributes?.title ?? "",
+      body: item.attributes?.body?.value ?? "",
+      created: item.attributes?.created ?? "",
+      status: item.attributes?.field_status_sednice,
+      files,
     };
-  } catch (error) {
-    console.error("Fetch error:", error);
+  } catch (e) {
+    console.error(e);
     return null;
   }
 }
 
-// 🔥 PAGE
+// -------------------- ICON --------------------
+function getIcon(mime: string) {
+  if (mime.includes("pdf")) return FileText;
+  if (mime.includes("word")) return FileType;
+  if (mime.includes("excel") || mime.includes("spreadsheet"))
+    return FileSpreadsheet;
+  if (mime.startsWith("image/")) return Image;
+  return File;
+}
+
+// -------------------- PAGE --------------------
 export default async function SednicaPage({ params }: PageProps) {
   const { id } = await params;
   if (!id) notFound();
@@ -123,14 +123,11 @@ export default async function SednicaPage({ params }: PageProps) {
   const sednica = await getSednica(id);
   if (!sednica) notFound();
 
-  const docs = sednica.dokumenti || [];
-  const pdfDoc = docs.find((d) => d.mimeType?.includes("pdf"));
-
   return (
     <div className="max-w-4xl">
       <BackButton />
 
-      {/* NASLOV */}
+      {/* HEADER */}
       <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
         {sednica.title}
         {sednica.status && (
@@ -138,8 +135,7 @@ export default async function SednicaPage({ params }: PageProps) {
         )}
       </h1>
 
-      {/* DATUM */}
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-sm text-gray-500">
         {new Date(sednica.created).toLocaleDateString("sr-RS", {
           day: "numeric",
           month: "long",
@@ -147,51 +143,67 @@ export default async function SednicaPage({ params }: PageProps) {
         })}
       </p>
 
-      {/* OPIS */}
+      <div className="border-t my-8" />
+
+      {/* BODY */}
       {!isEmptyHtml(sednica.body) && (
         <div
-          className="prose max-w-none bg-white p-5 rounded-2xl border mb-6"
+          className="prose prose-sm max-w-none text-gray-700"
           dangerouslySetInnerHTML={{ __html: sednica.body }}
         />
       )}
 
-      {/* 📎 DOKUMENTI */}
-      {docs.length > 0 && (
-        <div className="bg-white p-5 rounded-2xl border space-y-4">
-          {docs.map((doc) => (
-            <div
-              key={doc.id}
-              className="flex items-center gap-3 border rounded-xl p-4 hover:bg-gray-50 transition"
-            >
-              <span className="text-xl">
-                {getFileIcon(doc.mimeType)}
-              </span>
+      {/* FILES */}
+      {sednica.files && sednica.files.length > 0 && (
+        <>
+          <div className="border-t my-8" />
 
-              <div className="flex-1">
-                <div className="font-medium">{doc.title}</div>
-              </div>
+          <ul>
+            {sednica.files.map((file, i) => {
+              const mime = file.mime || "";
+              const Icon = getIcon(mime);
+              const size = formatFileSize(file.size);
 
-              <a
-                href={doc.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Otvori
-              </a>
-            </div>
-          ))}
+              const type = (() => {
+                if (mime.includes("pdf")) return "PDF";
+                if (mime.includes("word")) return "DOC";
+                if (
+                  mime.includes("excel") ||
+                  mime.includes("spreadsheet")
+                )
+                  return "XLS";
+                if (mime.startsWith("image/")) return "IMG";
+                return "FILE";
+              })();
 
-          {/* 📄 PDF PREVIEW */}
-          {pdfDoc && (
-            <div className="mt-4 border rounded-xl overflow-hidden">
-              <iframe
-                src={pdfDoc.url}
-                className="w-full h-[600px]"
-              />
-            </div>
-          )}
-        </div>
+              return (
+                <li
+                  key={i}
+                  className="flex items-center justify-between py-2 border-b border-slate-100 last:border-b-0"
+                >
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 min-w-0 text-slate-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Icon size={16} className="text-slate-400 shrink-0" />
+
+                    <span className="truncate text-sm">
+                      {file.description || file.filename || "Fajl"}
+                    </span>
+                  </a>
+
+                  <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0 ml-3">
+                    <span>{type}</span>
+                    {size && <span>•</span>}
+                    {size && <span>{size}</span>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );

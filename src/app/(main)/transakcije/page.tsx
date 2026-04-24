@@ -19,7 +19,7 @@ export default function TransakcijePage() {
       try {
         setLoading(true);
 
-        const res = await fetch(`/api/transakcije?page=${page}&limit=10`);
+        const res = await fetch(`/api/transakcije?sort=-created&page=${page}&limit=10`);
         const json = await res.json();
 
         setTransakcije(json.data || []);
