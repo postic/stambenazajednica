@@ -1,103 +1,162 @@
 // src/app/(main)/dokumenti/[tip]/[id]/page.tsx
+
 import { notFound } from "next/navigation";
-import { isEmptyHtml } from "@/lib/text";
 import { getDokument } from "@/lib/drupal/getDokument";
+import { isEmptyHtml } from "@/lib/text";
 import StatusBadge from "@/components/StatusBadge";
 import BackButton from "@/components/BackButton";
-import { getFileIcon } from "@/features/dokumenti/utils";
 
+import {
+  FileText,
+  File,
+  FileSpreadsheet,
+  FileType,
+  Image,
+} from "lucide-react";
+
+// ---------------- ICON SYSTEM (SAME AS TRANSAKCIJE) ----------------
+function getFileIcon(mime?: string) {
+  if (!mime) return File;
+
+  if (mime.includes("pdf")) return FileText;
+  if (mime.includes("word")) return FileType;
+  if (mime.includes("excel") || mime.includes("spreadsheet"))
+    return FileSpreadsheet;
+  if (mime.startsWith("image/")) return Image;
+
+  return File;
+}
+
+// ---------------- PAGE ----------------
 export default async function Page({
   params,
 }: {
   params: Promise<{ tip: string; id: string }>;
 }) {
-  const { tip, id } = await params;
+  const { id } = await params;
 
   const dokument = await getDokument(id);
-  if (!dokument) return notFound();
+  if (!dokument) notFound();
 
   const createdDate = new Date(dokument.date?.value || dokument.date);
 
   const formattedDate = isNaN(createdDate.getTime())
     ? "Nepoznat"
-    : createdDate.toLocaleDateString("sr-RS");
+    : createdDate.toLocaleDateString("sr-RS", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
 
   const files = Array.isArray(dokument.files) ? dokument.files : [];
 
-  const firstFile = files[0];
-  const isPdf = firstFile?.mime?.includes("pdf");
-
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl text-gray-800">
+
       {/* BACK */}
       <BackButton />
 
-      {/* TITLE */}
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
-        {dokument.title}
-        {dokument.status && <StatusBadge status={dokument.status} />}
-      </h1>
+      {/* HEADER */}
+      <div className="mb-6">
 
-      {/* DATE */}
-      <p className="text-gray-500 text-sm mb-6">
-        {new Date(dokument.date).toLocaleDateString("sr-RS", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
-      </p>
+        <div className="flex items-start justify-between gap-4">
+
+          {/* LEFT */}
+          <div>
+            <h1 className="text-lg font-semibold text-slate-800">
+              {dokument.title}
+            </h1>
+
+            <p className="text-xs text-slate-500 mt-1">
+              {formattedDate}
+            </p>
+          </div>
+
+          {/* RIGHT (STATUS) */}
+          <div className="flex items-center gap-2">
+            {dokument.status && (
+              <StatusBadge status={dokument.status} />
+            )}
+          </div>
+
+        </div>
+
+        {/* DIVIDER */}
+        <div className="border-t border-slate-200 mt-4" />
+
+</div>
 
       {/* FILES */}
       {files.length > 0 ? (
-        <div className="mt-6 bg-white p-5 mb-6 rounded-2xl border space-y-4">
-          {files.map((f: any) => (
-            <div
-              key={f.id}
-              className="flex items-center gap-3 border rounded-xl p-4 hover:bg-gray-50 transition"
-            >
-              <span className="text-xl">{getFileIcon(f.mime)}</span>
+        <div className="border border-slate-200">
 
-              <div className="flex-1">
-                {/* 👇 KLJUČNA IZMENA */}
-                <div className="font-medium">
-                  {f.description || f.filename}
-                </div>
+          {/* HEADER BAR */}
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 text-sm font-medium">
+            Dokumenti
+          </div>
 
-                <div className="text-sm text-gray-500">{f.mime}</div>
-              </div>
+          <ul>
+            {files.map((file: any, i: number) => {
+              const mime = file.mimeType || file.mime || "";
+              const Icon = getFileIcon(mime);
 
-              <a
-                href={f.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Otvori
-              </a>
-            </div>
-          ))}
+              const type = mime.includes("pdf")
+                ? "PDF"
+                : mime.includes("word")
+                ? "DOC"
+                : mime.includes("excel") ||
+                  mime.includes("spreadsheet")
+                ? "XLS"
+                : mime.startsWith("image/")
+                ? "IMG"
+                : "FILE";
 
-          {/* 📄 AUTO PDF PREVIEW */}
-          {files.length === 1 && isPdf && (
-            <div className="mt-4 border rounded-xl overflow-hidden">
-              <iframe
-                src={firstFile.url}
-                className="w-full h-[600px]"
-              />
-            </div>
-          )}
+              return (
+                <li
+                  key={i}
+                  className="flex items-center justify-between px-4 py-3 border-b border-slate-100 last:border-b-0"
+                >
+
+                  {/* FILE LINK */}
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-slate-700 hover:text-blue-600 min-w-0"
+                  >
+                    <Icon size={16} className="text-slate-400 shrink-0" />
+
+                    <span className="truncate">
+                      {file.description ||
+                        file.filename ||
+                        "Dokument"}
+                    </span>
+                  </a>
+
+                  {/* TYPE */}
+                  <div className="text-xs text-slate-400 shrink-0 ml-3">
+                    {type}
+                  </div>
+
+                </li>
+              );
+            })}
+          </ul>
         </div>
       ) : (
-        <p>Nema fajlova.</p>
+        <p className="text-gray-500">Nema dokumenata.</p>
       )}
 
-      {/* OPIS */}
+      {/* BODY */}
       {!isEmptyHtml(dokument.body) && (
-        <div
-          className="prose max-w-none bg-white p-5 rounded-2xl border"
-          dangerouslySetInnerHTML={{ __html: dokument.body }}
-        />
+        <div className="border border-slate-200 p-4 mt-6">
+          <div
+            className="text-sm text-slate-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: dokument.body }}
+          />
+        </div>
       )}
+
     </div>
   );
 }
