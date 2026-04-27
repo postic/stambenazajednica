@@ -8,7 +8,7 @@ export default function ObavestenjeForm() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("");
+  const [prioritet, setPrioritet] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter(); // Next.js router
@@ -17,7 +17,7 @@ export default function ObavestenjeForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createKvar({ title, description, priority, status });
+      await createKvar({ title, description, prioritet, status });
       toast.success("Kvar je uspešno kreiran!");
       router.push("/kvarovi");
     } catch (err: any) {

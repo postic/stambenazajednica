@@ -5,6 +5,6 @@ export interface Kvar {
   description: string;
   created: string;
   status: string;
-  priority: string;
+  prioritet: string;
   image?: string[];
 }

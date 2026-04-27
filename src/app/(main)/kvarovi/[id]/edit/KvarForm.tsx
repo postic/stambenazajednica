@@ -20,7 +20,7 @@ interface Props {
 export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Props) {
   const [title, setTitle] = useState(kvar.title || "");
   const [description, setDescription] = useState(kvar.description || "");
-  const [priority, setPriority] = useState(kvar.priority || "");
+  const [priority, setPriority] = useState(kvar.prioritet || "");
   const [status, setStatus] = useState(kvar.status || "");
   const [loading, setLoading] = useState(false);
   const router = useRouter(); // Next.js router

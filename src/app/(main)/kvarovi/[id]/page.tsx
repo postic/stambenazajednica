@@ -36,7 +36,7 @@ async function getKvar(id: string): Promise<Kvar | null> {
       description: item.attributes.body?.value ?? "",
       created: item.attributes.created,
       status: item.attributes.field_status_kvara,
-      priority: item.attributes.field_prioritet_kvara,
+      prioritet: item.attributes.field_prioritet_kvara,
       image: images,
     };
   } catch (e) {
@@ -82,7 +82,7 @@ export default async function KvarPage({ params }: PageProps) {
 
           <div className="flex items-center gap-2 flex-wrap justify-end">
             {kvar.status && <StatusBadge status={kvar.status} />}
-            {kvar.priority && <StatusBadge prioritet={kvar.priority} />}
+            {kvar.prioritet && <StatusBadge prioritet={kvar.prioritet} />}
           </div>
         </div>
       </div>

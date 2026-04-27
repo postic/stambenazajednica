@@ -3,11 +3,12 @@ import type {
   TransakcijaWithBalance,
 } from "@/types/transakcija";
 
-
-export function addRunningBalance(
-  transactions: Transakcija[],
+export function addRunningBalance<
+  T extends Transakcija & { created: string }
+>(
+  transactions: T[],
   initialBalance = 0
-): TransakcijaWithBalance[] {
+): (T & { balance: number })[] {
 
   const toTime = (d?: string) => {
     if (!d) return 0;
@@ -15,7 +16,7 @@ export function addRunningBalance(
     return isNaN(t) ? 0 : t;
   };
 
-  // 1. ASC za ispravan balans
+  // 1. ASC za balans
   const sortedAsc = [...transactions].sort(
     (a, b) => toTime(a.created) - toTime(b.created)
   );
@@ -32,9 +33,11 @@ export function addRunningBalance(
       balance -= amount;
     }
 
-    return { ...t, balance };
+    return {
+      ...t, // ✅ KLJUČNO — čuva files i sve ostalo
+      balance,
+    };
   });
 
-  // 2. vrati DESC za UI
   return withBalanceAsc.reverse();
 }

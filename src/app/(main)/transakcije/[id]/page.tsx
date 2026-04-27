@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { isEmptyHtml, formatRSD } from "@/lib/text";
 import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
-import type { TransakcijaWithBalance } from "@/types/transakcija";
+import type { TransakcijaDetail, FileItem } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
 
 import {
@@ -17,14 +17,6 @@ const NEXT_PUBLIC_DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
-type FileItem = {
-  url: string;
-  filename?: string;
-  mime?: string;
-  description?: string;
-  size?: number;
-};
-
 const formatFileSize = (bytes?: number) => {
   if (!bytes) return "";
 
@@ -37,7 +29,7 @@ const formatFileSize = (bytes?: number) => {
 
 async function getTransakcija(
   id: string
-): Promise<TransakcijaWithBalance | null> {
+): Promise<TransakcijaDetail | null> {
   try {
     const res = await fetch(
       `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/transakcija?page[limit]=100&include=field_faktura`,
@@ -70,19 +62,22 @@ async function getTransakcija(
     const raw = (json.data || []).map((item: any) => {
       const fileRel = item.relationships?.field_faktura?.data || [];
 
-      const files: FileItem[] = Array.isArray(fileRel)
-        ? fileRel
-            .map((f: any) => {
-              const base = getFile(f.id);
-              if (!base) return null;
+      const files: FileItem[] = [];
 
-              return {
-                ...base,
-                description: f.meta?.description || base.filename,
-              };
-            })
-            .filter(Boolean)
-        : [];
+      if (Array.isArray(fileRel)) {
+        for (const f of fileRel) {
+          const base = getFile(f.id);
+          if (!base) continue;
+
+          files.push({
+            url: base.url,
+            filename: base.filename,
+            mime: base.mime,
+            size: base.size,
+            description: f.meta?.description || base.filename,
+          });
+        }
+      }
 
       return {
         id: item.id,
@@ -95,7 +90,8 @@ async function getTransakcija(
       };
     });
 
-    const withBalance = addRunningBalance(raw);
+    // 🔥 SIMPLE FIX (CAST)
+    const withBalance = addRunningBalance(raw) as TransakcijaDetail[];
 
     return withBalance.find((t) => t.id === id) ?? null;
   } catch (e) {
@@ -137,7 +133,6 @@ export default async function TransakcijaPage({
             </p>
           </div>
 
-          {/* TIP + IZNOS (FINANCIAL SUMMARY) */}
           <div className="text-right">
             <div className="flex items-center gap-2 justify-end">
               <StatusBadge status={tx.type ?? "unknown"} />
@@ -179,7 +174,7 @@ export default async function TransakcijaPage({
       )}
 
       {/* FILES */}
-      {tx.files && tx.files.length > 0 && (
+      {tx.files.length > 0 && (
         <div className="border border-slate-200">
 
           <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 text-sm font-medium">

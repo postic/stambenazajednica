@@ -8,7 +8,7 @@ export default function KvarForm() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("");
+  const [prioritet, setPrioritet] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter(); // Next.js router
@@ -17,7 +17,7 @@ export default function KvarForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createKvar({ title, description, priority, status });
+      await createKvar({ title, description, prioritet, status });
       toast.success("Kvar je uspešno kreiran!");
       router.push("/kvarovi");
     } catch (err: any) {
@@ -57,9 +57,9 @@ export default function KvarForm() {
       <div>
         <label className="block text-sm text-slate-600 mb-1">Prioritet</label>
         <select
-          value={priority}
+          value={prioritet}
           required
-          onChange={(e) => setPriority(e.target.value)}
+          onChange={(e) => setPrioritet(e.target.value)}
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         >
           <option value="">Izaberi prioritet</option>

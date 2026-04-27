@@ -45,7 +45,7 @@ export async function fetchKvar(id: string): Promise<Kvar> {
     title: data.attributes.title ?? "",
     description: data.attributes.body?.value ?? "",
     status: data.attributes.field_status_kvara ?? "unknown",
-    priority: data.attributes.field_prioritet_kvara ?? "normal",
+    prioritet: data.attributes.field_prioritet_kvara ?? "normal",
 
     body: data.attributes.body?.value ?? "",
     created: data.attributes.created ?? "",
@@ -120,7 +120,7 @@ export async function updateKvar(kvar: Kvar): Promise<boolean> {
               format: "plain_text",
             },
             field_status_kvara: kvar.status,
-            field_prioritet_kvara: kvar.priority,
+            field_prioritet_kvara: kvar.prioritet,
           },
         },
       }),
@@ -137,7 +137,7 @@ export async function createKvar(data: {
   title: string;
   description: string;
   status?: string;
-  priority?: string;
+  prioritet?: string;
 }) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar`,
@@ -158,7 +158,7 @@ export async function createKvar(data: {
               format: "plain_text",
             },
             field_status_kvara: data.status ?? null,
-            field_prioritet_kvara: data.priority ?? null,
+            field_prioritet_kvara: data.prioritet ?? null,
           },
         },
       }),

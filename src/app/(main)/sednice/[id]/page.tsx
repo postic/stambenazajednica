@@ -72,19 +72,23 @@ async function getSednica(id: string) {
     const fileRel =
       item.relationships?.field_dokumenti_sednice?.data || [];
 
-    const files: FileItem[] = Array.isArray(fileRel)
-      ? fileRel
-          .map((f: any) => {
-            const base = getFile(f.id);
-            if (!base) return null;
+    // ✅ SAFE FILE MAPPING (NO null, NO TS issues)
+    const files: FileItem[] = [];
 
-            return {
-              ...base,
-              description: f.meta?.description || base.filename,
-            };
-          })
-          .filter(Boolean)
-      : [];
+    if (Array.isArray(fileRel)) {
+      for (const f of fileRel) {
+        const base = getFile(f.id);
+        if (!base) continue;
+
+        files.push({
+          url: base.url,
+          filename: base.filename,
+          mime: base.mime,
+          size: base.size,
+          description: f.meta?.description || base.filename,
+        });
+      }
+    }
 
     return {
       id: item.id,
@@ -126,7 +130,7 @@ export default async function SednicaPage({ params }: PageProps) {
         <BackButton />
       </div>
 
-      {/* HEADER (KVAR STYLE) */}
+      {/* HEADER */}
       <div className="mb-5">
 
         <div className="flex items-start justify-between gap-4">
@@ -156,7 +160,7 @@ export default async function SednicaPage({ params }: PageProps) {
         <div className="mt-3 border-b border-gray-200"></div>
       </div>
 
-      {/* BODY (SYSTEM PANEL) */}
+      {/* BODY */}
       {!isEmptyHtml(sednica.body) && (
         <div className="border border-gray-300 bg-slate-50 p-4 mb-6">
           <div
@@ -166,8 +170,8 @@ export default async function SednicaPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* FILES (KVAROVI ATTACHMENT STYLE) */}
-      {sednica.files && sednica.files.length > 0 && (
+      {/* FILES */}
+      {sednica.files.length > 0 && (
         <div className="border border-gray-300 bg-white">
 
           <div className="px-4 py-2 border-b border-gray-300 bg-slate-50 text-sm font-medium">
