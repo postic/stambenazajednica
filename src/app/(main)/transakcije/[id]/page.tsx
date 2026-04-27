@@ -117,60 +117,74 @@ export default async function TransakcijaPage({
 
   return (
     <div className="max-w-4xl">
-      <BackButton />
 
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-2 text-slate-700 flex items-center gap-3">
-        {tx.title}
-        <StatusBadge status={tx.type ?? "unknown"} />
-      </h1>
+      {/* HEADER */}
+      <div className="mb-6">
+        <BackButton />
 
-      <p className="text-sm text-gray-500">
-        {new Date(tx.created).toLocaleDateString("sr-RS", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
-      </p>
+        <div className="flex items-start justify-between gap-4 mt-4">
+          <div>
+            <h1 className="text-lg font-semibold text-slate-800">
+              {tx.title}
+            </h1>
 
-      <div className="border-t my-8" />
+            <p className="text-xs text-slate-500 mt-1">
+              {new Date(tx.created).toLocaleDateString("sr-RS", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
 
-      {/* INFO */}
-      <div className="space-y-4 text-sm font-mono">
-        <div className="flex justify-between">
-          <span className="text-gray-500">Tip:</span>
-          <span className="text-gray-800">{tx.type}</span>
+          {/* TIP + IZNOS (FINANCIAL SUMMARY) */}
+          <div className="text-right">
+            <div className="flex items-center gap-2 justify-end">
+              <StatusBadge status={tx.type ?? "unknown"} />
+
+              <div className="text-xl font-semibold tabular-nums text-slate-900">
+                {formatRSD(tx.amount)}
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="flex justify-between">
-          <span className="text-gray-500">Iznos:</span>
-          <span className="text-gray-800 tabular-nums">
+      {/* META */}
+      <div className="border border-slate-200 bg-slate-50 p-4 mb-6">
+        <div className="grid grid-cols-2 gap-y-3 text-sm font-mono">
+          <div className="text-slate-500">Tip</div>
+          <div className="text-slate-800">{tx.type}</div>
+
+          <div className="text-slate-500">Iznos</div>
+          <div className="text-slate-800 tabular-nums">
             {formatRSD(tx.amount)}
-          </span>
-        </div>
+          </div>
 
-        <div className="flex justify-between">
-          <span className="text-gray-500">Stanje:</span>
-          <span className="text-gray-800 tabular-nums">
+          <div className="text-slate-500">Stanje</div>
+          <div className="text-slate-800 tabular-nums">
             {formatRSD(tx.balance ?? 0)}
-          </span>
+          </div>
         </div>
       </div>
 
       {/* BODY */}
-      {!isEmptyHtml(tx.body) && <div className="border-t my-8" />}
-
       {!isEmptyHtml(tx.body) && (
-        <div
-          className="prose prose-sm max-w-none text-gray-700"
-          dangerouslySetInnerHTML={{ __html: tx.body }}
-        />
+        <div className="border border-slate-200 p-4 mb-6">
+          <div
+            className="text-sm text-slate-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: tx.body }}
+          />
+        </div>
       )}
 
       {/* FILES */}
       {tx.files && tx.files.length > 0 && (
-        <>
-          {/* BORDER ABOVE FILES */}
-          <div className="border-t my-8" />
+        <div className="border border-slate-200">
+
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 text-sm font-medium">
+            Dokumenti
+          </div>
 
           <ul>
             {tx.files.map((file, i) => {
@@ -187,37 +201,28 @@ export default async function TransakcijaPage({
                 Icon = FileSpreadsheet;
               else if (mime.startsWith("image/")) Icon = Image;
 
-              const type = (() => {
-                if (mime.includes("pdf")) return "PDF";
-                if (mime.includes("word")) return "DOC";
-                if (mime.includes("excel") || mime.includes("spreadsheet"))
-                  return "XLS";
-                if (mime.startsWith("image/")) return "IMG";
-                return "FILE";
-              })();
-
               const size = formatFileSize(file.size);
 
               return (
                 <li
                   key={i}
-                  className="flex items-center justify-between py-2 border-b border-slate-100 last:border-b-0"
+                  className="flex items-center justify-between px-4 py-3 border-b border-slate-100 last:border-b-0"
                 >
                   <a
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 min-w-0 text-slate-700 hover:text-blue-600 transition-colors"
+                    className="flex items-center gap-2 text-sm text-slate-700 hover:text-blue-600 min-w-0"
                   >
                     <Icon size={16} className="text-slate-400 shrink-0" />
 
-                    <span className="truncate text-sm">
+                    <span className="truncate">
                       {file.description || file.filename || "Fajl"}
                     </span>
                   </a>
 
-                  <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0 ml-3">
-                    <span>{type}</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 shrink-0 ml-3">
+                    <span>{mime.split("/")[1]?.toUpperCase() || "FILE"}</span>
                     {size && <span>•</span>}
                     {size && <span>{size}</span>}
                   </div>
@@ -225,7 +230,7 @@ export default async function TransakcijaPage({
               );
             })}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );

@@ -20,9 +20,6 @@ export default function BalancePill() {
         }
 
         const data = await res.json();
-
-        console.log("BALANCE API RESPONSE:", data);
-
         setBalance(data.balance ?? 0);
       } catch (err) {
         console.error("FETCH ERROR:", err);
@@ -34,7 +31,7 @@ export default function BalancePill() {
 
   if (balance === null) {
     return (
-      <div className="fixed bottom-5 right-5 px-4 py-2 rounded-full bg-gray-300 animate-pulse">
+      <div className="fixed bottom-5 right-5 px-4 py-2 border border-gray-200 text-gray-400 text-sm">
         ...
       </div>
     );
@@ -43,10 +40,21 @@ export default function BalancePill() {
   return (
     <button
       onClick={() => router.push("/transakcije")}
-      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-red-600 text-white shadow-lg"
+      className="
+        fixed bottom-5 right-5 z-50
+        flex items-center gap-2
+        px-4 py-2
+        border border-red-200
+        bg-red-50/70
+        text-red-700 text-sm
+        hover:bg-red-100/70
+        transition-colors
+      "
     >
-      <Wallet className="w-4 h-4" />
-      <span>{balance.toLocaleString("sr-RS")} RSD</span>
+      <Wallet className="w-4 h-4 text-red-600" />
+      <span className="font-medium">
+        {balance.toLocaleString("sr-RS")} RSD
+      </span>
     </button>
   );
 }

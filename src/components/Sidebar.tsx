@@ -15,8 +15,6 @@ import {
   Vote,
   ChevronDown,
   Wallet,
-  CircleEllipsis,
-  Package,
   Grid
 } from "lucide-react";
 
@@ -25,14 +23,12 @@ interface SidebarProps {
   setMobileOpen: (open: boolean) => void;
 }
 
-// Tip za submenu item
 interface SubItem {
   title: string;
   href: string;
   badge?: number;
 }
 
-// Tip za sidebar item
 interface SidebarItem {
   title: string;
   href?: string;
@@ -41,7 +37,6 @@ interface SidebarItem {
   submenu?: SubItem[];
 }
 
-// Tip za sekciju
 interface MenuSection {
   title: string;
   items: SidebarItem[];
@@ -62,14 +57,14 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           title: "Stanari",
           icon: Users,
           submenu: [
-            { title: "Stanovi", href: "/stanovi", /*badge: 2*/ },
-            { title: "Stanari", href: "/stanari", /*badge: 3*/ },
+            { title: "Stanovi", href: "/stanovi" },
+            { title: "Stanari", href: "/stanari" },
           ],
         },
-        { title: "Kvarovi", icon: Wrench, href: "/kvarovi", /*badge: 3*/ },
-        { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja", /*badge: 2*/ },
+        { title: "Kvarovi", icon: Wrench, href: "/kvarovi" },
+        { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja" },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
-        { title: "Ankete", icon: Vote, href: "/ankete", /*badge: 3*/ },
+        { title: "Ankete", icon: Vote, href: "/ankete" },
       ],
     },
     {
@@ -88,28 +83,25 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         },
       ],
     },
-
     {
       title: "OSTALO",
       items: [
         {
           title: "Ostalo",
           icon: Grid,
-          submenu: [
-            { title: "Telefoni", href: "/telefoni" },
-          ],
+          submenu: [{ title: "Telefoni", href: "/telefoni" }],
         },
       ],
     },
-
   ];
 
-  // Automatski otvara meni ako je aktivan URL
   useEffect(() => {
     menuSections.forEach((section) =>
       section.items.forEach((item) => {
         if (item.submenu) {
-          const activeSub = item.submenu.find((sub) => pathname.startsWith(sub.href));
+          const activeSub = item.submenu.find((sub) =>
+            pathname.startsWith(sub.href)
+          );
           if (activeSub) setOpenMenu(item.title);
         }
       })
@@ -117,12 +109,13 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   }, [pathname]);
 
   const itemBase =
-    "group relative w-full flex items-center px-3 py-2 text-[15px] rounded-lg transition hover:bg-slate-700";
-  const iconClass = "w-5 h-5 shrink-0";
+    "group relative w-full flex items-center px-3 py-2 text-[15px] transition";
+
+  const iconClass = "w-5 h-5 shrink-0 text-slate-400";
 
   const Badge = ({ value }: { value?: number }) =>
     value !== undefined ? (
-      <span className="ml-auto text-[11px] bg-slate-600 text-white px-1.5 py-0.5 rounded-full">
+      <span className="ml-auto text-[11px] bg-slate-600 text-white px-1.5 py-0.5">
         {value}
       </span>
     ) : null;
@@ -139,9 +132,9 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
       <aside
         className={`
           fixed md:static top-0 left-0 z-50 h-screen
-          bg-slate-800 text-white border-r border-slate-700/50
+          bg-slate-900 text-white border-r border-slate-800
           flex flex-col
-          transition-all duration-300 ease-in-out
+          transition-all duration-300
           ${collapsed ? "md:w-16" : "md:w-64"}
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
@@ -149,13 +142,13 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         {/* HEADER */}
         <div className={`flex items-center p-4 ${collapsed ? "justify-center" : "justify-between"}`}>
           {!collapsed && (
-            <span className="text-2xl font-bold leading-tight truncate">
+            <span className="text-lg font-semibold truncate text-slate-200">
               {user?.name}
             </span>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 hover:bg-slate-700 rounded-lg transition"
+            className="p-2 hover:bg-slate-800 transition"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -166,17 +159,20 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           {menuSections.map((section) => (
             <div key={section.title} className="mb-4">
               {!collapsed && (
-                <div className="px-4 mb-2 text-xs font-semibold text-slate-400 tracking-wider">
+                <div className="px-4 mb-2 text-xs font-semibold text-slate-500 tracking-wider">
                   {section.title}
                 </div>
               )}
+
               <ul className="space-y-1 px-2">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isOpen = openMenu === item.title;
                   const isParentActive =
                     item.submenu &&
-                    item.submenu.some((sub) => pathname.startsWith(sub.href));
+                    item.submenu.some((sub) =>
+                      pathname.startsWith(sub.href)
+                    );
 
                   return (
                     <li key={item.title}>
@@ -185,8 +181,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                           <button
                             onClick={() => setOpenMenu(isOpen ? null : item.title)}
                             className={`${itemBase} ${
-                              collapsed ? "justify-center" : "justify-between"
-                            } ${isParentActive ? "bg-slate-700" : ""}`}
+                              isParentActive ? "bg-slate-800" : "hover:bg-slate-800"
+                            }`}
                           >
                             <div className="flex items-center gap-3">
                               {Icon && <Icon className={iconClass} />}
@@ -194,32 +190,21 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                             </div>
 
                             {!collapsed && (
-                              <div className="flex items-center justify-center w-5 h-5">
-                                <ChevronDown
-                                  className={`w-4 h-4 transition-transform ${
-                                    isOpen ? "rotate-180" : ""
-                                  }`}
-                                />
-                              </div>
-                            )}
-
-                            {collapsed && (
-                              <span className="absolute left-full ml-2 px-2 py-1 text-xs bg-black text-white rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                                {item.title}
-                              </span>
+                              <ChevronDown
+                                className={`w-4 h-4 ml-auto transition-transform ${
+                                  isOpen ? "rotate-180" : ""
+                                }`}
+                              />
                             )}
                           </button>
 
                           <div
                             className={`overflow-hidden transition-all duration-300 ${
-                              isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                              isOpen ? "max-h-96" : "max-h-0"
                             }`}
                           >
                             {!collapsed && (
-                              <ul
-                                className="mt-1 space-y-1 border-l border-slate-700"
-                                style={{ marginLeft: "24px", paddingLeft: "10px" }}
-                              >
+                              <ul className="mt-1 border-l border-slate-800 ml-6 pl-3 space-y-1">
                                 {item.submenu.map((sub) => (
                                   <li key={sub.href}>
                                     <Link
@@ -228,10 +213,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                                         setMobileOpen(false);
                                         setOpenMenu(null);
                                       }}
-                                      className={`flex items-center px-3 py-2 text-[15px] rounded-lg hover:bg-slate-700 ${
+                                      className={`flex items-center px-3 py-2 text-[14px] ${
                                         pathname === sub.href
-                                          ? "bg-slate-700 border-l-2 border-blue-500"
-                                          : ""
+                                          ? "text-white border-l-2 border-red-500 bg-slate-800"
+                                          : "text-slate-400 hover:text-white hover:bg-slate-800"
                                       }`}
                                     >
                                       <span className="flex-1">{sub.title}</span>
@@ -251,17 +236,14 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                             setOpenMenu(null);
                           }}
                           className={`${itemBase} ${
-                            collapsed ? "justify-center" : "gap-3"
-                          } ${pathname === item.href ? "bg-slate-700" : ""}`}
+                            pathname === item.href
+                              ? "bg-slate-800 text-white"
+                              : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                          }`}
                         >
                           {Icon && <Icon className={iconClass} />}
-                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                          {!collapsed && <span className="ml-3 flex-1">{item.title}</span>}
                           {!collapsed && item.badge !== undefined && <Badge value={item.badge} />}
-                          {collapsed && (
-                            <span className="absolute left-full ml-2 px-2 py-1 text-xs bg-black text-white rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                              {item.title}
-                            </span>
-                          )}
                         </Link>
                       )}
                     </li>

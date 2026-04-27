@@ -37,7 +37,7 @@ export function DataTable<T extends HasId>({
 
   if (!data || data.length === 0) {
     return (
-      <div className="w-full border p-6 text-sm text-gray-500 text-center">
+      <div className="w-full border border-gray-200 p-6 text-sm text-gray-500 text-center">
         {emptyMessage}
       </div>
     );
@@ -58,18 +58,19 @@ export function DataTable<T extends HasId>({
     <div className="w-full">
 
       {/* ================= DESKTOP TABLE ================= */}
-      <div className="hidden md:block w-full overflow-x-auto border rounded-lg">
+      <div className="hidden md:block w-full overflow-x-auto border border-gray-200">
         <table className="w-full text-sm border-collapse">
 
-          <thead className="bg-gray-50">
+          {/* 🔥 ISTAKNUT HEADER */}
+          <thead className="bg-gray-100 sticky top-0 z-10 border-b-2 border-gray-300">
             <tr>
-              {columns.map((col) => (
+              {columns.map((col, index) => (
                 <th
                   key={col.key}
                   className={`
-                    px-4 py-3 font-medium text-gray-700
-                    border border-gray-200
+                    px-4 py-2 font-semibold text-gray-700 text-xs uppercase tracking-wide
                     ${getAlignClass(col.align)}
+                    ${index !== columns.length - 1 ? "border-r border-gray-200" : ""}
                   `}
                 >
                   {col.header}
@@ -82,13 +83,18 @@ export function DataTable<T extends HasId>({
             {data.map((row) => (
               <tr
                 key={row.id}
-                className="hover:bg-gray-50 even:bg-gray-50/40"
+                className="
+                  odd:bg-white
+                  even:bg-gray-50/60
+                  hover:bg-gray-100/70
+                  transition-colors
+                "
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
                     className={`
-                      px-4 py-3 border border-gray-200
+                      px-4 py-3 border-b border-gray-200
                       ${getAlignClass(col.align)}
                     `}
                   >
@@ -102,32 +108,42 @@ export function DataTable<T extends HasId>({
         </table>
       </div>
 
-      {/* ================= MOBILE CARDS ================= */}
-      <div className="md:hidden space-y-3">
+      {/* ================= MOBILE (FLAT LIST) ================= */}
+<div className="md:hidden border border-gray-200">
 
-        {data.map((row) => (
-          <div
-            key={row.id}
-            className="border rounded-lg bg-white shadow-sm p-3"
-          >
-            {columns.map((col) => (
-              <div
-                key={col.key}
-                className="flex justify-between gap-4 py-1 border-b last:border-0"
-              >
-                <span className="text-gray-500 text-sm">
-                  {col.header}
-                </span>
+  {data.map((row, index) => (
+    <div
+      key={row.id}
+      className={`
+        px-3 py-2
+        ${index % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
+      `}
+    >
 
-                <span className={`text-sm font-medium ${getAlignClass(col.align)}`}>
-                  {col.render(row)}
-                </span>
-              </div>
-            ))}
-          </div>
-        ))}
+      {columns.map((col, colIndex) => (
+        <div
+          key={col.key}
+          className={`
+            flex justify-between items-start gap-4 py-2
+            ${colIndex !== columns.length - 1 ? "border-b border-gray-200" : ""}
+          `}
+        >
+          {/* LABEL */}
+          <span className="text-gray-700 text-xs font-medium uppercase tracking-wide">
+            {col.header}
+          </span>
 
-      </div>
+          {/* VALUE */}
+          <span className={`text-sm text-gray-900 ${getAlignClass(col.align)}`}>
+            {col.render(row)}
+          </span>
+        </div>
+      ))}
+
+    </div>
+  ))}
+
+</div>
 
     </div>
   );

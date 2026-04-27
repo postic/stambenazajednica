@@ -20,7 +20,7 @@ export default function ImageGridLightbox({ images }: Props) {
         {images.map((img, idx) => (
           <div
             key={idx}
-            className="w-full h-40 rounded-xl overflow-hidden cursor-pointer"
+            className="w-full h-40 overflow-hidden cursor-pointer"
             onClick={() => {
               setPhotoIndex(idx);
               setOpen(true);

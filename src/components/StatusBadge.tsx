@@ -10,20 +10,16 @@ type Status =
   | "zakazana"
   | "otkazana"
   | "odrzana"
-  // dokumenti
   | "active"
   | "pending"
   | "accepted"
   | "rejected"
   | "aktivan"
   | "pasivan"
-  // anketa
   | "otvorena_anketa"
   | "zatvorena_anketa"
-  // transakcija
   | "uplata"
   | "isplata"
-  // stan
   | "vlasnik"
   | "stanar"
   | "podstanar"
@@ -37,35 +33,43 @@ interface StatusBadgeProps {
   prioritet?: string | { name: string; value: string };
 }
 
+/**
+ * ENTERPRISE CLEAN STYLE SYSTEM
+ * - flat background (no strong saturation)
+ * - subtle border
+ * - muted text tones
+ */
+
 const statusStyles: Record<Status, string> = {
-  prijavljen: "bg-yellow-100 text-yellow-800",
-  u_obradi: "bg-blue-100 text-blue-800",
-  na_cekanju: "bg-white text-gray-800 border border-gray-200",
-  resen: "bg-green-100 text-green-800",
-  odbijen: "bg-red-100 text-red-800",
-  zatvoren: "bg-purple-100 text-purple-800",
-  zakazana: "bg-indigo-100 text-indigo-800",
-  otkazana: "bg-red-200 text-red-900",
-  odrzana: "bg-green-200 text-green-900",
-  // dokumenti
-  active: "bg-blue-100 text-blue-800",
-  pending: "bg-yellow-100 text-yellow-800",
-  accepted: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-  pasivan: "bg-red-200 text-red-900",
-  aktivan: "bg-green-200 text-green-900",
-  archived: "bg-gray-100 text-gray-700",
-  // anketa
-  otvorena_anketa: "bg-green-100 text-green-800",
-  zatvorena_anketa: "bg-red-200 text-red-900",
-  // transakcija
-  uplata: "bg-green-100 text-green-800",
-  isplata: "bg-red-200 text-red-900",
-  // stan
-  clan_domacinstva: "bg-indigo-100 text-indigo-800",
-  podstanar: "bg-yellow-200 text-yellow-900",
-  stanar: "bg-indigo-200 text-indigo-900",
-  vlasnik: "bg-green-200 text-green-900",
+  prijavljen: "bg-yellow-50 text-yellow-800 border-yellow-200",
+  u_obradi: "bg-blue-50 text-blue-800 border-blue-200",
+  na_cekanju: "bg-gray-50 text-gray-700 border-gray-200",
+  resen: "bg-green-50 text-green-800 border-green-200",
+  odbijen: "bg-red-50 text-red-800 border-red-200",
+  zatvoren: "bg-purple-50 text-purple-800 border-purple-200",
+  zakazana: "bg-indigo-50 text-indigo-800 border-indigo-200",
+  otkazana: "bg-red-50 text-red-700 border-red-200",
+  odrzana: "bg-green-50 text-green-700 border-green-200",
+
+  active: "bg-blue-50 text-blue-800 border-blue-200",
+  pending: "bg-yellow-50 text-yellow-800 border-yellow-200",
+  accepted: "bg-green-50 text-green-800 border-green-200",
+  rejected: "bg-red-50 text-red-800 border-red-200",
+
+  aktivan: "bg-green-50 text-green-800 border-green-200",
+  pasivan: "bg-gray-50 text-gray-700 border-gray-200",
+  archived: "bg-gray-50 text-gray-500 border-gray-200",
+
+  otvorena_anketa: "bg-green-50 text-green-800 border-green-200",
+  zatvorena_anketa: "bg-gray-50 text-gray-700 border-gray-200",
+
+  uplata: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  isplata: "bg-rose-50 text-rose-800 border-rose-200",
+
+  vlasnik: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  stanar: "bg-blue-50 text-blue-800 border-blue-200",
+  podstanar: "bg-amber-50 text-amber-800 border-amber-200",
+  clan_domacinstva: "bg-indigo-50 text-indigo-800 border-indigo-200",
 };
 
 const statusLabels: Record<Status, string> = {
@@ -78,32 +82,33 @@ const statusLabels: Record<Status, string> = {
   zakazana: "zakazana",
   otkazana: "otkazana",
   odrzana: "održana",
-  // dokumenti
+
   active: "aktivno",
   pending: "na razmatranju",
   accepted: "prihvaćeno",
   rejected: "odbijeno",
-  archived: "arhivirano",
+
   aktivan: "aktivan",
   pasivan: "pasivan",
-  // stan
+  archived: "arhivirano",
+
+  otvorena_anketa: "otvorena",
+  zatvorena_anketa: "zatvorena",
+
+  uplata: "uplata",
+  isplata: "isplata",
+
   vlasnik: "vlasnik",
   stanar: "stanar",
   podstanar: "podstanar",
   clan_domacinstva: "član domaćinstva",
-  // anketa
-  otvorena_anketa: "otvorena",
-  zatvorena_anketa: "zatvorena",
-  // transakcija
-  uplata: "uplata",
-  isplata: "isplata",
 };
 
 const prioritetStyles: Record<Prioritet, string> = {
-  nizak: "bg-blue-100 text-gray-700",
-  srednji: "bg-blue-100 text-blue-700",
-  visok: "bg-orange-100 text-orange-700",
-  hitno: "bg-red-600 text-white",
+  nizak: "bg-blue-50 text-blue-700 border-blue-200",
+  srednji: "bg-slate-50 text-slate-700 border-slate-200",
+  visok: "bg-orange-50 text-orange-700 border-orange-200",
+  hitno: "bg-red-50 text-red-700 border-red-200",
 };
 
 const prioritetLabels: Record<Prioritet, string> = {
@@ -125,9 +130,7 @@ function normalizeStatus(status?: string): Status | undefined {
 function normalizePrioritet(p?: string): Prioritet | undefined {
   if (!p) return undefined;
 
-  return p
-    .toLowerCase()
-    .replace(/[^\w]/g, "") as Prioritet;
+  return p.toLowerCase().replace(/[^\w]/g, "") as Prioritet;
 }
 
 export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
@@ -142,7 +145,7 @@ export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
 
   const style = normalizedStatus
     ? statusStyles[normalizedStatus]
-    : "bg-gray-100 text-gray-800";
+    : "bg-gray-50 text-gray-700 border-gray-200";
 
   const label = normalizedStatus
     ? statusLabels[normalizedStatus]
@@ -166,7 +169,7 @@ export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
       {/* STATUS */}
       {normalizedStatus && (
         <span
-          className={`inline-block lowercase px-3 py-1 rounded-full text-xs font-medium ${style}`}
+          className={`inline-block px-2 py-1 text-xs font-medium border ${style}`}
           title={label}
         >
           {label}
@@ -176,7 +179,7 @@ export default function StatusBadge({ status, prioritet }: StatusBadgeProps) {
       {/* PRIORITET */}
       {normalizedPrioritet && pStyle && !isSednica && (
         <span
-          className={`inline-block lowercase px-3 py-1 rounded-full text-xs font-medium ${pStyle}`}
+          className={`inline-block px-2 py-1 text-xs font-medium border ${pStyle}`}
           title={pLabel}
         >
           {pLabel}

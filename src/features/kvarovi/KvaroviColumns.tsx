@@ -30,7 +30,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "prioritet",
     header: "Prioritet",
-    render: (kvar) => <StatusBadge prioritet={kvar.priority} />,
+    render: (kvar) => <StatusBadge prioritet={kvar.prioritet} />,
   },
   {
     key: "status",
