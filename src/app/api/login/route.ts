@@ -60,6 +60,8 @@ export async function POST(req: NextRequest) {
 
     const text = await res.text();
 
+    console.error('ERROR',text);
+
     if (!res.ok) {
       return NextResponse.json(
         {
