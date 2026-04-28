@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
 
     const ankete: Anketa[] = json.data.map((node: any) => ({
       id: node.id, // UUID
-      title: node.attributes.field_anketa_pitanje || "Bez pitanja",
+      title: node.attributes.title,
+      //title: node.attributes.field_anketa_pitanje || "Bez pitanja",
       body: node.attributes.body?.value || "",
       created: node.attributes.created,
       status: node.attributes.field_status_ankete || undefined,

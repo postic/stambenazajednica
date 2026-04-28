@@ -15,6 +15,13 @@ export const telefoniColumns: Column<Telefon>[] = [
     ),
   },
   {
+    key: "telefon",
+    header: "Telefon",
+    render: (telefon) => (
+      <span>{telefon.phone ?? "-"}</span>
+    )
+  },
+  {
     key: "actions",
     header: "Akcije",
     width: "90px",

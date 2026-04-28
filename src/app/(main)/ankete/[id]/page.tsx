@@ -129,6 +129,16 @@ export default async function AnketeDetailPage({
         </h2>
       </div>
 
+      {/* DESCRIPTION */}
+      {!isEmptyHtml(anketa.body) && (
+        <div className="border border-gray-300 bg-white p-4 mb-6">
+          <div
+            className="text-sm text-gray-700"
+            dangerouslySetInnerHTML={{ __html: anketa.body }}
+          />
+        </div>
+      )}
+
       {/* VOTING BLOCK (CORE SYSTEM BOX) */}
       <div className="border border-gray-300 bg-white p-4 mb-6">
 
@@ -139,16 +149,6 @@ export default async function AnketeDetailPage({
         )}
 
       </div>
-
-      {/* DESCRIPTION */}
-      {!isEmptyHtml(anketa.body) && (
-        <div className="border border-gray-300 bg-white p-4">
-          <div
-            className="text-sm text-gray-700"
-            dangerouslySetInnerHTML={{ __html: anketa.body }}
-          />
-        </div>
-      )}
 
     </div>
   );
