@@ -1,3 +1,5 @@
+"use client";
+
 export default function AnketeResults({
   opcije,
   userVote,
@@ -8,7 +10,13 @@ export default function AnketeResults({
   const total = opcije.reduce((sum, o) => sum + o.votes, 0);
 
   return (
-    <div style={{ width: "100%", padding: "1rem 0", fontFamily: "Arial, sans-serif" }}>
+    <div
+      style={{
+        width: "100%",
+        padding: "1rem 0",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
       {opcije.map((o) => {
         const percent = total ? Math.round((o.votes / total) * 100) : 0;
         const isUserVote = userVote === o.id;
@@ -18,14 +26,12 @@ export default function AnketeResults({
             key={o.id}
             style={{
               marginBottom: "16px",
-              padding: "12px",
-              borderRadius: "12px",
-              background: isUserVote ? "#e6f4ea" : "#f7f7f7",
-              boxShadow: isUserVote ? "0 2px 8px rgba(0, 128, 0, 0.2)" : "0 1px 4px rgba(0,0,0,0.05)",
-              transition: "all 0.3s ease",
+              padding: "12px 0",
+              borderBottom: "1px solid #eee",
               width: "100%",
             }}
           >
+            {/* LABEL + RESULT */}
             <div
               style={{
                 display: "flex",
@@ -35,18 +41,31 @@ export default function AnketeResults({
                 color: isUserVote ? "#007b00" : "#333",
               }}
             >
-              <span>{o.label} {isUserVote && "✔"}</span>
-              <span>{percent}% ({o.votes})</span>
+              <span>
+                {o.label} {isUserVote && "✔"}
+              </span>
+              <span>
+                {percent}% ({o.votes})
+              </span>
             </div>
 
-            <div style={{ background: "#ddd", height: "16px", borderRadius: "8px", overflow: "hidden", width: "100%" }}>
+            {/* PROGRESS BAR */}
+            <div
+              style={{
+                background: "#e5e7eb",
+                height: "14px",
+                borderRadius: "999px",
+                overflow: "hidden",
+                width: "100%",
+              }}
+            >
               <div
                 style={{
                   width: `${percent}%`,
-                  background: isUserVote ? "#4caf50" : "#007bff",
+                  background: isUserVote ? "#22c55e" : "#3b82f6",
                   height: "100%",
-                  borderRadius: "8px",
-                  transition: "width 0.5s ease",
+                  borderRadius: "999px",
+                  transition: "width 0.4s ease",
                 }}
               />
             </div>

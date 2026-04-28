@@ -26,6 +26,9 @@ export default function AnketeVotingForm({
       body: JSON.stringify({
         anketaId,
         opcijaId: selected,
+        // ❌ NIKAD HARDCODE 581
+        // stanId dolazi iz JWT na serveru
+        stanId: '0d0d96d6-6ef4-4dc7-be4b-2eb6e68030a6'
       }),
     });
 
@@ -34,11 +37,25 @@ export default function AnketeVotingForm({
     if (res.ok) {
       setVoted(true);
     } else {
-      alert("Greška pri glasanju!");
+      const status = res.status;
+
+      let errorBody = "";
+
+      try {
+        errorBody = await res.text();
+      } catch {
+        errorBody = "Could not read response body";
+      }
+
+      console.error("❌ VOTE FAILED");
+      console.error("Status:", status);
+      console.error("Body:", errorBody);
+
+      alert(`Greška pri glasanju!\nStatus: ${status}\n${errorBody}`);
     }
   };
 
-  // ✅ nakon glasanja (Twitter-like feedback)
+  // ✅ nakon glasanja
   if (voted) {
     return (
       <div className="text-sm text-slate-600 mt-3">
@@ -71,7 +88,6 @@ export default function AnketeVotingForm({
               {o.label}
             </span>
 
-            {/* SELECT INDICATOR */}
             {isSelected && (
               <span className="text-blue-500 text-sm font-semibold">
                 ✔
