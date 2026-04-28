@@ -18,7 +18,7 @@ export default function AnketeVotingForm({
 
     setLoading(true);
 
-    const res = await fetch("/api/vote", {
+    const res = await fetch("/api/ankete/glas", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
