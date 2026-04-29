@@ -65,7 +65,7 @@ export default function AnketeVotingForm({
   }
 
   return (
-    <div className="mt-3 border p-3 bg-slate-50">
+    <div className="mt-3 border p-3 bg-slate-50 space-y-3">
       {/* OPCIJE */}
       {opcije.map((o) => {
         const isSelected = selected === o.id;
@@ -75,12 +75,16 @@ export default function AnketeVotingForm({
             key={o.id}
             onClick={() => setSelected(o.id)}
             className={`
-              w-full text-left px-4 py-3 rounded-full border transition
+              w-full text-left px-4 py-3
+              border transition
               flex items-center justify-between
+
+              bg-white
+
               ${
                 isSelected
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300 hover:bg-gray-50"
+                  ? "border-blue-600 bg-blue-100"
+                  : "border-gray-200 hover:bg-gray-100 hover:border-gray-300"
               }
             `}
           >
@@ -89,7 +93,7 @@ export default function AnketeVotingForm({
             </span>
 
             {isSelected && (
-              <span className="text-blue-500 text-sm font-semibold">
+              <span className="text-green-600 text-sm font-semibold">
                 ✔
               </span>
             )}

@@ -72,7 +72,7 @@ export default function VotingClient({ anketaId, opcije }: Props) {
   // ---------------- LOADING ----------------
   if (loading) {
     return (
-      <div className="w-full py-6 text-gray-500 text-center">
+      <div className="w-full py-6 text-gray-500 text-sm text-center">
         <span className="animate-pulse">Podaci se učitavaju...</span>
       </div>
     );
@@ -92,14 +92,12 @@ export default function VotingClient({ anketaId, opcije }: Props) {
           </div>
 
           {/* LINK TO RESULTS */}
-          {/*
           <Link
             href={`/ankete/${anketaId}`}
             className="text-blue-600 hover:underline"
           >
             Pogledaj rezultate
           </Link>
-           */}
 
         </div>
 
