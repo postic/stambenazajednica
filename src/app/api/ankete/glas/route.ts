@@ -83,6 +83,27 @@ export async function POST(req: Request) {
       "X-API-KEY": drupalToken,
     };
 
+
+    // =========================
+    // 4. CHECK IF USER ALREADY VOTED
+    // =========================
+    const checkRes = await fetch(
+      `${baseUrl}/jsonapi/node/glas?filter[field_glas_anketa.id]=${anketaId}&filter[field_glas_stanar.id]=${stanId}`,
+      {
+        headers,
+        cache: "no-store",
+      }
+    );
+
+    const checkData = await checkRes.json();
+
+    if (checkData?.data?.length > 0) {
+      return NextResponse.json(
+        { error: "Već ste glasali" },
+        { status: 400 }
+      );
+    }
+
     // =========================
     // 5. CREATE GLAS
     // =========================

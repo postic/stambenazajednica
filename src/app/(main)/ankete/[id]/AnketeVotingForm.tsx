@@ -58,14 +58,14 @@ export default function AnketeVotingForm({
   // ✅ nakon glasanja
   if (voted) {
     return (
-      <div className="text-sm text-slate-600 mt-3">
+      <div className="mt-3 border p-3 bg-slate-50">
         Hvala na glasu!
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="mt-3 border p-3 bg-slate-50">
       {/* OPCIJE */}
       {opcije.map((o) => {
         const isSelected = selected === o.id;
