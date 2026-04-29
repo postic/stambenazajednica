@@ -53,6 +53,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
       title: "ZGRADA",
       items: [
         { title: "Transakcije", icon: Wallet, href: "/transakcije" },
+        { title: "Ankete", icon: Vote, href: "/ankete" },
+        { title: "Kvarovi", icon: Wrench, href: "/kvarovi" },
+        { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja" },
+        { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
         {
           title: "Stanari",
           icon: Users,
@@ -61,10 +65,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             { title: "Stanari", href: "/stanari" },
           ],
         },
-        { title: "Kvarovi", icon: Wrench, href: "/kvarovi" },
-        { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja" },
-        { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
-        { title: "Ankete", icon: Vote, href: "/ankete" },
       ],
     },
     {
