@@ -65,11 +65,25 @@ export default async function AnketeDetailPage({
 
       <BackButton />
 
-      <h1 className="text-xl font-bold">{anketa.title}</h1>
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-lg font-semibold text-slate-800">
+            {anketa.title}
+          </h1>
 
-      <p className="text-xs text-gray-500">
-        {new Date(anketa.created).toLocaleDateString("sr-RS")}
-      </p>
+          <p className="text-xs text-slate-500 mt-1">
+            {new Date(anketa.created).toLocaleDateString("sr-RS", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {anketa.status && <StatusBadge status={anketa.status} />}
+        </div>
+      </div>
 
       <div className="mt-3 border p-3 bg-slate-50">
         {anketa.pitanje}

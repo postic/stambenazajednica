@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
-    const res = await fetch(`${DRUPAL_URL}/jsonapi/node/anketa?page[limit]=${limit}&page[offset]=${offset}`, {
+    const res = await fetch(`${DRUPAL_URL}/jsonapi/node/anketa?sort=-created&page[limit]=${limit}&page[offset]=${offset}`, {
       cache: "no-store",
     });
 
