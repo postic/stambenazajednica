@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ data: ankete, total, page, totalPages });
   } catch (err) {
-    console.error("Greška pri fetch-u anketa:", err);
+    console.log("Greška pri fetch-u anketa:", err);
     return NextResponse.json({ error: "Interna greška servera" }, { status: 500 });
   }
 }

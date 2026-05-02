@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     const text = await res.text();
 
-    console.error('ERROR',text);
+    console.log('ERROR',text);
 
     if (!res.ok) {
       return NextResponse.json(

@@ -142,7 +142,7 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("Drupal create glas error:", text);
+      console.log("Drupal create glas error:", text);
 
       return NextResponse.json(
         { error: "Drupal create glas error", details: text },
@@ -198,7 +198,7 @@ export async function POST(req: Request) {
     if (!updateRes.ok) {
       const text = await updateRes.text();
 
-      console.error("Drupal update opcija error:", text);
+      console.log("Drupal update opcija error:", text);
 
       return NextResponse.json(
         { error: "Failed to update opcija", details: text },
@@ -215,7 +215,7 @@ export async function POST(req: Request) {
     });
 
   } catch (e: any) {
-    console.error("Server error:", e.message);
+    console.log("Server error:", e.message);
 
     return NextResponse.json(
       { error: "Server error", details: e.message },

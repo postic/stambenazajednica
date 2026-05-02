@@ -9,7 +9,7 @@ export async function GET() {
       balance,
     });
   } catch (error) {
-    console.error("BALANCE API ERROR:", error);
+    console.log("BALANCE API ERROR:", error);
 
     return Response.json(
       {

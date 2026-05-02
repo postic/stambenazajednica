@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("UPRAVNIK /api/me ERROR:", text);
+      console.log("UPRAVNIK /api/me ERROR:", text);
 
       return NextResponse.json({ user: null }, { status: 401 });
     }
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (err) {
-    console.error("UPRAVNIK ERROR:", err);
+    console.log("UPRAVNIK ERROR:", err);
 
     return NextResponse.json({ user: null }, { status: 401 });
   }
