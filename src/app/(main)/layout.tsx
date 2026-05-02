@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <BalancePill />
                 </div>
 
-                <AllowNotifications />
+                {/* <AllowNotifications /> */}
 
               </main>
             </div>
