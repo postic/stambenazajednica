@@ -15,7 +15,8 @@ import {
   Vote,
   ChevronDown,
   Wallet,
-  Grid
+  Grid,
+  Building
 } from "lucide-react";
 
 interface SidebarProps {
@@ -57,14 +58,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         { title: "Kvarovi", icon: Wrench, href: "/kvarovi" },
         { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja" },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
-        {
-          title: "Stanari",
-          icon: Users,
-          submenu: [
-            { title: "Stanovi", href: "/stanovi" },
-            { title: "Stanari", href: "/stanari" },
-          ],
-        },
+        { title: "Stanovi", icon: Building, href: "/stanovi" },
+        { title: "Stanari", icon: Users, href: "/stanari" },
       ],
     },
     {
@@ -89,7 +84,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         {
           title: "Ostalo",
           icon: Grid,
-          submenu: [{ title: "Telefoni", href: "/telefoni" }],
+          submenu: [
+            { title: "Telefoni", href: "/telefoni" },
+            { title: "FCM", href: "/test" }
+          ],
         },
       ],
     },

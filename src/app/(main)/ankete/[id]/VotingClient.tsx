@@ -5,6 +5,7 @@ import AnketeVotingForm from "./AnketeVotingForm";
 import AnketeResults from "./AnketeResults";
 import Link from "next/link";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import Voting from '@/components/Voting';
 
 type Props = {
   anketaId: string;
@@ -112,7 +113,7 @@ export default function VotingClient({ anketaId, opcije }: Props) {
 
   // ---------------- VOTING FORM ----------------
   return (
-    <AnketeVotingForm
+    <Voting
       anketaId={anketaId}
       opcije={opcije}
       onVote={handleVote}

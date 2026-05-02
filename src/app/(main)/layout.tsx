@@ -9,7 +9,7 @@ import TelefoniSidebar from "@/components/TelefoniSidebar";
 import AlertBanner from "@/components/AlertBanner";
 import { Toaster } from "sonner";
 import BalancePill from "@/components/BalancePill";
-import PushBottomSheet from "@/components/PushBottomSheet";
+import AllowNotifications from "@/components/AllowNotifications";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <BalancePill />
                 </div>
 
-                <PushBottomSheet />
+                <AllowNotifications />
 
               </main>
             </div>

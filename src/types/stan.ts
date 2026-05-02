@@ -8,6 +8,9 @@ export interface Stan {
   kvadratura?: number | string | null;
   tip?: number | string | null;
   vlasnik?: string | null;
+  broj_stanara?: number | string | null;
+  telefon?: string;
+  email?: string;
   stanari: Osoba[];
 }
 

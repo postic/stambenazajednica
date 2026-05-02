@@ -47,6 +47,11 @@ async function getStan(id: string): Promise<Stan | null> {
       image: images,
       sprat: item.attributes.field_sprat,
       kvadratura: item.attributes.field_kvadratura,
+
+      broj_stanara: item.attributes.field_stan_broj_stanara,
+      email: item.attributes.field_stan_email,
+      telefon: item.attributes.field_stan_telefon,
+
       tip: tipName ?? "",
       vlasnik: stan.vlasnik,
       stanari: stan.stanari || [],
@@ -76,23 +81,30 @@ export default async function StanPage({ params }: PageProps) {
         <BackButton />
       </div>
 
-      {/* TITLE */}
-      <h1 className="text-xl font-semibold mb-1">
-        {stan.title}
-      </h1>
+      {/* HEADER */}
+      <div className="mb-5">
 
-      {/* META (ticket header line) */}
-      <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-5 border-b border-gray-200 pb-2">
-        {stan.sprat !== undefined && (
-          <span>🏢 Sprat: {stan.sprat}</span>
-        )}
-        {stan.kvadratura !== undefined && (
-          <span>📐 {stan.kvadratura} m²</span>
-        )}
-        {stan.tip && (
-          <span>🏷️ {stan.tip}</span>
-        )}
+        <div className="flex items-start justify-between gap-4">
+
+          <div>
+            <h1 className="text-xl font-semibold">
+              {stan.title}
+            </h1>
+
+            <p className="text-xs text-gray-500 mt-1">
+              {new Date(stan.created).toLocaleDateString("sr-RS", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-3 border-b border-gray-200"></div>
       </div>
+
 
       {/* GRID PANELS (with background like kvarovi) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -104,26 +116,32 @@ export default async function StanPage({ params }: PageProps) {
           </h3>
 
           <div className="text-sm">
-            {stan.sprat !== undefined && (
-              <div className="flex justify-between border-b border-gray-200 py-2">
-                <span>Sprat</span>
-                <span>{stan.sprat}</span>
-              </div>
-            )}
 
-            {stan.kvadratura !== undefined && (
-              <div className="flex justify-between border-b border-gray-200 py-2">
-                <span>Kvadratura</span>
-                <span>{stan.kvadratura} m²</span>
-              </div>
-            )}
+            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Broj stanara</p>
+              <p>{stan.broj_stanara || "-"}</p>
+            </div>
 
-            {stan.tip && (
-              <div className="flex justify-between py-2">
-                <span>Tip</span>
-                <span>{stan.tip}</span>
-              </div>
-            )}
+            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Sprat</p>
+              <p>{stan.sprat || "-"}</p>
+            </div>
+
+            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Kvadratura</p>
+              <p>{stan.kvadratura || "-"}  m²</p>
+            </div>
+
+            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Telefon</p>
+              <p>{stan.telefon || "-"}</p>
+            </div>
+
+            <div className="py-2">
+              <p className="text-xs text-gray-500">E-mail</p>
+              <p>{stan.email || "-"}</p>
+            </div>
+
           </div>
         </div>
 
@@ -138,16 +156,18 @@ export default async function StanPage({ params }: PageProps) {
               stan.stanari.map((s: any) => (
                 <div
                   key={s.id}
-                  className="flex justify-between border-b border-gray-200 py-2"
+                  className="border-b border-gray-200 py-2"
                 >
-                  <span>{s.title}</span>
-                  {s.isVlasnik && (
-                    <span className="text-gray-400">vlasnik</span>
-                  )}
+                  <p className="text-xs text-gray-500">
+                    {s.isVlasnik ? "Vlasnik stana" : "Stanar"}
+                  </p>
+                  <p>{s.title}</p>
                 </div>
               ))
             ) : (
-              <div className="text-gray-400">Nema stanara</div>
+              <div className="text-gray-400">
+                <p className="text-xs text-gray-500 py-2">Nema stanara</p>
+              </div>
             )}
           </div>
         </div>
@@ -157,10 +177,18 @@ export default async function StanPage({ params }: PageProps) {
           <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
             Vlasnik
           </h3>
-
-          <div className="text-sm text-gray-700">
-            {stan.vlasnik || "nije definisan"}
+          {!stan.vlasnik ? (
+            <div className="text-gray-400">
+              <p className="text-xs text-gray-500 py-2">Nema unetog vlasnika</p>
+            </div>
+          ) : (
+          <div className="text-sm">
+            <div className="border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Ime i prezime</p>
+              <p>{stan.vlasnik}</p>
+            </div>
           </div>
+          )}
         </div>
 
       </div>
@@ -173,22 +201,19 @@ export default async function StanPage({ params }: PageProps) {
         />
       )}
 
-      {/* IMAGES (KVAROVI / SYSTEM STYLE) */}
+      {/*}
       {images.length > 0 && (
         <div className="mb-6 border border-slate-200">
-
-          {/* HEADER */}
           <div className="px-4 py-2 border-b border-slate-200 bg-slate-50 text-sm font-medium">
             Fotografije
           </div>
-
-          {/* CONTENT */}
           <div className="p-4 [&_img]:rounded-none [&_img]:shadow-none">
             <ImageGridLightbox images={images} />
           </div>
 
         </div>
       )}
+      {*/}
 
     </div>
   );
