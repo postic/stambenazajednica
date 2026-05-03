@@ -10,6 +10,7 @@ import AlertBanner from "@/components/AlertBanner";
 import { Toaster } from "sonner";
 import BalancePill from "@/components/BalancePill";
 import AllowNotifications from "@/components/AllowNotifications";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);

@@ -6,6 +6,7 @@ import { telefoniColumns } from "@/features/telefoni/TelefoniColumns";
 import type { Telefon } from "@/types/telefon";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 
 export default function TelefoniPage() {
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,10 @@ export default function TelefoniPage() {
 
   return (
     <div>
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <AppBreadcrumb />
+      </div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700">
           Telefoni

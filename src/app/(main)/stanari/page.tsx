@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { stanariColumns } from "@/features/stanari/StanariColumns";
 import type { Stanar } from "@/types/stanar";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 
 export default function StanariPage() {
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,10 @@ export default function StanariPage() {
 
   return (
     <div>
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <AppBreadcrumb />
+      </div>
       <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
         Stanari
       </h1>

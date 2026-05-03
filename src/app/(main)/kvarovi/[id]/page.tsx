@@ -3,7 +3,7 @@ import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import type { Kvar } from "@/types/kvar";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
@@ -63,7 +63,11 @@ export default async function KvarPage({ params }: PageProps) {
 
       {/* HEADER */}
       <div className="mb-6">
-        <BackButton />
+
+        {/* Breadcrumb */}
+        <div className="mb-4 ">
+          <AppBreadcrumb title={kvar.title} />
+        </div>
 
         <div className="mt-4 flex items-start justify-between gap-4">
           <div>

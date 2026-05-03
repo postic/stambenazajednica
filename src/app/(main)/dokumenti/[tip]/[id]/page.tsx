@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getDokument } from "@/lib/drupal/getDokument";
 import { isEmptyHtml } from "@/lib/text";
 import StatusBadge from "@/components/StatusBadge";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 
 import {
   FileText,
@@ -53,8 +53,10 @@ export default async function Page({
   return (
     <div className="max-w-4xl text-gray-800">
 
-      {/* BACK */}
-      <BackButton />
+      {/* Breadcrumb */}
+      <div className="mb-4 ">
+        <AppBreadcrumb title={dokument.title} />
+      </div>
 
       {/* HEADER */}
       <div className="mb-6">

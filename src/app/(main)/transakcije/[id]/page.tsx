@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { isEmptyHtml, formatRSD } from "@/lib/text";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import StatusBadge from "@/components/StatusBadge";
 import type { TransakcijaDetail, FileItem } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
@@ -114,10 +114,13 @@ export default async function TransakcijaPage({
   return (
     <div className="max-w-4xl">
 
+      {/* Breadcrumb */}
+      <div className="mb-4 ">
+        <AppBreadcrumb title={tx.title} />
+      </div>
+
       {/* HEADER */}
       <div className="mb-6">
-        <BackButton />
-
         <div className="flex items-start justify-between gap-4 mt-4">
           <div>
             <h1 className="text-lg font-semibold text-slate-800">

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import BackButton from "@/components/BackButton";
 import StatusBadge from "@/components/StatusBadge";
 import { isEmptyHtml } from "@/lib/text";
-
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import VotingClient from "./VotingClient";
 
 // ---------------- ANKETA ----------------
@@ -63,7 +62,10 @@ export default async function AnketeDetailPage({
   return (
     <div className="max-w-4xl text-gray-800">
 
-      <BackButton />
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <AppBreadcrumb title={anketa.title} />
+      </div>
 
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
@@ -85,7 +87,7 @@ export default async function AnketeDetailPage({
         </div>
       </div>
 
-      <div className="mt-3 border p-3 bg-slate-50">
+      <div className="mt-3 mb-3 border p-3 bg-slate-50">
         {anketa.pitanje}
       </div>
 

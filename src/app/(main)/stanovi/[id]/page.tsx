@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import type { Stan } from "@/types/stan";
 import { parseStan } from "@/lib/drupal/getStan";
 
@@ -76,9 +76,9 @@ export default async function StanPage({ params }: PageProps) {
   return (
     <div className="max-w-5xl text-gray-800">
 
-      {/* BACK */}
-      <div className="mb-4">
-        <BackButton />
+      {/* Breadcrumb */}
+      <div className="mb-4 ">
+        <AppBreadcrumb title={stan.title} />
       </div>
 
       {/* HEADER */}

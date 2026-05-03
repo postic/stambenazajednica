@@ -3,7 +3,7 @@ import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import type { Telefon } from "@/types/telefon";
 import { Phone } from "lucide-react";
 
@@ -57,9 +57,9 @@ export default async function TelefonPage({ params }: PageProps) {
   return (
     <div className="max-w-4xl">
 
-      {/* BACK */}
-      <div className="mb-4">
-        <BackButton />
+      {/* Breadcrumb */}
+      <div className="mb-4 ">
+        <AppBreadcrumb title={telefon.title} />
       </div>
 
       {/* TITLE */}

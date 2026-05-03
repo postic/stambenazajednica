@@ -27,6 +27,13 @@ export const stanoviColumns: Column<Stan>[] = [
     )
   },
   {
+    key: "stanari",
+    header: "Stanari",
+    render: (stan) => (
+      <span>{stan.broj_stanara ?? "-"}</span>
+    )
+  },
+  {
     key: "sprat",
     header: "Sprat",
     render: (stan) => (

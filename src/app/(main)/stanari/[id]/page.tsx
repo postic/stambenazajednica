@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import StatusBadge from "@/components/StatusBadge";
 import type { Stanar } from "@/types/stanar";
 
@@ -88,9 +88,9 @@ export default async function StanarPage({ params }: PageProps) {
   return (
     <div className="max-w-5xl text-gray-800">
 
-      {/* BACK */}
-      <div className="mb-4">
-        <BackButton />
+      {/* Breadcrumb */}
+      <div className="mb-4 ">
+        <AppBreadcrumb title={stanar.title} />
       </div>
 
       {/* HEADER */}
@@ -123,13 +123,13 @@ export default async function StanarPage({ params }: PageProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
         {/* 📸 FOTOGRAFIJE */}
-        <div className="border border-gray-300 bg-white">
+        <div className="border border-gray-300 bg-slate-50 p-4">
 
-          <div className="px-4 py-2 border-b border-gray-300 bg-slate-50 text-sm font-medium">
-            Fotografije
+          <div className="text-sm font-semibold mb-3 border-b border-gray-300 pb-1">
+            Fotografija
           </div>
 
-          <div className="p-3">
+          <div className="p-2">
             {stanar.image && stanar.image.length > 0 ? (
               <img
                 src={stanar.image[0]}

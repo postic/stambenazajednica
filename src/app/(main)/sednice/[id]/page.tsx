@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { isEmptyHtml } from "@/lib/text";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import StatusBadge from "@/components/StatusBadge";
 
 import {
@@ -125,9 +125,9 @@ export default async function SednicaPage({ params }: PageProps) {
   return (
     <div className="max-w-4xl text-gray-800">
 
-      {/* BACK */}
-      <div className="mb-4">
-        <BackButton />
+      {/* Breadcrumb */}
+      <div className="mb-4 ">
+        <AppBreadcrumb title={sednica.title} />
       </div>
 
       {/* HEADER */}

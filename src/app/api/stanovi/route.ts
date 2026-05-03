@@ -49,6 +49,7 @@ export async function GET(req: Request) {
         created: item.attributes?.created || "",
         sprat: item.attributes?.field_sprat ?? null,
         kvadratura: item.attributes?.field_kvadratura ?? null,
+        broj_stanara: item.attributes.field_stan_broj_stanara,
 
         // Ako je node → title, ako je taxonomy → name
         vlasnik:

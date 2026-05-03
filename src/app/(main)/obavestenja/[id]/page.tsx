@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
-import BackButton from "@/components/BackButton";
+import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import type { Obavestenje } from "@/types/obavestenje";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
@@ -59,7 +59,11 @@ export default async function ObavestenjePage({ params }: PageProps) {
 
       {/* HEADER (KVAR STYLE) */}
       <div className="mb-6">
-        <BackButton />
+
+        {/* Breadcrumb */}
+        <div className="mb-4 ">
+          <AppBreadcrumb title={obavestenje.title} />
+        </div>
 
         <div className="mt-4">
           <h1 className="text-lg font-semibold text-slate-800">
