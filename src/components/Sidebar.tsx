@@ -86,7 +86,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           icon: Grid,
           submenu: [
             { title: "Telefoni", href: "/telefoni" },
-            { title: "FCM", href: "/test" }
           ],
         },
       ],
