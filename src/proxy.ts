@@ -25,11 +25,6 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // 🔁 redirect logged-in users away from login
-  if (token && pathname === "/login") {
-    return NextResponse.redirect(new URL("/transakcije", req.url));
-  }
-
   return NextResponse.next();
 }
 

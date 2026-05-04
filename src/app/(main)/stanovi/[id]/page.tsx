@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import type { Stan } from "@/types/stan";
 import { parseStan } from "@/lib/drupal/getStan";
 
@@ -76,11 +75,6 @@ export default async function StanPage({ params }: PageProps) {
   return (
     <div className="max-w-5xl text-gray-800">
 
-      {/* Breadcrumb */}
-      <div className="mb-4 ">
-        <AppBreadcrumb title={stan.title} />
-      </div>
-
       {/* HEADER */}
       <div className="mb-5">
 
@@ -92,7 +86,7 @@ export default async function StanPage({ params }: PageProps) {
             </h1>
 
             <p className="text-xs text-gray-500 mt-1">
-              {new Date(stan.created).toLocaleDateString("sr-RS", {
+              {new Date(stan.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

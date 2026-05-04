@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
+
 import type { Obavestenje } from "@/types/obavestenje";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
@@ -60,18 +60,13 @@ export default async function ObavestenjePage({ params }: PageProps) {
       {/* HEADER (KVAR STYLE) */}
       <div className="mb-6">
 
-        {/* Breadcrumb */}
-        <div className="mb-4 ">
-          <AppBreadcrumb title={obavestenje.title} />
-        </div>
-
         <div className="mt-4">
           <h1 className="text-lg font-semibold text-slate-800">
             {obavestenje.title}
           </h1>
 
           <p className="text-xs text-slate-500 mt-1">
-            {new Date(obavestenje.created).toLocaleDateString("sr-RS", {
+            {new Date(obavestenje.created).toLocaleDateString("sr-Latn-RS", {
               day: "numeric",
               month: "long",
               year: "numeric",

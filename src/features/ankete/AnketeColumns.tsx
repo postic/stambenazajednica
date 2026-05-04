@@ -25,9 +25,9 @@ export const anketeColumns: Column<Anketa>[] = [
     header: "Datum",
     render: (anketa) =>
       anketa.created
-        ? new Date(anketa.created).toLocaleDateString("sr-RS", {
+        ? new Date(anketa.created).toLocaleDateString("sr-Latn-RS", {
             day: "numeric",
-            month: "short",
+            month: "long",
             year: "numeric",
           })
         : "-",

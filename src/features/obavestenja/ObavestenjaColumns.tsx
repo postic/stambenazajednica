@@ -22,9 +22,9 @@ export const obavestenjaColumns: Column<Obavestenje>[] = [
     key: "date",
     header: "Datum",
     render: (o) =>
-      new Date(o.created).toLocaleDateString("sr-RS", {
+      new Date(o.created).toLocaleDateString("sr-Latn-RS", {
         day: "numeric",
-        month: "short",
+        month: "long",
         year: "numeric",
       }),
   },

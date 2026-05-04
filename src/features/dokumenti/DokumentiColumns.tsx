@@ -33,9 +33,9 @@ export const dokumentiColumns: Column<Dokument>[] = [
     header: "Datum",
     render: (d) =>
       d.created
-        ? new Date(d.created).toLocaleDateString("sr-RS", {
+        ? new Date(d.created).toLocaleDateString("sr-Latn-RS", {
             day: "numeric",
-            month: "short",
+            month: "long",
             year: "numeric",
           })
         : "-",

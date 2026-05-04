@@ -49,7 +49,7 @@ export function isEmptyHtml(html?: string): boolean {
 }
 
 export function formatRSD(amount: number) {
-  return new Intl.NumberFormat("sr-RS", {
+  return new Intl.NumberFormat("sr-Latn-RS", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);

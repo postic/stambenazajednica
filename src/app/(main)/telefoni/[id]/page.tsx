@@ -3,7 +3,7 @@ import { extractImages } from "@/lib/images";
 import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import StatusBadge from "@/components/StatusBadge";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
+
 import type { Telefon } from "@/types/telefon";
 import { Phone } from "lucide-react";
 
@@ -57,18 +57,13 @@ export default async function TelefonPage({ params }: PageProps) {
   return (
     <div className="max-w-4xl">
 
-      {/* Breadcrumb */}
-      <div className="mb-4 ">
-        <AppBreadcrumb title={telefon.title} />
-      </div>
-
       {/* TITLE */}
       <h1 className="text-xl font-semibold mb-1">
         {telefon.title}
       </h1>
 
       <p className="text-xs text-gray-500 mt-1">
-        {new Date(telefon.created).toLocaleDateString("sr-RS", {
+        {new Date(telefon.created).toLocaleDateString("sr-Latn-RS", {
           day: "numeric",
           month: "long",
           year: "numeric",

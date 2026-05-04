@@ -2,47 +2,46 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
 import { findBreadcrumb } from "@/lib/navigation";
 
-type Props = {
-  title?: string; // Drupal title
-};
-
-export function AppBreadcrumb({ title }: Props) {
+export function AppBreadcrumb() {
   const pathname = usePathname();
 
-  const items = findBreadcrumb(pathname, (segment) => {
-    // UUID / ID detekcija
-    const isDynamic = segment.length > 10 && /\d|[a-f]/i.test(segment);
+  const rawItems = findBreadcrumb(pathname);
 
-    if (isDynamic && title) {
-      return title;
-    }
+  // ❗ izbaci poslednji item (title stranice)
+  const items =
+    rawItems.length > 1 ? rawItems.slice(0, -1) : rawItems;
 
-    return null;
-  });
+  // ako nema šta da se prikaže (npr. /)
+  if (!items.length) return null;
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-500">
-      {items.map((item, index) => {
-        const isLast = index === items.length - 1;
+    <Breadcrumb>
+      <BreadcrumbList>
+        {items.map((item, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href={item.href}>
+                  {item.label}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
 
-        return (
-          <span key={index} className="flex items-center space-x-2">
-            {!isLast ? (
-              <Link href={item.href || "#"} className="hover:text-gray-700">
-                {item.label}
-              </Link>
-            ) : (
-              <span className="text-gray-900 font-medium">
-                {item.label}
-              </span>
-            )}
-
-            {!isLast && <span>/</span>}
-          </span>
-        );
-      })}
-    </nav>
+            {index < items.length - 1 && <BreadcrumbSeparator />}
+          </div>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }

@@ -20,9 +20,9 @@ export const kvaroviColumns: Column<Kvar>[] = [
     header: "Datum",
     render: (kvar) =>
       kvar.created
-        ? new Date(kvar.created).toLocaleDateString("sr-RS", {
+        ? new Date(kvar.created).toLocaleDateString("sr-Latn-RS", {
             day: "numeric",
-            month: "short",
+            month: "long",
             year: "numeric",
           })
         : "-",

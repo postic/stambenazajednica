@@ -31,9 +31,9 @@ export const sedniceColumns: Column<Sednica>[] = [
     sortable: true,
     render: (s) =>
       s.created
-        ? new Date(s.created).toLocaleDateString("sr-RS", {
+        ? new Date(s.created).toLocaleDateString("sr-Latn-RS", {
             day: "numeric",
-            month: "short",
+            month: "long",
             year: "numeric",
           })
         : "-",

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { extractImages } from "@/lib/images";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
+
 import StatusBadge from "@/components/StatusBadge";
 import type { Stanar } from "@/types/stanar";
 
@@ -88,11 +88,6 @@ export default async function StanarPage({ params }: PageProps) {
   return (
     <div className="max-w-5xl text-gray-800">
 
-      {/* Breadcrumb */}
-      <div className="mb-4 ">
-        <AppBreadcrumb title={stanar.title} />
-      </div>
-
       {/* HEADER */}
       <div className="mb-5 flex items-start justify-between gap-4">
 
@@ -102,7 +97,7 @@ export default async function StanarPage({ params }: PageProps) {
           </h1>
 
           <p className="text-xs text-gray-500 mt-1">
-            {new Date(stanar.created).toLocaleDateString("sr-RS", {
+            {new Date(stanar.created).toLocaleDateString("sr-Latn-RS", {
               day: "numeric",
               month: "long",
               year: "numeric",

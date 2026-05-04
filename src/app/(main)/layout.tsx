@@ -37,7 +37,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
                 {/* CONTENT AREA */}
                 <div className="flex-1 flex flex-col overflow-y-auto p-6">
+
+                  {/* BREADCRUMB */}
+                  <div className="mb-2 text-sm text-gray-500">
+                    <AppBreadcrumb />
+                  </div>
                   {children}
+
                 </div>
 
                 {/* RIGHT SIDEBAR */}

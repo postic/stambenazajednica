@@ -46,7 +46,7 @@ export const stanoviColumns: Column<Stan>[] = [
     render: (stan) => (
       <span>
         {stan.kvadratura != null
-        ? `${Number(stan.kvadratura).toLocaleString("sr-RS")} m²`
+        ? `${Number(stan.kvadratura).toLocaleString("sr-Latn-RS")} m²`
         : "-"}
       </span>
     )

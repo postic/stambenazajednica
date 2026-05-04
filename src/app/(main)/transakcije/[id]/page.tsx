@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { isEmptyHtml, formatRSD } from "@/lib/text";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import StatusBadge from "@/components/StatusBadge";
 import type { TransakcijaDetail, FileItem } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
@@ -114,11 +113,6 @@ export default async function TransakcijaPage({
   return (
     <div className="max-w-4xl">
 
-      {/* Breadcrumb */}
-      <div className="mb-4 ">
-        <AppBreadcrumb title={tx.title} />
-      </div>
-
       {/* HEADER */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 mt-4">
@@ -128,7 +122,7 @@ export default async function TransakcijaPage({
             </h1>
 
             <p className="text-xs text-slate-500 mt-1">
-              {new Date(tx.created).toLocaleDateString("sr-RS", {
+              {new Date(tx.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

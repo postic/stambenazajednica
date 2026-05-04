@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { isEmptyHtml } from "@/lib/text";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
+
 import StatusBadge from "@/components/StatusBadge";
 
 import {
@@ -125,11 +125,6 @@ export default async function SednicaPage({ params }: PageProps) {
   return (
     <div className="max-w-4xl text-gray-800">
 
-      {/* Breadcrumb */}
-      <div className="mb-4 ">
-        <AppBreadcrumb title={sednica.title} />
-      </div>
-
       {/* HEADER */}
       <div className="mb-5">
 
@@ -141,7 +136,7 @@ export default async function SednicaPage({ params }: PageProps) {
             </h1>
 
             <p className="text-xs text-gray-500 mt-1">
-              {new Date(sednica.created).toLocaleDateString("sr-RS", {
+              {new Date(sednica.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

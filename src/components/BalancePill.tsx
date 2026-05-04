@@ -34,7 +34,7 @@ export default function BalancePill() {
 
   const isPositive = balance >= 0;
 
-  const formatted = new Intl.NumberFormat("sr-RS", {
+  const formatted = new Intl.NumberFormat("sr-Latn-RS", {
     style: "currency",
     currency: "RSD",
   }).format(balance);

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { anketeColumns } from "@/features/ankete/AnketeColumns";
 import type { Anketa } from "@/types/anketa";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 
 export default function AnketePage() {
   const [loading, setLoading] = useState(true);
@@ -44,11 +43,6 @@ export default function AnketePage() {
 
   return (
     <div>
-
-      {/* Breadcrumb */}
-      <div className="mb-4">
-        <AppBreadcrumb />
-      </div>
 
       <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
         Ankete

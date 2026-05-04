@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
 import { isEmptyHtml } from "@/lib/text";
-import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import VotingClient from "./VotingClient";
 
 // ---------------- ANKETA ----------------
@@ -61,12 +60,6 @@ export default async function AnketeDetailPage({
 
   return (
     <div className="max-w-4xl text-gray-800">
-
-      {/* Breadcrumb */}
-      <div className="mb-4">
-        <AppBreadcrumb title={anketa.title} />
-      </div>
-
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold text-slate-800">
@@ -74,7 +67,7 @@ export default async function AnketeDetailPage({
           </h1>
 
           <p className="text-xs text-slate-500 mt-1">
-            {new Date(anketa.created).toLocaleDateString("sr-RS", {
+            {new Date(anketa.created).toLocaleDateString("sr-Latn-RS", {
               day: "numeric",
               month: "long",
               year: "numeric",
