@@ -32,7 +32,7 @@ export function AppBreadcrumb() {
           <div key={index} className="flex items-center gap-2">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={item.href}>
+                <Link href={item.href ?? "/"}>
                   {item.label}
                 </Link>
               </BreadcrumbLink>
