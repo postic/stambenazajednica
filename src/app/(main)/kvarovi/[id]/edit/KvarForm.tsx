@@ -147,7 +147,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
       <button
         type="submit"
         disabled={loading}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
+        className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
       >
         {loading ? "Saving..." : "Save"}
       </button>

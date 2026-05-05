@@ -65,7 +65,7 @@ export default function AnketePage() {
             className={`px-3 py-2 rounded-md border text-sm font-medium transition
               ${
                 page === p
-                  ? "bg-blue-600 text-white border-blue-600"
+                  ? "bg-primary text-white border-primary"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
               }
             `}

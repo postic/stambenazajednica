@@ -98,7 +98,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
         {deferredPrompt && (
           <button
             onClick={handleInstallApp}
-            className="flex items-center gap-1 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+            className="flex items-center gap-1 px-3 py-2 rounded-md bg-primary text-white hover:bg-blue-700 transition"
             title="Install App"
           >
             <Download size={18} />
@@ -127,7 +127,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
         {!loading && !user && (
           <button
             onClick={() => router.push("/login")}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md"
+            className="px-4 py-2 bg-primary text-white rounded-md"
           >
             Login
           </button>
