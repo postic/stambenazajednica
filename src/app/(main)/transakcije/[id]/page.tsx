@@ -204,7 +204,7 @@ export default async function TransakcijaPage({
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-slate-700 hover:text-blue-600 min-w-0"
+                    className="flex items-center gap-2 text-sm text-slate-700 hover: min-w-0"
                   >
                     <Icon size={16} className="text-slate-400 shrink-0" />
 

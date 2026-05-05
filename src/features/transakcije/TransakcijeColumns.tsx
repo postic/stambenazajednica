@@ -11,7 +11,7 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
     header: "Naziv",
     width: "25%",
     render: (t) => (
-      <Link href={`/transakcije/${t.id}`} className="text-blue-600 hover:underline">
+      <Link href={`/transakcije/${t.id}`} className=" hover:underline">
         {t.title}
       </Link>
     ),
@@ -51,7 +51,7 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
     isAction: true,
     render: (t) => (
       <div className="flex gap-2 justify-center">
-        <Link href={`/transakcije/${t.id}`} className="text-blue-600 hover:text-blue-800" title="View"><FaEye /></Link>
+        <Link href={`/transakcije/${t.id}`} className=" hover:text-blue-800" title="View"><FaEye /></Link>
         <Link href={`/transakcije/${t.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit"><FaEdit /></Link>
         <button className="text-red-600"><FaTrash /></button>
       </div>

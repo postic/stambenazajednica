@@ -12,7 +12,7 @@ export const stanoviColumns: Column<Stan>[] = [
     render: (stan) => (
       <Link
         href={`/stanovi/${stan.id}`}
-        className="text-blue-600 hover:underline"
+        className=" hover:underline"
         title={stan.title}
       >
         {stan.title}
@@ -60,7 +60,7 @@ export const stanoviColumns: Column<Stan>[] = [
       <div className="flex justify-center gap-2">
         <Link
           href={`/stanovi/${stan.id}`}
-          className="text-blue-600 hover:text-blue-800"
+          className=" hover:text-blue-800"
           title="View"
         >
           <FaEye />

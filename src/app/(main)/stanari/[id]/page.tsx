@@ -222,7 +222,7 @@ export default async function StanarPage({ params }: PageProps) {
 
                 <a
                   href={`/stanovi/${stan.id}`}
-                  className="text-xs text-blue-600"
+                  className="text-xs "
                 >
                   Pogledaj →
                 </a>

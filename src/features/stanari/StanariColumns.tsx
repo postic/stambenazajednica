@@ -11,7 +11,7 @@ export const stanariColumns: Column<Stanar>[] = [
     render: (stanar) => (
       <Link
         href={`/stanari/${stanar.id}`}
-        className="text-blue-600 hover:underline"
+        className=" hover:underline"
         title={stanar.title}
       >
         {stanar.title}
@@ -39,7 +39,7 @@ export const stanariColumns: Column<Stanar>[] = [
       <div className="flex justify-center gap-2">
         <Link
           href={`/stanari/${stanar.id}`}
-          className="text-blue-600 hover:text-blue-800"
+          className=" hover:text-blue-800"
           title="View"
         >
           <FaEye />

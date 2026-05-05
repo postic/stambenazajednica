@@ -10,7 +10,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
     header: "Naziv",
     width: "35%",
     render: (kvar) => (
-      <Link href={`/kvarovi/${kvar.id}`} className="text-blue-600 hover:underline" title={kvar.title}>
+      <Link href={`/kvarovi/${kvar.id}`} className=" hover:underline" title={kvar.title}>
         {kvar.title}
       </Link>
     ),
@@ -45,7 +45,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
     isAction: true,
     render: (kvar) => (
       <div className="flex justify-center gap-2">
-        <Link href={`/kvarovi/${kvar.id}`} className="text-blue-600 hover:text-blue-800" title="View">
+        <Link href={`/kvarovi/${kvar.id}`} className=" hover:text-blue-800" title="View">
           <FaEye />
         </Link>
         <Link href={`/kvarovi/${kvar.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit">

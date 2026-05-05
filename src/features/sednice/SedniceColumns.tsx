@@ -18,7 +18,7 @@ export const sedniceColumns: Column<Sednica>[] = [
     render: (s) => (
       <Link
         href={`/sednice/${s.id}`}
-        className="text-blue-600 hover:underline"
+        className=" hover:underline"
         title={s.title}
       >
         {s.title}
@@ -53,7 +53,7 @@ export const sedniceColumns: Column<Sednica>[] = [
       <div className="flex justify-center gap-2">
         <Link
           href={`/sednice/${s.id}`}
-          className="text-blue-600 hover:text-blue-800"
+          className=" hover:text-blue-800"
           title="View"
         >
           <FaEye />

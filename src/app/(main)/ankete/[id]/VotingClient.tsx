@@ -95,7 +95,7 @@ export default function VotingClient({ anketaId, opcije }: Props) {
           {/* LINK TO RESULTS */}
           <Link
             href={`/ankete/${anketaId}`}
-            className="text-blue-600 hover:underline"
+            className=" hover:underline"
           >
             Pogledaj rezultate
           </Link>

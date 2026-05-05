@@ -9,7 +9,7 @@ export const telefoniColumns: Column<Telefon>[] = [
     key: "title",
     header: "Naziv",
     render: (telefon) => (
-      <Link href={`/telefoni/${telefon.id}`} className="text-blue-600 hover:underline" title={telefon.title}>
+      <Link href={`/telefoni/${telefon.id}`} className=" hover:underline" title={telefon.title}>
         {telefon.title}
       </Link>
     ),
@@ -29,7 +29,7 @@ export const telefoniColumns: Column<Telefon>[] = [
     isAction: true,
     render: (telefon) => (
       <div className="flex justify-center gap-2">
-        <Link href={`/telefoni/${telefon.id}`} className="text-blue-600 hover:text-blue-800" title="View">
+        <Link href={`/telefoni/${telefon.id}`} className=" hover:text-blue-800" title="View">
           <FaEye />
         </Link>
         <Link href={`/telefoni/${telefon.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit">

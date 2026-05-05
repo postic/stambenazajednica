@@ -160,3 +160,20 @@ textarea,
 div {
   border-radius: 0 !important;
 }
+
+main a {
+  color: #111827; /* neutralno, ne plavo */
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+main a:hover {
+  color: #059669; /* emerald */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+main a:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}

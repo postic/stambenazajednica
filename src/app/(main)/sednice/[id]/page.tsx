@@ -198,7 +198,7 @@ export default async function SednicaPage({ params }: PageProps) {
                   <a
                     href={file.url}
                     target="_blank"
-                    className="flex items-center gap-2 min-w-0 text-slate-700 hover:text-blue-600"
+                    className="flex items-center gap-2 min-w-0 text-slate-700 hover:"
                   >
                     <Icon size={16} className="text-slate-400 shrink-0" />
 

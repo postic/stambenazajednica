@@ -21,7 +21,7 @@ export const dokumentiColumns: Column<Dokument>[] = [
     render: (d) => (
       <Link
         href={`/dokumenti/${d.tip}/${d.id}`}
-        className="text-blue-600 hover:underline"
+        className=" hover:underline"
         title={d.title}
       >
         {d.title}
@@ -55,7 +55,7 @@ export const dokumentiColumns: Column<Dokument>[] = [
       <div className="flex justify-center gap-2">
         <Link
           href={`/dokumenti/${d.tip}/${d.id}`}
-          className="text-blue-600 hover:text-blue-800"
+          className=" hover:text-blue-800"
           title="View"
         >
           <FaEye />
