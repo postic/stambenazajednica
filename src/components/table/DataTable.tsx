@@ -129,12 +129,12 @@ export function DataTable<T extends HasId>({
           `}
         >
           {/* LABEL */}
-          <span className="text-gray-700 text-xs font-medium uppercase tracking-wide">
+          <span className="text-gray-400 text-xs font-medium uppercase tracking-wide">
             {col.header}
           </span>
 
           {/* VALUE */}
-          <span className={`text-sm text-gray-900 ${getAlignClass(col.align)}`}>
+          <span className={`text-sm text-gray-800 ${getAlignClass(col.align)}`}>
             {col.render(row)}
           </span>
         </div>
