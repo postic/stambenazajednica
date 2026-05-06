@@ -73,18 +73,15 @@ export default async function StanPage({ params }: PageProps) {
   const images = stan.image ?? [];
 
   return (
-    <div className="max-w-5xl text-gray-800">
+    <div className="max-w-4xl">
 
       {/* HEADER */}
-      <div className="mb-5">
-
+      <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
-
-          <div>
+          <div data-field>
             <h1 className="text-xl font-semibold">
               {stan.title}
             </h1>
-
             <p className="text-xs text-gray-500 mt-1">
               {new Date(stan.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
@@ -93,12 +90,8 @@ export default async function StanPage({ params }: PageProps) {
               })}
             </p>
           </div>
-
         </div>
-
-        <div className="mt-3 border-b border-gray-200"></div>
       </div>
-
 
       {/* GRID PANELS (with background like kvarovi) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

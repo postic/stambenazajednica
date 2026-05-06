@@ -121,7 +121,7 @@ export default async function TransakcijaPage({
               {tx.title}
             </h1>
 
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               {new Date(tx.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",

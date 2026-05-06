@@ -57,22 +57,18 @@ export default async function ObavestenjePage({ params }: PageProps) {
   return (
     <div className="max-w-4xl">
 
-      {/* HEADER (KVAR STYLE) */}
+      {/* HEADER */}
       <div className="mb-6">
-
-        <div className="mt-4">
-          <h1 className="text-lg font-semibold text-slate-800">
-            {obavestenje.title}
-          </h1>
-
-          <p className="text-xs text-slate-500 mt-1">
-            {new Date(obavestenje.created).toLocaleDateString("sr-Latn-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold">
+          {obavestenje.title}
+        </h1>
+        <p className="text-xs text-slate-400 mt-1">
+          {new Date(obavestenje.created).toLocaleDateString("sr-Latn-RS", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
       </div>
 
       {/* DESCRIPTION (SAME AS KVAR) */}

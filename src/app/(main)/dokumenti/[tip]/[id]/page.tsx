@@ -64,7 +64,7 @@ export default async function Page({
               {dokument.title}
             </h1>
 
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               {formattedDate}
             </p>
           </div>

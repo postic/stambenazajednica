@@ -124,18 +124,14 @@ export default async function SednicaPage({ params }: PageProps) {
 
   return (
     <div className="max-w-4xl text-gray-800">
-
       {/* HEADER */}
-      <div className="mb-5">
-
+      <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
-
-          <div>
+          <div data-field>
             <h1 className="text-xl font-semibold">
               {sednica.title}
             </h1>
-
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-400 mt-1">
               {new Date(sednica.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
@@ -143,16 +139,12 @@ export default async function SednicaPage({ params }: PageProps) {
               })}
             </p>
           </div>
-
           <div>
             {sednica.status && (
               <StatusBadge status={sednica.status} />
             )}
           </div>
-
         </div>
-
-        <div className="mt-3 border-b border-gray-200"></div>
       </div>
 
       {/* BODY */}

@@ -86,33 +86,29 @@ export default async function StanarPage({ params }: PageProps) {
   const stanovi = await getStanoviZaStanar(id);
 
   return (
-    <div className="max-w-5xl text-gray-800">
+    <div className="max-w-5xl">
 
       {/* HEADER */}
-      <div className="mb-5 flex items-start justify-between gap-4">
-
-        <div>
-          <h1 className="text-xl font-semibold">
-            {stanar.ime_prezime || stanar.title}
-          </h1>
-
-          <p className="text-xs text-gray-500 mt-1">
-            {new Date(stanar.created).toLocaleDateString("sr-Latn-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-4">
+          <div data-field>
+            <h1 className="text-xl font-semibold">
+              {stanar.ime_prezime || stanar.title}
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
+              {new Date(stanar.created).toLocaleDateString("sr-Latn-RS", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <StatusBadge status={stanar.status ? "aktivan" : "pasivan"} />
+            <StatusBadge status={stanar.tip ? "podstanar" : "stanar"} />
+          </div>
         </div>
-
-        <div className="flex gap-2 flex-wrap">
-          <StatusBadge status={stanar.status ? "aktivan" : "pasivan"} />
-          <StatusBadge status={stanar.tip ? "podstanar" : "stanar"} />
-        </div>
-
       </div>
-
-      <div className="border-b border-gray-200 mb-5"></div>
 
       {/* 🧱 3-COLUMN SYSTEM (KVAROVI STYLE) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -213,7 +209,7 @@ export default async function StanarPage({ params }: PageProps) {
               >
                 <div>
                   <p className="text-sm font-medium">
-                    Stan {stan.title || "-"}
+                    {stan.title || "-"}
                   </p>
                   <p className="text-xs text-gray-500">
                     Sprat: {stan.sprat || "-"}

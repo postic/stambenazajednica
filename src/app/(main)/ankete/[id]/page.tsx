@@ -60,23 +60,24 @@ export default async function AnketeDetailPage({
 
   return (
     <div className="max-w-4xl text-gray-800">
-      <div className="mt-4 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-800">
-            {anketa.title}
-          </h1>
-
-          <p className="text-xs text-slate-500 mt-1">
-            {new Date(anketa.created).toLocaleDateString("sr-Latn-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          {anketa.status && <StatusBadge status={anketa.status} />}
+      {/* HEADER */}
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-4">
+          <div data-field>
+            <h1 className="text-xl font-semibold">
+              {anketa.title}
+            </h1>
+            <p className="text-xs text-slate-400 mt-1">
+              {new Date(anketa.created).toLocaleDateString("sr-Latn-RS", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {anketa.status && <StatusBadge status={anketa.status} />}
+          </div>
         </div>
       </div>
 

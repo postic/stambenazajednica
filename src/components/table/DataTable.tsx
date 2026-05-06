@@ -59,7 +59,7 @@ export function DataTable<T extends HasId>({
 
       {/* ================= DESKTOP TABLE ================= */}
       <div className="hidden md:block w-full overflow-x-auto border border-gray-200">
-        <table className="w-full text-sm border-collapse">
+        <table className="w-full text-sm border-collapse text-gray-800">
 
           {/* 🔥 ISTAKNUT HEADER */}
           <thead className="bg-gray-100 sticky top-0 z-10 border-b-2 border-gray-300">

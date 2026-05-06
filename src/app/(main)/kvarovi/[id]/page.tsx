@@ -63,14 +63,12 @@ export default async function KvarPage({ params }: PageProps) {
 
       {/* HEADER */}
       <div className="mb-6">
-
-        <div className="mt-4 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold text-slate-800">
+        <div className="flex items-start justify-between gap-4">
+          <div data-field>
+            <h1 className="text-xl font-semibold">
               {kvar.title}
             </h1>
-
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               {new Date(kvar.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
@@ -78,7 +76,6 @@ export default async function KvarPage({ params }: PageProps) {
               })}
             </p>
           </div>
-
           <div className="flex items-center gap-2 flex-wrap justify-end">
             {kvar.status && <StatusBadge status={kvar.status} />}
             {kvar.prioritet && <StatusBadge prioritet={kvar.prioritet} />}
