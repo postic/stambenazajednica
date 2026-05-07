@@ -55,7 +55,7 @@ export default function KvaroviPage() {
 
         <Link
           href="/kvarovi/new"
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition"
+          className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium text-white bg-black-600 hover:bg-green-700 transition"
         >
           <Plus className="w-4 h-4" />
           Dodaj kvar

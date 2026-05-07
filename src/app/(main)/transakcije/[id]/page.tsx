@@ -112,15 +112,13 @@ export default async function TransakcijaPage({
 
   return (
     <div className="max-w-4xl">
-
       {/* HEADER */}
       <div className="mb-6">
-        <div className="flex items-start justify-between gap-4 mt-4">
-          <div>
-            <h1 className="text-lg font-semibold text-slate-800">
+        <div className="flex items-start justify-between gap-4">
+          <div data-field>
+            <h1 className="text-xl font-semibold">
               {tx.title}
             </h1>
-
             <p className="text-xs text-slate-400 mt-1">
               {new Date(tx.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
@@ -133,7 +131,6 @@ export default async function TransakcijaPage({
           <div className="text-right">
             <div className="flex items-center gap-2 justify-end">
               <StatusBadge status={tx.type ?? "unknown"} />
-
               <div className="text-xl font-semibold tabular-nums text-slate-900">
                 {formatRSD(tx.amount)}
               </div>
@@ -147,7 +144,6 @@ export default async function TransakcijaPage({
         <div className="grid grid-cols-2 gap-y-3 text-sm font-mono">
           <div className="text-slate-500">Tip</div>
           <div className="text-slate-800">{tx.type}</div>
-
           <div className="text-slate-500">Iznos</div>
           <div className="text-slate-800 tabular-nums">
             {formatRSD(tx.amount)}

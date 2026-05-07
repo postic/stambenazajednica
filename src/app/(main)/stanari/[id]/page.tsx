@@ -96,12 +96,12 @@ export default async function StanarPage({ params }: PageProps) {
               {stanar.ime_prezime || stanar.title}
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              {new Date(stanar.created).toLocaleDateString("sr-Latn-RS", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              {stanovi.length > 0 &&
+                stanovi.map((stan: any) => (
+                  stan.title || "-"
+              ))}
             </p>
+
           </div>
           <div className="flex gap-2 flex-wrap">
             <StatusBadge status={stanar.status ? "aktivan" : "pasivan"} />
@@ -120,7 +120,7 @@ export default async function StanarPage({ params }: PageProps) {
             Fotografija
           </div>
 
-          <div className="p-2">
+          <div data-field>
             {stanar.image && stanar.image.length > 0 ? (
               <img
                 src={stanar.image[0]}
@@ -129,7 +129,7 @@ export default async function StanarPage({ params }: PageProps) {
               />
             ) : (
               <div className="text-xs text-gray-400">
-                Nema fotografija
+                Nema fotografije
               </div>
             )}
           </div>
@@ -189,45 +189,7 @@ export default async function StanarPage({ params }: PageProps) {
 
           </div>
         </div>
-
       </div>
-
-      {/* 🏠 STANOVI */}
-      {stanovi.length > 0 && (
-        <div className="border border-gray-300 bg-white">
-
-          <div className="px-4 py-2 border-b border-gray-300 bg-slate-50 text-sm font-medium">
-            Stanovi
-          </div>
-
-          <div className="divide-y divide-gray-200">
-
-            {stanovi.map((stan: any) => (
-              <div
-                key={stan.id}
-                className="flex justify-between items-center px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm font-medium">
-                    {stan.title || "-"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Sprat: {stan.sprat || "-"}
-                  </p>
-                </div>
-
-                <a
-                  href={`/stanovi/${stan.id}`}
-                  className="text-xs "
-                >
-                  Pogledaj →
-                </a>
-              </div>
-            ))}
-
-          </div>
-        </div>
-      )}
 
     </div>
   );

@@ -4,6 +4,7 @@ import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import type { Stan } from "@/types/stan";
 import { parseStan } from "@/lib/drupal/getStan";
+import { Square, Layers3, Users } from "lucide-react";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
@@ -82,13 +83,21 @@ export default async function StanPage({ params }: PageProps) {
             <h1 className="text-xl font-semibold">
               {stan.title}
             </h1>
-            <p className="text-xs text-gray-500 mt-1">
-              {new Date(stan.created).toLocaleDateString("sr-Latn-RS", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
+            <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <Users className="h-4 w-4" />
+                <span>{stan.broj_stanara}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Layers3 className="h-4 w-4" />
+                <span>{stan.sprat}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Square className="h-4 w-4" />
+                <span>{stan.kvadratura} m²</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -177,7 +186,6 @@ export default async function StanPage({ params }: PageProps) {
           </div>
           )}
         </div>
-
       </div>
 
       {/* OPIS */}
