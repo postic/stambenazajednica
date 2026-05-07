@@ -54,8 +54,7 @@ export default function KvaroviPage() {
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Prijava i praćenje kvarova u zgradi
-          </p>
+            Prijava i praćenje kvarova u zgradi</p>
         </div>
 
         <div data-field>
