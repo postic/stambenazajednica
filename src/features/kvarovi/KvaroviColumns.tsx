@@ -8,9 +8,13 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "title",
     header: "Naziv",
-    width: "35%",
+    //width: "35%",
     render: (kvar) => (
-      <Link href={`/kvarovi/${kvar.id}`} className=" hover:underline" title={kvar.title}>
+      <Link
+        href={`/kvarovi/${kvar.id}`}
+        className="hover:underline"
+        title={kvar.title}
+      >
         {kvar.title}
       </Link>
     ),
@@ -37,24 +41,38 @@ export const kvaroviColumns: Column<Kvar>[] = [
     header: "Status",
     render: (kvar) => <StatusBadge status={kvar.status} />,
   },
-  {
-    key: "actions",
-    header: "Akcije",
-    align: "center",
-    width: "90px",
-    isAction: true,
-    render: (kvar) => (
-      <div className="flex justify-center gap-2">
-        <Link href={`/kvarovi/${kvar.id}`} className=" hover:text-blue-800" title="View">
-          <FaEye />
-        </Link>
-        <Link href={`/kvarovi/${kvar.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit">
-          <FaEdit />
-        </Link>
-        <button className="text-red-600 hover:text-red-800" title="Delete">
-          <FaTrash />
-        </button>
-      </div>
-    ),
-  },
+
+  // {
+  //   key: "actions",
+  //   header: "",
+  //   align: "center",
+  //   width: "90px",
+  //   isAction: true,
+  //   render: (kvar) => (
+  //     <div className="flex justify-center gap-2">
+  //       <Link
+  //         href={`/kvarovi/${kvar.id}`}
+  //         className="hover:text-gray-900"
+  //         title="Pregled"
+  //       >
+  //         <FaEye />
+  //       </Link>
+
+  //       <Link
+  //         href={`/kvarovi/${kvar.id}/edit`}
+  //         className="hover:text-gray-900"
+  //         title="Izmeni"
+  //       >
+  //         <FaEdit />
+  //       </Link>
+
+  //       <button
+  //         className="hover:text-red-600"
+  //         title="Obriši"
+  //       >
+  //         <FaTrash />
+  //       </button>
+  //     </div>
+  //   ),
+  // },
 ];

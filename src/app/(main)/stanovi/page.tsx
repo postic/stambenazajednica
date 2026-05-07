@@ -42,10 +42,18 @@ export default function StanoviPage() {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div>
-      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Stanovi
-      </h1>
+    <div className="max-w-4xl">
+
+      {/* HEADER */}
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-4">
+          <div data-field>
+            <h1 className="text-xl font-semibold">
+              Stanovi
+            </h1>
+          </div>
+        </div>
+      </div>
 
       {/* TABLE */}
       <DataTable<Stan>

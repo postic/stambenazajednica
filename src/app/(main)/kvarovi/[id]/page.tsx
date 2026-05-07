@@ -68,7 +68,7 @@ export default async function KvarPage({ params }: PageProps) {
             <h1 className="text-xl font-semibold">
               {kvar.title}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               {new Date(kvar.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",

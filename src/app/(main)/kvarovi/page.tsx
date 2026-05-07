@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
 import type { Kvar } from "@/types/kvar";
-import { Plus } from "lucide-react";
+import { Plus, Wrench, TriangleAlert, Hammer } from "lucide-react";
 import Link from "next/link";
+
 
 export default function KvaroviPage() {
   const [loading, setLoading] = useState(true);
@@ -43,23 +44,34 @@ export default function KvaroviPage() {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div>
-
-
+    <div className="max-w-4xl">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700">
-          Kvarovi
-        </h1>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div data-field>
+          <h1 className="text-xl font-semibold">
+            Kvarovi
+          </h1>
 
-        <Link
-          href="/kvarovi/new"
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium text-white bg-black-600 hover:bg-green-700 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Dodaj kvar
-        </Link>
+          <p className="mt-1 text-sm text-slate-500">
+            Prijava i praćenje kvarova u zgradi
+          </p>
+        </div>
+
+        <div data-field>
+          <Link
+            href="/kvarovi/new"
+            className="
+              inline-flex h-10 w-10 items-center justify-center
+              rounded-xl border border-gray-200
+              bg-white text-gray-700
+              hover:bg-gray-100
+              transition
+            "
+          >
+            <Plus className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
       {/* TABLE */}
