@@ -23,12 +23,12 @@ async function getStan(id: string): Promise<Stan | null> {
 
     const data = await res.json();
     const item = data?.data;
-    const stan = parseStan(data);
 
     if (!item) return null;
 
-    const images =
-      extractImages(item, data.included, "field_stan_images") ?? [];
+    const stan = parseStan(data);
+
+    const images = extractImages(item, data.included, "field_stan_images") ?? [];
 
     const tipRel = item.relationships?.field_tip_stana?.data;
     const tipIncluded =
@@ -36,8 +36,6 @@ async function getStan(id: string): Promise<Stan | null> {
       data.included?.find(
         (i: any) => i.type === tipRel.type && i.id === tipRel.id
       );
-
-    const tipName = tipIncluded?.attributes?.name || "-";
 
     return {
       id: item.id,
@@ -47,12 +45,10 @@ async function getStan(id: string): Promise<Stan | null> {
       image: images,
       sprat: item.attributes.field_sprat,
       kvadratura: item.attributes.field_kvadratura,
-
       broj_stanara: item.attributes.field_stan_broj_stanara,
       email: item.attributes.field_stan_email,
       telefon: item.attributes.field_stan_telefon,
-
-      tip: tipName ?? "",
+      tip: tipIncluded?.attributes?.name || "-",
       vlasnik: stan.vlasnik,
       stanari: stan.stanari || [],
     };
@@ -73,45 +69,43 @@ export default async function StanPage({ params }: PageProps) {
 
   const images = stan.image ?? [];
 
+  const spratRoman =
+    typeof stan.sprat === "number" ? toRoman(stan.sprat) : null;
+
   return (
     <div className="max-w-4xl">
 
       {/* HEADER */}
       <div className="mb-6">
-        <div className="flex items-start justify-between gap-4">
-          <div data-field>
-            <h1 className="text-xl font-semibold">
-              {stan.title}
-            </h1>
+        <h1 className="text-xl font-semibold">{stan.title}</h1>
 
-            <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
-              {stan.broj_stanara && (
-                <div className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4" />
-                  <span>{stan.broj_stanara}</span>
-                </div>
-              )}
+        <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
 
-              {stan.sprat !== null && stan.sprat !== undefined && (
-                <div className="flex items-center gap-1.5">
-                  <Layers3 className="h-4 w-4" />
-                  <span>{toRoman(stan.sprat)}</span>
-                </div>
-              )}
-
-              {stan.kvadratura && (
-                <div className="flex items-center gap-1.5">
-                  <Scaling className="h-4 w-4" />
-                  <span>{stan.kvadratura} m²</span>
-                </div>
-              )}
+          {!!stan.broj_stanara && (
+            <div className="flex items-center gap-1.5">
+              <Users className="h-4 w-4" />
+              <span>{stan.broj_stanara}</span>
             </div>
+          )}
 
-          </div>
+          {spratRoman && (
+            <div className="flex items-center gap-1.5">
+              <Layers3 className="h-4 w-4" />
+              <span>{spratRoman}</span>
+            </div>
+          )}
+
+          {!!stan.kvadratura && (
+            <div className="flex items-center gap-1.5">
+              <Scaling className="h-4 w-4" />
+              <span>{stan.kvadratura} m²</span>
+            </div>
+          )}
+
         </div>
       </div>
 
-      {/* GRID PANELS (with background like kvarovi) */}
+      {/* GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
         {/* INFO */}
@@ -120,31 +114,31 @@ export default async function StanPage({ params }: PageProps) {
             Info
           </h3>
 
-          <div className="text-sm">
+          <div className="text-sm space-y-3">
 
-            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+            <div>
               <p className="text-xs text-gray-500">Broj stanara</p>
-              <p>{stan.broj_stanara || "-"}</p>
+              <p>{stan.broj_stanara ?? "-"}</p>
             </div>
 
-            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+            <div>
               <p className="text-xs text-gray-500">Sprat</p>
-              <p>{toRoman(stan.sprat)}</p>
+              <p>{spratRoman ?? "-"}</p>
             </div>
 
-            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+            <div>
               <p className="text-xs text-gray-500">Kvadratura</p>
-              <p>{stan.kvadratura || "-"}  m²</p>
+              <p>{stan.kvadratura ?? "-"} m²</p>
             </div>
 
-            <div className="border-b border-gray-200 py-2 border-b border-gray-200 py-2">
+            <div>
               <p className="text-xs text-gray-500">Telefon</p>
-              <p>{stan.telefon || "-"}</p>
+              <p>{stan.telefon ?? "-"}</p>
             </div>
 
-            <div className="py-2">
+            <div>
               <p className="text-xs text-gray-500">E-mail</p>
-              <p>{stan.email || "-"}</p>
+              <p>{stan.email ?? "-"}</p>
             </div>
 
           </div>
@@ -156,13 +150,10 @@ export default async function StanPage({ params }: PageProps) {
             Stanari
           </h3>
 
-          <div className="text-sm">
-            {stan.stanari.length > 0 ? (
+          <div className="text-sm space-y-2">
+            {stan.stanari.length ? (
               stan.stanari.map((s: any) => (
-                <div
-                  key={s.id}
-                  className="border-b border-gray-200 py-2"
-                >
+                <div key={s.id} className="border-b border-gray-200 py-2">
                   <p className="text-xs text-gray-500">
                     {s.isVlasnik ? "Vlasnik stana" : "Stanar"}
                   </p>
@@ -170,9 +161,7 @@ export default async function StanPage({ params }: PageProps) {
                 </div>
               ))
             ) : (
-              <div className="text-gray-400">
-                <p className="text-xs text-gray-500 py-2">Nema stanara</p>
-              </div>
+              <p className="text-xs text-gray-500 py-2">Nema stanara</p>
             )}
           </div>
         </div>
@@ -182,19 +171,19 @@ export default async function StanPage({ params }: PageProps) {
           <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
             Vlasnik
           </h3>
+
           {!stan.vlasnik ? (
-            <div className="text-gray-400">
-              <p className="text-xs text-gray-500 py-2">Nema unetog vlasnika</p>
-            </div>
+            <p className="text-xs text-gray-500 py-2">
+              Nema unetog vlasnika
+            </p>
           ) : (
-          <div className="text-sm">
-            <div className="border-b border-gray-200 py-2">
+            <div className="text-sm">
               <p className="text-xs text-gray-500">Ime i prezime</p>
               <p>{stan.vlasnik}</p>
             </div>
-          </div>
           )}
         </div>
+
       </div>
 
       {/* OPIS */}
@@ -204,20 +193,6 @@ export default async function StanPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: stan.body }}
         />
       )}
-
-      {/*}
-      {images.length > 0 && (
-        <div className="mb-6 border border-slate-200">
-          <div className="px-4 py-2 border-b border-slate-200 bg-slate-50 text-sm font-medium">
-            Fotografije
-          </div>
-          <div className="p-4 [&_img]:rounded-none [&_img]:shadow-none">
-            <ImageGridLightbox images={images} />
-          </div>
-
-        </div>
-      )}
-      {*/}
 
     </div>
   );
