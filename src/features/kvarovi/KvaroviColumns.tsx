@@ -8,7 +8,7 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "title",
     header: "Naziv",
-    //width: "35%",
+    width: "35%",
     render: (kvar) => (
       <Link
         href={`/kvarovi/${kvar.id}`}
@@ -41,38 +41,4 @@ export const kvaroviColumns: Column<Kvar>[] = [
     header: "Status",
     render: (kvar) => <StatusBadge status={kvar.status} />,
   },
-
-  // {
-  //   key: "actions",
-  //   header: "",
-  //   align: "center",
-  //   width: "90px",
-  //   isAction: true,
-  //   render: (kvar) => (
-  //     <div className="flex justify-center gap-2">
-  //       <Link
-  //         href={`/kvarovi/${kvar.id}`}
-  //         className="hover:text-gray-900"
-  //         title="Pregled"
-  //       >
-  //         <FaEye />
-  //       </Link>
-
-  //       <Link
-  //         href={`/kvarovi/${kvar.id}/edit`}
-  //         className="hover:text-gray-900"
-  //         title="Izmeni"
-  //       >
-  //         <FaEdit />
-  //       </Link>
-
-  //       <button
-  //         className="hover:text-red-600"
-  //         title="Obriši"
-  //       >
-  //         <FaTrash />
-  //       </button>
-  //     </div>
-  //   ),
-  // },
 ];
