@@ -43,23 +43,18 @@ export default function TransakcijePage() {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div>
+    <div className="max-w-4xl">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700">
-          Transakcije
-        </h1>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div data-field>
+          <h1 className="text-xl font-semibold">
+            Transakcije
+          </h1>
 
-{/*}
-        <Link
-          href="/kvarovi/new"
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Dodaj transakciju
-        </Link>
-{*/}
+          <p className="mt-1 text-sm text-slate-500">
+            Praćenje svih prihoda i rashoda stambene zajednice</p>
+        </div>
 
       </div>
 

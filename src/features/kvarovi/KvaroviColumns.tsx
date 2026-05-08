@@ -8,7 +8,6 @@ export const kvaroviColumns: Column<Kvar>[] = [
   {
     key: "title",
     header: "Naziv",
-    width: "35%",
     render: (kvar) => (
       <Link
         href={`/kvarovi/${kvar.id}`}

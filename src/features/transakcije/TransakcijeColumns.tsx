@@ -9,7 +9,6 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
   {
     key: "title",
     header: "Naziv",
-    width: "25%",
     render: (t) => (
       <Link href={`/transakcije/${t.id}`} className=" hover:underline">
         {t.title}
@@ -42,19 +41,5 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
     header: "Stanje",
     align: "right",
     render: (t) => formatRSD(t.balance),
-  },
-  {
-    key: "actions",
-    header: "Akcije",
-    align: "center",
-    width: "90px",
-    isAction: true,
-    render: (t) => (
-      <div className="flex gap-2 justify-center">
-        <Link href={`/transakcije/${t.id}`} className=" hover:text-blue-800" title="View"><FaEye /></Link>
-        <Link href={`/transakcije/${t.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit"><FaEdit /></Link>
-        <button className="text-red-600"><FaTrash /></button>
-      </div>
-    ),
   },
 ];
