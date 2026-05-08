@@ -124,12 +124,12 @@ export function DataTable<T extends HasId>({
         <div
           key={col.key}
           className={`
-            flex justify-between items-start gap-4 py-2
+            flex justify-between items-center gap-4 py-2
             ${colIndex !== columns.length - 1 ? "border-b border-gray-200" : ""}
           `}
         >
           {/* LABEL */}
-          <span className="text-gray-400 text-xs font-medium uppercase tracking-wide">
+          <span className="text-gray-400 text-[11px] uppercase font-normal tracking-normal">
             {col.header}
           </span>
 
