@@ -81,13 +81,15 @@ export default async function AnketeDetailPage({
         </div>
       </div>
 
-      <div className="mt-3 mb-3 border p-3 bg-slate-50">
-        {anketa.pitanje}
+      <div className="mt-4 mb-4 rounded-xl border bg-white p-4">
+        <h2 className="text-base font-semibold text-gray-500 leading-snug">
+          {anketa.pitanje}
+        </h2>
       </div>
 
       {!isEmptyHtml(anketa.body) && (
         <div
-          className="mt-3 border p-3 bg-slate-50"
+          className="mt-3 mb-4 border p-3 bg-slate-50"
           dangerouslySetInnerHTML={{ __html: anketa.body }}
         />
       )}

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 type Opcija = {
   id: string;
@@ -21,7 +21,7 @@ export default function Voting({
   const totalVotes = opcije.reduce((sum, o) => sum + o.votes, 0);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {opcije.map((o) => {
         const percent = totalVotes
           ? Math.round((o.votes / totalVotes) * 100)
@@ -32,16 +32,32 @@ export default function Voting({
             key={o.id}
             onClick={() => onVote(o.id)}
             disabled={disabled}
-            className="w-full text-left border rounded p-2 hover:bg-gray-50 disabled:opacity-50"
+            className="
+              w-full text-left rounded-xl border
+              bg-white p-4 transition
+              hover:bg-gray-50 hover:border-gray-300
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
           >
-            <div className="flex justify-between text-sm">
-              <span>{o.label}</span>
-              <span>{percent}%</span>
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-base font-semibold text-gray-800">
+                {o.label}
+              </span>
+
+              <span className="text-sm text-gray-500 font-medium">
+                {percent}%
+              </span>
             </div>
 
-            <div className="h-2 bg-gray-200 rounded mt-1 overflow-hidden">
+            {/* BIGGER PROGRESS BAR */}
+            <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className="h-2 bg-black"
+                className="
+                  h-full rounded-full
+                  bg-gradient-to-r from-blue-400 to-blue-600
+                  transition-all duration-500
+                "
                 style={{ width: `${percent}%` }}
               />
             </div>
