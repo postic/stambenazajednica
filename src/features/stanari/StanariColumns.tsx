@@ -30,34 +30,4 @@ export const stanariColumns: Column<Stanar>[] = [
     render: (stanar) =>
       <StatusBadge status={stanar.tip ? "podstanar" : "stanar"} />
   },
-  {
-    key: "actions",
-    header: "Akcije",
-    width: "90px", // 👈 KLJUČNO
-    isAction: true,
-    render: (stanar) => (
-      <div className="flex justify-center gap-2">
-        <Link
-          href={`/stanari/${stanar.id}`}
-          className=" hover:text-blue-800"
-          title="View"
-        >
-          <FaEye />
-        </Link>
-        <Link
-          href={`/stanari/${stanar.id}/edit`}
-          className="text-yellow-600 hover:text-yellow-800"
-          title="Edit"
-        >
-          <FaEdit />
-        </Link>
-        <button
-          className="text-red-600 hover:text-red-800"
-          title="Delete"
-        >
-          <FaTrash />
-        </button>
-      </div>
-    ),
-  },
 ];

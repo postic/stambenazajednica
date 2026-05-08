@@ -51,6 +51,9 @@ export default function StanoviPage() {
             <h1 className="text-xl font-semibold">
               Stanovi
             </h1>
+
+            <p className="mt-1 text-sm text-slate-500">
+            Pregled svih stanova u zgradi</p>
           </div>
         </div>
       </div>

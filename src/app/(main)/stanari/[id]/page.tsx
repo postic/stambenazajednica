@@ -95,7 +95,7 @@ export default async function StanarPage({ params }: PageProps) {
             <h1 className="text-xl font-semibold">
               {stanar.ime_prezime || stanar.title}
             </h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               {stanovi.length > 0 &&
                 stanovi.map((stan: any) => (
                   stan.title || "-"
