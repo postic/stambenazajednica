@@ -46,35 +46,35 @@ export const dokumentiColumns: Column<Dokument>[] = [
     render: (d) =>
       <StatusBadge status={d.status ?? undefined} />
   },
-  {
-    key: "actions",
-    header: "Akcije",
-    width: "90px", // 👈 KLJUČNO
-    isAction: true,
-    render: (d) => (
-      <div className="flex justify-center gap-2">
-        <Link
-          href={`/dokumenti/${d.tip}/${d.id}`}
-          className=" hover:text-blue-800"
-          title="View"
-        >
-          <FaEye />
-        </Link>
-        <Link
-          href={`/dokumenti/${d.tip}/${d.id}/edit`}
-          className="text-yellow-600 hover:text-yellow-800"
-          title="Edit"
-        >
-          <FaEdit />
-        </Link>
-        <button
-          className="text-red-600 hover:text-red-800"
-          title="Delete"
-          onClick={() => handleDelete(d.id)}
-        >
-          <FaTrash />
-        </button>
-      </div>
-    ),
-  },
+  //{
+  //  key: "actions",
+  //  header: "Akcije",
+  //  width: "90px", // 👈 KLJUČNO
+  //  isAction: true,
+  //  render: (d) => (
+  //    <div className="flex justify-center gap-2">
+  //      <Link
+  //        href={`/dokumenti/${d.tip}/${d.id}`}
+  //        className=" hover:text-blue-800"
+  //        title="View"
+  //      >
+  //        <FaEye />
+  //      </Link>
+  //      <Link
+  //        href={`/dokumenti/${d.tip}/${d.id}/edit`}
+  //        className="text-yellow-600 hover:text-yellow-800"
+  //        title="Edit"
+  //      >
+  //        <FaEdit />
+  //      </Link>
+  //      <button
+  //        className="text-red-600 hover:text-red-800"
+  //        title="Delete"
+  //        onClick={() => handleDelete(d.id)}
+  //      >
+  //        <FaTrash />
+  //      </button>
+  //    </div>
+  //  ),
+  //},
 ];

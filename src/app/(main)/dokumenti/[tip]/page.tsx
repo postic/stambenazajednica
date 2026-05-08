@@ -25,8 +25,20 @@ export default async function DokumentiPage({ params }: PageProps) {
   }));
 
   return (
-    <div>
-      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">{tip}</h1>
+    <div className="max-w-4xl">
+
+      {/* HEADER */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div data-field>
+          <h1 className="text-xl font-semibold">
+            {tip}
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Digitalna arhiva stambene zajednice</p>
+        </div>
+
+      </div>
 
       {dokumenti.length === 0 ? (
         <p className="text-gray-500">Nema dokumenata.</p>

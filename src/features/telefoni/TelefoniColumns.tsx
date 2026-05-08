@@ -9,9 +9,7 @@ export const telefoniColumns: Column<Telefon>[] = [
     key: "title",
     header: "Naziv",
     render: (telefon) => (
-      <Link href={`/telefoni/${telefon.id}`} className=" hover:underline" title={telefon.title}>
-        {telefon.title}
-      </Link>
+      telefon.title
     ),
   },
   {
@@ -21,24 +19,24 @@ export const telefoniColumns: Column<Telefon>[] = [
       <span>{telefon.phone ?? "-"}</span>
     )
   },
-  {
-    key: "actions",
-    header: "Akcije",
-    width: "90px",
-    align: "center",
-    isAction: true,
-    render: (telefon) => (
-      <div className="flex justify-center gap-2">
-        <Link href={`/telefoni/${telefon.id}`} className=" hover:text-blue-800" title="View">
-          <FaEye />
-        </Link>
-        <Link href={`/telefoni/${telefon.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit">
-          <FaEdit />
-        </Link>
-        <button className="text-red-600 hover:text-red-800" title="Delete">
-          <FaTrash />
-        </button>
-      </div>
-    ),
-  },
+  //{
+  //  key: "actions",
+  //  header: "Akcije",
+  //  width: "90px",
+  //  align: "center",
+  //  isAction: true,
+  //  render: (telefon) => (
+  //    <div className="flex justify-center gap-2">
+  //      <Link href={`/telefoni/${telefon.id}`} className=" hover:text-blue-800" title="View">
+  //        <FaEye />
+  //      </Link>
+  //      <Link href={`/telefoni/${telefon.id}/edit`} className="text-yellow-600 hover:text-yellow-800" title="Edit">
+  //        <FaEdit />
+  //      </Link>
+  //      <button className="text-red-600 hover:text-red-800" title="Delete">
+  //        <FaTrash />
+  //      </button>
+  //    </div>
+  //  ),
+  //},
 ];
