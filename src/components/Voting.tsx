@@ -33,19 +33,19 @@ export default function Voting({
             onClick={() => onVote(o.id)}
             disabled={disabled}
             className="
-              w-full text-left rounded-xl border
-              bg-white p-4 transition
+              w-full text-left rounded-xl border border-gray-300
+              bg-slate-50 p-4 transition
               hover:bg-gray-50 hover:border-gray-300
               disabled:opacity-50 disabled:cursor-not-allowed
             "
           >
             {/* HEADER */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-base font-semibold text-gray-800">
+              <span className="text-gray-500 text-sm uppercase font-normal tracking-normal">
                 {o.label}
               </span>
 
-              <span className="text-sm text-gray-500 font-medium">
+              <span className="text-gray-500 text-sm uppercase font-normal tracking-normal">
                 {percent}%
               </span>
             </div>

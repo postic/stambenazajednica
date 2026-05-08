@@ -1,18 +1,22 @@
 import { notFound } from "next/navigation";
 import ObavestenjeForm from "./ObavestenjeForm";
 //import { getObavestenje, Obavestenje } from "@/lib/kvar";
-import BackButton from "@/components/BackButton";
 
 export default function NewObavestenjePage() {
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="mb-4">
-        <BackButton />
-      </div>
+    <div className="max-w-4xl">
 
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-6 text-slate-700">
-        Novo Obaveštenje
-      </h1>
+      {/* HEADER */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div data-field>
+          <h1 className="text-xl font-semibold">
+            Novo obaveštenje
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Objavite novosti i važne informacije za stanare.</p>
+        </div>
+      </div>
 
       <ObavestenjeForm />
     </div>

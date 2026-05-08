@@ -2,18 +2,22 @@ import { notFound } from "next/navigation";
 import KvarForm from "./KvarForm";
 import type { Kvar } from "@/types/kvar";
 import { getKvar, getFieldOptions } from "@/lib/kvar";
-import BackButton from "@/components/BackButton";
 
 export default function NewKvarPage() {
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="mb-4">
-        <BackButton />
-      </div>
+    <div className="max-w-4xl">
 
-      <h1 className="text-base uppercase tracking-wide font-semibold mb-6 text-slate-700">
-        Novi Kvar
-      </h1>
+      {/* HEADER */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div data-field>
+          <h1 className="text-xl font-semibold">
+            Prijava novog kvara
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Unesite detalje i prijavite problem stambenoj zajednici.</p>
+        </div>
+      </div>
 
       <KvarForm />
     </div>
