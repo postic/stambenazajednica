@@ -123,7 +123,7 @@ export default async function SednicaPage({ params }: PageProps) {
   if (!sednica) notFound();
 
   return (
-    <div className="max-w-4xl text-gray-800">
+    <div className="max-w-4xl">
       {/* HEADER */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
@@ -131,7 +131,7 @@ export default async function SednicaPage({ params }: PageProps) {
             <h1 className="text-xl font-semibold">
               {sednica.title}
             </h1>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               {new Date(sednica.created).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",

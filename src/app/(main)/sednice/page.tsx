@@ -43,11 +43,20 @@ export default function SednicePage() {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div>
+    <div className="max-w-4xl">
 
-      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">
-        Sednice
-      </h1>
+      {/* HEADER */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div data-field>
+          <h1 className="text-xl font-semibold">
+            Sednice
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Informacije o sastancima, odlukama i zapisnicima</p>
+        </div>
+
+      </div>
 
       {/* TABLE */}
       <DataTable<Sednica>

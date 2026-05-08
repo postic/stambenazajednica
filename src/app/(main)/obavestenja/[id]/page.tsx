@@ -62,7 +62,7 @@ export default async function ObavestenjePage({ params }: PageProps) {
         <h1 className="text-xl font-semibold">
           {obavestenje.title}
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-sm text-slate-400 mt-1">
           {new Date(obavestenje.created).toLocaleDateString("sr-Latn-RS", {
             day: "numeric",
             month: "long",
