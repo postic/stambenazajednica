@@ -28,34 +28,14 @@ export function useDashboardStats() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
-
     async function load() {
       try {
         setLoading(true);
 
-        const [kvarovi, obavestenja, ankete, sednice, stanari, stanovi, transakcije, telefoni] =
-          await Promise.all([
-            fetch(`${base}/jsonapi/node/kvar`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/obavestenje`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/anketa`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/sednica`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/stanar`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/stan`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/transakcija`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/telefon`).then((r) => r.json()),
-          ]);
+        const res = await fetch("/api/dashboard");
+        const data = await res.json();
 
-        setStats({
-          kvarovi: kvarovi?.data?.length ?? 0,
-          obavestenja: obavestenja?.data?.length ?? 0,
-          ankete: ankete?.data?.length ?? 0,
-          sednice: sednice?.data?.length ?? 0,
-          stanari: stanari?.data?.length ?? 0,
-          stanovi: stanovi?.data?.length ?? 0,
-          transakcije: transakcije?.data?.length ?? 0,
-          telefoni: transakcije?.data?.length ?? 0,
-        });
+        setStats(data);
       } catch (e) {
         console.error("Dashboard stats error:", e);
       } finally {
