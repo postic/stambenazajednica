@@ -6,6 +6,7 @@ type Stats = {
   kvarovi: number;
   obavestenja: number;
   ankete: number;
+  sednice: number;
   stanari: number;
   stanovi: number;
   telefoni: number;
@@ -17,6 +18,7 @@ export function useDashboardStats() {
     kvarovi: 0,
     obavestenja: 0,
     ankete: 0,
+    sednice: 0,
     stanari: 0,
     stanovi: 0,
     telefoni: 0,
@@ -32,12 +34,13 @@ export function useDashboardStats() {
       try {
         setLoading(true);
 
-        const [kvarovi, obavestenja, ankete, stanari, stanovi, transakcije, telefoni] =
+        const [kvarovi, obavestenja, ankete, sednice, stanari, stanovi, transakcije, telefoni] =
           await Promise.all([
             fetch(`${base}/jsonapi/node/kvar`).then((r) => r.json()),
             fetch(`${base}/jsonapi/node/obavestenje`).then((r) => r.json()),
             fetch(`${base}/jsonapi/node/anketa`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/user/user`).then((r) => r.json()),
+            fetch(`${base}/jsonapi/node/sednica`).then((r) => r.json()),
+            fetch(`${base}/jsonapi/node/stanar`).then((r) => r.json()),
             fetch(`${base}/jsonapi/node/stan`).then((r) => r.json()),
             fetch(`${base}/jsonapi/node/transakcija`).then((r) => r.json()),
             fetch(`${base}/jsonapi/node/telefon`).then((r) => r.json()),
@@ -47,6 +50,7 @@ export function useDashboardStats() {
           kvarovi: kvarovi?.data?.length ?? 0,
           obavestenja: obavestenja?.data?.length ?? 0,
           ankete: ankete?.data?.length ?? 0,
+          sednice: sednice?.data?.length ?? 0,
           stanari: stanari?.data?.length ?? 0,
           stanovi: stanovi?.data?.length ?? 0,
           transakcije: transakcije?.data?.length ?? 0,
