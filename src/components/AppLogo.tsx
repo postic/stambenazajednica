@@ -12,7 +12,7 @@ export default function AppLogo() {
       </div>
 
       <span className="font-semibold tracking-wide text-slate-800 dark:text-white">
-        Stambena zajednica
+        Komšija
       </span>
     </div>
   );

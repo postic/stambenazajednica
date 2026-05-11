@@ -70,7 +70,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
     <header className="h-16 bg-white dark:bg-gray-900 flex items-center justify-between px-4 md:px-6 border-b border-gray-200 dark:border-gray-800 shadow-sm">
 
       {/* LEFT SIDE */}
-      <div className="flex items-center gap-3 md:ml-8 lg:ml-12">
+      <div className="flex items-center gap-3 md:ml-4 lg:ml-6">
 
         {/* Mobile hamburger (fine tuned left) */}
         <button
@@ -102,14 +102,6 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
             <span className="hidden md:block text-sm">Install</span>
           </button>
         )}
-
-        {/* 🌙 Dark mode toggle */}
-        <button
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          onClick={() => setDarkMode(!darkMode)}
-        >
-          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
 
         {/* Loading */}
         {loading && (
