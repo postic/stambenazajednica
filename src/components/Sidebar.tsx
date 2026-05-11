@@ -26,14 +26,12 @@ interface SidebarProps {
 interface SubItem {
   title: string;
   href: string;
-  badge?: number;
 }
 
 interface SidebarItem {
   title: string;
   href?: string;
   icon?: any;
-  badge?: number;
   submenu?: SubItem[];
 }
 
@@ -99,31 +97,11 @@ export default function Sidebar({
     },
   ];
 
-  useEffect(() => {
-    menuSections.forEach((section) =>
-      section.items.forEach((item) => {
-        if (item.submenu) {
-          const activeSub = item.submenu.find((sub) =>
-            pathname.startsWith(sub.href)
-          );
-          if (activeSub) setOpenMenu(item.title);
-        }
-      })
-    );
-  }, [pathname]);
-
   const itemBase =
-    "group flex items-center w-full px-4 py-3 text-[15px] rounded-xl transition";
+    "group flex items-center justify-start w-full px-4 py-3 text-[15px] rounded-xl transition";
 
   const iconClass =
     "w-5 h-5 shrink-0 text-slate-500 group-hover:text-white transition-colors";
-
-  const Badge = ({ value }: { value?: number }) =>
-    value !== undefined ? (
-      <span className="ml-auto text-[11px] bg-slate-700 text-white px-2 py-0.5 rounded-full">
-        {value}
-      </span>
-    ) : null;
 
   const itemClass = (active: boolean) =>
     `${itemBase} ${
@@ -134,15 +112,13 @@ export default function Sidebar({
 
   return (
     <>
-      {/* MOBILE OVERLAY */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* SIDEBAR */}
       <aside
         className={`
           fixed md:static top-0 left-0 z-50
@@ -151,8 +127,7 @@ export default function Sidebar({
           flex flex-col
           transition-all duration-300
 
-          w-72
-          md:${collapsed ? "w-20" : "w-72"}
+          ${collapsed ? "w-20" : "w-72"}
 
           ${
             mobileOpen
@@ -161,15 +136,12 @@ export default function Sidebar({
           }
         `}
       >
-        {/* HEADER (FINAL PIXEL PERFECT ALIGN) */}
-        <div className="h-16 shrink-0 flex items-center border-b border-slate-800 px-3">
+        {/* HEADER */}
+        <div className="h-16 flex items-center border-b border-slate-800 px-3">
           <button
             onClick={() => {
-              if (isMobile) {
-                setMobileOpen(!mobileOpen);
-              } else {
-                setCollapsed(!collapsed);
-              }
+              if (isMobile) setMobileOpen(!mobileOpen);
+              else setCollapsed(!collapsed);
             }}
             className="p-2 ml-2 text-slate-300 hover:text-white"
           >
@@ -178,12 +150,12 @@ export default function Sidebar({
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-20">
+        <nav className="flex-1 overflow-y-auto px-2 py-4">
           {menuSections.map((section) => (
             <div key={section.title} className="mb-6">
 
-              {(!collapsed || mobileOpen) && (
-                <div className="px-3 mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
+              {!collapsed && (
+                <div className="px-3 mb-3 text-[11px] font-semibold uppercase text-slate-500">
                   {section.title}
                 </div>
               )}
@@ -191,34 +163,28 @@ export default function Sidebar({
               <ul className="space-y-2">
                 {section.items.map((item) => {
                   const Icon = item.icon;
+                  const isActive = pathname === item.href;
+
                   const isOpen = openMenu === item.title;
 
-                  const isParentActive =
-                    item.submenu &&
-                    item.submenu.some((sub) =>
-                      pathname.startsWith(sub.href)
-                    );
+                  const hasSub = item.submenu;
 
-                  if (item.submenu) {
-                    return (
-                      <li key={item.title}>
+                  return (
+                    <li key={item.title}>
+
+                      {/* PARENT */}
+                      {hasSub ? (
                         <button
                           onClick={() =>
                             setOpenMenu(isOpen ? null : item.title)
                           }
-                          className={itemClass(!!isParentActive)}
+                          className={itemClass(false)}
                         >
-                          {Icon && (
-                            <Icon
-                              className={`${iconClass} ${
-                                collapsed && !mobileOpen ? "mx-auto" : ""
-                              }`}
-                            />
-                          )}
+                          {Icon && <Icon className={iconClass} />}
 
-                          {(!collapsed || mobileOpen) && (
+                          {!collapsed && (
                             <>
-                              <span className="ml-3 flex-1">
+                              <span className="ml-3 flex-1 text-left">
                                 {item.title}
                               </span>
 
@@ -230,64 +196,50 @@ export default function Sidebar({
                             </>
                           )}
                         </button>
+                      ) : (
+                        <Link
+                          href={item.href || "#"}
+                          className={itemClass(isActive)}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {Icon && <Icon className={iconClass} />}
 
-                        {(!collapsed || mobileOpen) && (
-                          <div
-                            className={`overflow-hidden transition-all duration-300 ${
-                              isOpen ? "max-h-96 mt-2" : "max-h-0"
-                            }`}
-                          >
-                            <ul className="ml-6 pl-3 border-l border-slate-800 space-y-1">
-                              {item.submenu.map((sub) => (
-                                <li key={sub.href}>
-                                  <Link
-                                    href={sub.href}
-                                    onClick={() => setMobileOpen(false)}
-                                    className={`flex items-center px-3 py-2 rounded-lg text-[14px] transition ${
-                                      pathname === sub.href
-                                        ? "bg-white/10 text-white"
-                                        : "text-slate-400 hover:text-white hover:bg-white/5"
-                                    }`}
-                                  >
-                                    <span className="flex-1">
-                                      {sub.title}
-                                    </span>
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  }
-
-                  return (
-                    <li key={item.title}>
-                      <Link
-                        href={item.href || "#"}
-                        onClick={() => setMobileOpen(false)}
-                        className={itemClass(pathname === item.href)}
-                      >
-                        {Icon && (
-                          <Icon
-                            className={`${iconClass} ${
-                              collapsed && !mobileOpen ? "mx-auto" : ""
-                            }`}
-                          />
-                        )}
-
-                        {(!collapsed || mobileOpen) && (
-                          <span className="ml-3 flex-1">
-                            {item.title}
-                          </span>
-                        )}
-
-                        {(!collapsed || mobileOpen) &&
-                          item.badge !== undefined && (
-                            <Badge value={item.badge} />
+                          {!collapsed && (
+                            <span className="ml-3 flex-1 text-left">
+                              {item.title}
+                            </span>
                           )}
-                      </Link>
+                        </Link>
+                      )}
+
+                      {/* SUBMENU (only expanded mode) */}
+                      {hasSub && !collapsed && (
+                        <div
+                          className={`overflow-hidden transition-all ${
+                            isOpen ? "max-h-96 mt-2" : "max-h-0"
+                          }`}
+                        >
+                          <ul className="ml-6 pl-3 border-l border-slate-800 space-y-1">
+                            {item.submenu!.map((sub) => (
+                              <li key={sub.href}>
+                                <Link
+                                  href={sub.href}
+                                  className={`flex items-center px-3 py-2 text-[14px] rounded-lg transition ${
+                                    pathname === sub.href
+                                      ? "bg-white/10 text-white"
+                                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                                  }`}
+                                >
+                                  <span className="text-left">
+                                    {sub.title}
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
                     </li>
                   );
                 })}
