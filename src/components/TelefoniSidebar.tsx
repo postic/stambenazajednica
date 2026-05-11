@@ -13,9 +13,9 @@ type Telefon = {
 export default function TelefoniSidebar() {
   const [telefoni, setTelefoni] = useState<Telefon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [openCategories, setOpenCategories] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     async function load() {
@@ -43,8 +43,12 @@ export default function TelefoniSidebar() {
           const rel = t.relationships?.field_kategorija?.data;
 
           if (rel && !Array.isArray(rel)) {
-            const term = data.included?.find((inc: any) => inc.id === rel.id);
-            if (term) kategorija = term.attributes?.name || "Ostalo";
+            const term = data.included?.find(
+              (inc: any) => inc.id === rel.id
+            );
+            if (term) {
+              kategorija = term.attributes?.name || "Ostalo";
+            }
           }
 
           return {
@@ -59,8 +63,11 @@ export default function TelefoniSidebar() {
 
         const initialState: Record<string, boolean> = {};
         mapped.forEach((t) => {
-          initialState[t.kategorija] = false;
+          if (!initialState[t.kategorija]) {
+            initialState[t.kategorija] = false;
+          }
         });
+
         setOpenCategories(initialState);
       } catch (err) {
         console.error("Fetch error:", err);
@@ -91,10 +98,8 @@ export default function TelefoniSidebar() {
   const grouped = groupByCategory(telefoni);
 
   return (
-    <aside className="hidden xl:flex h-full bg-slate-50 text-slate-900 flex-col shadow-sm">
-
-      <div className="px-3 py-3 overflow-y-auto pb-8">
-
+    <aside className="hidden xl:flex h-full w-full bg-slate-50 text-slate-900 flex-col shadow-sm">
+      <div className="px-3 py-3 overflow-y-auto pb-10">
         {loading ? (
           <div className="text-sm text-slate-500 mt-2">
             Učitavanje...
@@ -105,16 +110,11 @@ export default function TelefoniSidebar() {
               const isOpen = openCategories[kategorija];
 
               return (
-<<<<<<< HEAD
                 <div key={kategorija} className="mb-2">
-=======
-                <div key={kategorija} className="mb-3">
->>>>>>> refs/remotes/origin/main
-
                   {/* HEADER */}
                   <button
                     onClick={() => toggleCategory(kategorija)}
-                    className="w-full sticky top-0 z-10 bg-slate-50 flex justify-between items-center text-[13px] font-semibold text-slate-800 uppercase py-2 px-1 hover:text-slate-900"
+                    className="w-full sticky top-0 z-10 bg-slate-50 flex items-center justify-between text-[13px] font-semibold uppercase text-slate-800 py-2 px-1 hover:text-slate-900"
                   >
                     <span>{kategorija}</span>
 
@@ -125,22 +125,18 @@ export default function TelefoniSidebar() {
                     />
                   </button>
 
-                  {/* TELEFONI */}
+                  {/* LISTA */}
                   {isOpen && (
                     <nav className="mt-1 space-y-1">
                       {items.map((t) => (
                         <a
                           key={t.id}
                           href={`tel:${t.phone}`}
-<<<<<<< HEAD
-                          className="flex items-center py-1 text-[15px] rounded-lg hover:bg-slate-100 transition"
-=======
                           className="flex items-center justify-between px-2 py-1.5 text-[14px] rounded-lg hover:bg-slate-100 transition"
->>>>>>> refs/remotes/origin/main
                         >
                           <span className="truncate">{t.title}</span>
 
-                          <span className="text-slate-500 text-sm ml-2">
+                          <span className="text-slate-500 text-sm ml-3 whitespace-nowrap">
                             {t.phone}
                           </span>
                         </a>
@@ -158,7 +154,6 @@ export default function TelefoniSidebar() {
             )}
           </>
         )}
-
       </div>
     </aside>
   );
