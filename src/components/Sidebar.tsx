@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import InstallBanner from "@/components/InstallBanner";
+
 import {
-  Menu,
   Users,
   Wrench,
   Megaphone,
@@ -16,7 +14,8 @@ import {
   ChevronDown,
   Wallet,
   Grid,
-  Building
+  Building,
+  Menu,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -43,11 +42,21 @@ interface MenuSection {
   items: SidebarItem[];
 }
 
-export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
-  const { user } = useAuth();
+export default function Sidebar({
+  mobileOpen,
+  setMobileOpen,
+}: SidebarProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const menuSections: MenuSection[] = [
     {
@@ -84,9 +93,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         {
           title: "Ostalo",
           icon: Grid,
-          submenu: [
-            { title: "Telefoni", href: "/telefoni" },
-          ],
+          submenu: [{ title: "Telefoni", href: "/telefoni" }],
         },
       ],
     },
@@ -106,143 +113,181 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   }, [pathname]);
 
   const itemBase =
-    "group relative w-full flex items-center px-3 py-2 text-[15px] transition";
+    "group flex items-center w-full px-4 py-3 text-[15px] rounded-xl transition";
 
-  const iconClass = "w-5 h-5 shrink-0 text-slate-400";
+  const iconClass =
+    "w-5 h-5 shrink-0 text-slate-500 group-hover:text-white transition-colors";
 
   const Badge = ({ value }: { value?: number }) =>
     value !== undefined ? (
-      <span className="ml-auto text-[11px] bg-slate-600 text-white px-1.5 py-0.5">
+      <span className="ml-auto text-[11px] bg-slate-700 text-white px-2 py-0.5 rounded-full">
         {value}
       </span>
     ) : null;
 
+  const itemClass = (active: boolean) =>
+    `${itemBase} ${
+      active
+        ? "bg-white/10 text-white"
+        : "text-slate-300 hover:bg-white/5 hover:text-white"
+    }`;
+
   return (
     <>
+      {/* MOBILE OVERLAY */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
+      {/* SIDEBAR */}
       <aside
         className={`
-          fixed md:static top-0 left-0 z-50 h-screen
-          bg-slate-900 text-white border-r border-slate-800
+          fixed md:static top-0 left-0 z-50
+          h-[100dvh]
+          bg-[#0B1120]
           flex flex-col
           transition-all duration-300
-          ${collapsed ? "md:w-16" : "md:w-64"}
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+
+          w-72
+          md:${collapsed ? "w-20" : "w-72"}
+
+          ${
+            mobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }
         `}
       >
-        {/* HEADER */}
-        <div className={`flex items-center p-4 ${collapsed ? "justify-center" : "justify-between"}`}>
-          {!collapsed && (
-            <span className="text-lg font-semibold truncate text-slate-200">
-              {user?.name}
-            </span>
-          )}
+        {/* HEADER (FINAL PIXEL PERFECT ALIGN) */}
+        <div className="h-16 shrink-0 flex items-center border-b border-slate-800 px-3">
           <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-2 hover:bg-slate-800 transition"
+            onClick={() => {
+              if (isMobile) {
+                setMobileOpen(!mobileOpen);
+              } else {
+                setCollapsed(!collapsed);
+              }
+            }}
+            className="p-2 ml-2 text-slate-300 hover:text-white"
           >
             <Menu className="w-5 h-5" />
           </button>
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 mt-2 overflow-y-auto">
+        <nav className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-20">
           {menuSections.map((section) => (
-            <div key={section.title} className="mb-4">
-              {!collapsed && (
-                <div className="px-4 mb-2 text-xs font-semibold text-slate-500 tracking-wider">
+            <div key={section.title} className="mb-6">
+
+              {(!collapsed || mobileOpen) && (
+                <div className="px-3 mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
                   {section.title}
                 </div>
               )}
 
-              <ul className="space-y-1 px-2">
+              <ul className="space-y-2">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isOpen = openMenu === item.title;
+
                   const isParentActive =
                     item.submenu &&
                     item.submenu.some((sub) =>
                       pathname.startsWith(sub.href)
                     );
 
-                  return (
-                    <li key={item.title}>
-                      {item.submenu ? (
-                        <>
-                          <button
-                            onClick={() => setOpenMenu(isOpen ? null : item.title)}
-                            className={`${itemBase} ${
-                              isParentActive ? "bg-slate-800" : "hover:bg-slate-800"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              {Icon && <Icon className={iconClass} />}
-                              {!collapsed && <span>{item.title}</span>}
-                            </div>
+                  if (item.submenu) {
+                    return (
+                      <li key={item.title}>
+                        <button
+                          onClick={() =>
+                            setOpenMenu(isOpen ? null : item.title)
+                          }
+                          className={itemClass(!!isParentActive)}
+                        >
+                          {Icon && (
+                            <Icon
+                              className={`${iconClass} ${
+                                collapsed && !mobileOpen ? "mx-auto" : ""
+                              }`}
+                            />
+                          )}
 
-                            {!collapsed && (
+                          {(!collapsed || mobileOpen) && (
+                            <>
+                              <span className="ml-3 flex-1">
+                                {item.title}
+                              </span>
+
                               <ChevronDown
-                                className={`w-4 h-4 ml-auto transition-transform ${
+                                className={`w-4 h-4 transition-transform ${
                                   isOpen ? "rotate-180" : ""
                                 }`}
                               />
-                            )}
-                          </button>
+                            </>
+                          )}
+                        </button>
 
+                        {(!collapsed || mobileOpen) && (
                           <div
                             className={`overflow-hidden transition-all duration-300 ${
-                              isOpen ? "max-h-96" : "max-h-0"
+                              isOpen ? "max-h-96 mt-2" : "max-h-0"
                             }`}
                           >
-                            {!collapsed && (
-                              <ul className="mt-1 border-l border-slate-800 ml-6 pl-3 space-y-1">
-                                {item.submenu.map((sub) => (
-                                  <li key={sub.href}>
-                                    <Link
-                                      href={sub.href}
-                                      onClick={() => {
-                                        setMobileOpen(false);
-                                        setOpenMenu(null);
-                                      }}
-                                      className={`flex items-center px-3 py-2 text-[14px] ${
-                                        pathname === sub.href
-                                          ? "text-white border-l-2 border-red-500 bg-slate-800"
-                                          : "text-slate-400 hover:text-white hover:bg-slate-800"
-                                      }`}
-                                    >
-                                      <span className="flex-1">{sub.title}</span>
-                                      {sub.badge !== undefined && <Badge value={sub.badge} />}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                            <ul className="ml-6 pl-3 border-l border-slate-800 space-y-1">
+                              {item.submenu.map((sub) => (
+                                <li key={sub.href}>
+                                  <Link
+                                    href={sub.href}
+                                    onClick={() => setMobileOpen(false)}
+                                    className={`flex items-center px-3 py-2 rounded-lg text-[14px] transition ${
+                                      pathname === sub.href
+                                        ? "bg-white/10 text-white"
+                                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                                    }`}
+                                  >
+                                    <span className="flex-1">
+                                      {sub.title}
+                                    </span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                        </>
-                      ) : (
-                        <Link
-                          href={item.href || "#"}
-                          onClick={() => {
-                            setMobileOpen(false);
-                            setOpenMenu(null);
-                          }}
-                          className={`${itemBase} ${
-                            pathname === item.href
-                              ? "bg-slate-800 text-white"
-                              : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                          }`}
-                        >
-                          {Icon && <Icon className={iconClass} />}
-                          {!collapsed && <span className="ml-3 flex-1">{item.title}</span>}
-                          {!collapsed && item.badge !== undefined && <Badge value={item.badge} />}
-                        </Link>
-                      )}
+                        )}
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li key={item.title}>
+                      <Link
+                        href={item.href || "#"}
+                        onClick={() => setMobileOpen(false)}
+                        className={itemClass(pathname === item.href)}
+                      >
+                        {Icon && (
+                          <Icon
+                            className={`${iconClass} ${
+                              collapsed && !mobileOpen ? "mx-auto" : ""
+                            }`}
+                          />
+                        )}
+
+                        {(!collapsed || mobileOpen) && (
+                          <span className="ml-3 flex-1">
+                            {item.title}
+                          </span>
+                        )}
+
+                        {(!collapsed || mobileOpen) &&
+                          item.badge !== undefined && (
+                            <Badge value={item.badge} />
+                          )}
+                      </Link>
                     </li>
                   );
                 })}

@@ -3,8 +3,10 @@
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+
 import UserAvatar from "@/components/UserAvatar";
-import NotificationsPanel from "./NotificationsPanel";
+import AppLogo from "@/components/AppLogo";
 
 import {
   DropdownMenu,
@@ -30,11 +32,8 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
   useEffect(() => {
     const root = window.document.documentElement;
 
-    if (darkMode) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    if (darkMode) root.classList.add("dark");
+    else root.classList.remove("dark");
   }, [darkMode]);
 
   // 📲 PWA install detection
@@ -45,19 +44,14 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-    };
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const handleInstallApp = async () => {
     if (!deferredPrompt) return;
 
     deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-
-    //console.log("PWA install result:", choice);
+    await deferredPrompt.userChoice;
 
     setDeferredPrompt(null);
   };
@@ -68,55 +62,54 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
       router.push("/login");
       router.refresh();
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error(error);
     }
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-900 shadow flex items-center justify-between px-4 md:px-6">
+    <header className="h-16 bg-white dark:bg-gray-900 flex items-center justify-between px-4 md:px-6 border-b border-gray-200 dark:border-gray-800 shadow-sm">
 
       {/* LEFT SIDE */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 md:ml-8 lg:ml-12">
 
-        {/* Mobile sidebar */}
+        {/* Mobile hamburger (fine tuned left) */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="md:hidden p-2 -ml-[3px] rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
           onClick={() => setMobileOpen(true)}
         >
           <Menu size={22} />
         </button>
 
-        <h1 className="font-bold text-lg md:text-2xl text-gray-900 dark:text-white">
-          Stambena zajednica
-        </h1>
+        {/* LOGO (mobile shifted right ~10px) */}
+        <Link href="/" className="flex items-center hover:opacity-80 transition">
+          <div className="scale-125 md:scale-150 ml-[10px] md:ml-0">
+            <AppLogo />
+          </div>
+        </Link>
+
       </div>
 
       {/* RIGHT SIDE */}
       <div className="flex items-center gap-3 md:gap-4">
 
-        {/* 📲 Install App (PWA) */}
+        {/* 📲 Install App */}
         {deferredPrompt && (
           <button
             onClick={handleInstallApp}
             className="flex items-center gap-1 px-3 py-2 rounded-md bg-primary text-white hover:bg-blue-700 transition"
-            title="Install App"
           >
             <Download size={18} />
             <span className="hidden md:block text-sm">Install</span>
           </button>
         )}
 
-{/*
-  <button
-    className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-    onClick={() => setDarkMode(!darkMode)}
-    title="Toggle Dark Mode"
-  >
-    {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-  </button>
-
-  <NotificationsPanel />
-*/}
+        {/* 🌙 Dark mode toggle */}
+        <button
+          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+          onClick={() => setDarkMode(!darkMode)}
+        >
+          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
 
         {/* Loading */}
         {loading && (
@@ -138,7 +131,6 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
           <DropdownMenu>
 
             <DropdownMenuTrigger className="flex items-center gap-2 cursor-pointer">
-
               <UserAvatar
                 name={user?.name}
                 picture={user?.picture}
@@ -148,11 +140,9 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
               <span className="hidden md:block text-gray-900 dark:text-white text-sm font-medium">
                 {user?.name}
               </span>
-
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-
               <DropdownMenuItem onClick={() => router.push("/profile")}>
                 Profile
               </DropdownMenuItem>
