@@ -91,22 +91,30 @@ export default function TelefoniSidebar() {
   const grouped = groupByCategory(telefoni);
 
   return (
-    <aside className="hidden xl:flex w-64 h-full bg-slate-50 text-slate-900 border-l border-slate-200 flex-col">
-      <div className="p-4 overflow-y-auto pb-10">
+    <aside className="hidden xl:flex h-full bg-slate-50 text-slate-900 flex-col shadow-sm">
+
+      <div className="px-3 py-3 overflow-y-auto pb-8">
+
         {loading ? (
-          <div className="text-sm text-slate-500 mt-2">Učitavanje...</div>
+          <div className="text-sm text-slate-500 mt-2">
+            Učitavanje...
+          </div>
         ) : (
           <>
             {Object.entries(grouped).map(([kategorija, items]) => {
               const isOpen = openCategories[kategorija];
 
               return (
+<<<<<<< HEAD
                 <div key={kategorija} className="mb-2">
+=======
+                <div key={kategorija} className="mb-3">
+>>>>>>> refs/remotes/origin/main
 
                   {/* HEADER */}
                   <button
                     onClick={() => toggleCategory(kategorija)}
-                    className="w-full sticky top-0 z-10 bg-slate-50 flex justify-between items-center text-sm font-bold text-slate-800 tracking-wide py-2 uppercase text-[13px] md:text-[14px] lg:text-[15px] hover:text-slate-900"
+                    className="w-full sticky top-0 z-10 bg-slate-50 flex justify-between items-center text-[13px] font-semibold text-slate-800 uppercase py-2 px-1 hover:text-slate-900"
                   >
                     <span>{kategorija}</span>
 
@@ -124,10 +132,15 @@ export default function TelefoniSidebar() {
                         <a
                           key={t.id}
                           href={`tel:${t.phone}`}
+<<<<<<< HEAD
                           className="flex items-center py-1 text-[15px] rounded-lg hover:bg-slate-100 transition"
+=======
+                          className="flex items-center justify-between px-2 py-1.5 text-[14px] rounded-lg hover:bg-slate-100 transition"
+>>>>>>> refs/remotes/origin/main
                         >
-                          <span className="flex-1 truncate">{t.title}</span>
-                          <span className="text-slate-500 ml-2">
+                          <span className="truncate">{t.title}</span>
+
+                          <span className="text-slate-500 text-sm ml-2">
                             {t.phone}
                           </span>
                         </a>
@@ -145,6 +158,7 @@ export default function TelefoniSidebar() {
             )}
           </>
         )}
+
       </div>
     </aside>
   );

@@ -2,69 +2,76 @@
 
 import "../globals.css";
 import { ReactNode, useState } from "react";
+
 import { AuthProvider } from "@/context/AuthContext";
+
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import TelefoniSidebar from "@/components/TelefoniSidebar";
-import AlertBanner from "@/components/AlertBanner";
-import { Toaster } from "sonner";
-import BalancePill from "@/components/BalancePill";
-import AllowNotifications from "@/components/AllowNotifications";
 import { AppBreadcrumb } from "@/components/AppBreadcrumb";
+import BalancePill from "@/components/BalancePill";
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+import { Toaster } from "sonner";
+
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <html lang="sr">
-      <body className="bg-gray-100 h-screen overflow-hidden">
+      <body className="bg-light overflow-hidden h-dvh">
+
         <AuthProvider>
-          <div className="flex h-screen">
+
+          {/* NAVBAR */}
+          <Navbar setMobileOpen={setMobileOpen} />
+
+          {/* MAIN LAYOUT */}
+          <div className="flex h-[calc(100dvh-64px)] overflow-hidden">
 
             {/* LEFT SIDEBAR */}
-            <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+            <aside className="shrink-0">
+              <Sidebar
+                mobileOpen={mobileOpen}
+                setMobileOpen={setMobileOpen}
+              />
+            </aside>
 
-            {/* MAIN AREA */}
-            <div className="flex flex-1 flex-col">
+            {/* MAIN CONTENT */}
+            <main className="flex-1 overflow-y-auto bg-gray-100 p-4 min-h-0">
 
-              {/* NAVBAR */}
-              <div className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-sm">
-                <Navbar setMobileOpen={setMobileOpen} />
+              <div className="mb-3 text-sm text-gray-500">
+                <AppBreadcrumb />
               </div>
 
-              {/* MAIN CONTENT + RIGHT SIDEBAR */}
-              <main className="flex flex-1 overflow-hidden">
+              {children}
 
-                {/* CONTENT AREA */}
-                <div className="flex-1 flex flex-col overflow-y-auto p-6">
+            </main>
 
-                  {/* BREADCRUMB */}
-                  <div className="mb-2 text-sm text-gray-500">
-                    <AppBreadcrumb />
-                  </div>
-                  {children}
+            {/* RIGHT SIDEBAR */}
+            <aside className="hidden xl:flex w-64 flex-col bg-white min-h-0">
 
-                </div>
+              {/* TOP STATIC BLOCK */}
+              <div className="shrink-0 border-b border-gray-100">
+                <BalancePill />
+              </div>
 
-                {/* RIGHT SIDEBAR */}
-                <div className="hidden lg:block">
-                  <TelefoniSidebar />
-                </div>
+              {/* SCROLL AREA */}
+              <div className="flex-1 overflow-y-auto min-h-0">
+                <TelefoniSidebar />
+              </div>
 
-                {/* BADGE */}
-                <div className="absolute right-4 top-3">
-                  <BalancePill />
-                </div>
-
-                {/* <AllowNotifications /> */}
-
-              </main>
-            </div>
+            </aside>
 
           </div>
 
           <Toaster position="top-center" richColors />
+
         </AuthProvider>
+
       </body>
     </html>
   );

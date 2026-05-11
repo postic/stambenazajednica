@@ -9,7 +9,6 @@ import {
   Home,
   Wallet,
   FileText,
-  CalendarCheck,
   CircleEllipsis,
   Grid,
   Phone
@@ -29,13 +28,7 @@ export default function DashboardPage() {
       href: "/transakcije",
     },
     {
-      title: "Ankete",
-      value: stats.ankete,
-      icon: ClipboardList,
-      href: "/ankete",
-    },
-    {
-      title: "Kvarovi",
+      title: "Otvoreni kvarovi",
       value: stats.kvarovi,
       icon: AlertTriangle,
       href: "/kvarovi",
@@ -47,10 +40,10 @@ export default function DashboardPage() {
       href: "/obavestenja",
     },
     {
-      title: "Sednice",
-      value: stats.sednice,
-      icon: CalendarCheck,
-      href: "/sednice",
+      title: "Aktivne ankete",
+      value: stats.ankete,
+      icon: ClipboardList,
+      href: "/ankete",
     },
     {
       title: "Stanari",
@@ -65,10 +58,10 @@ export default function DashboardPage() {
       href: "/stanovi",
     },
     {
-      title: "Dokumenti",
+      title: "Dokumenta",
       value: 0,
       icon: FileText,
-      href: "/dokumenti",
+      href: "/dokumenta",
     },
     {
       title: "Telefoni",
@@ -79,48 +72,30 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="max-w-4xl">
-
-      {/* HEADER */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div data-field>
-          <h1 className="text-xl font-semibold">
-            Kontrolna tabla
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Brz pristup statistikama, obaveštenjima, kvarovima i finansijama.</p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* TITLE */}
+      <h1 className="text-base uppercase tracking-wide font-semibold text-slate-700 mb-6">Dashboard</h1>
 
       {/* STATS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((s, i) => (
-          <Card
-            key={i}
-            className="border border-slate-200 rounded-xl bg-slate-50 shadow-none"
-          >
-            <CardContent className="flex items-center justify-between px-4">
-              <div className="space-y-0.5">
-                <Link
-                  href={s.href}
-                  className="text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-                >
-                  {s.title}
-                </Link>
+          <Link key={i} href={s.href} className="block">
+            <Card className="cursor-pointer hover:shadow-md transition">
+              <CardContent className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">{s.title}</p>
 
-                <p className="text-2xl font-bold text-slate-900 leading-none">
-                  {loading ? "..." : s.value}
-                </p>
-              </div>
+                  <p className="text-2xl font-bold">
+                    {loading ? "..." : s.value}
+                  </p>
+                </div>
 
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-200">
-                <s.icon className="w-5 h-5 text-slate-500" />
-              </div>
-            </CardContent>
-          </Card>
+                <s.icon className="w-6 h-6 text-slate-600" />
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
-
     </div>
   );
 }

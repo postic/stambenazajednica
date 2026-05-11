@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import InstallBanner from "@/components/InstallBanner";
+
 import {
-  Menu,
   Users,
   Wrench,
   Megaphone,
@@ -16,7 +14,8 @@ import {
   ChevronDown,
   Wallet,
   Grid,
-  Building
+  Building,
+  Menu,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -24,32 +23,20 @@ interface SidebarProps {
   setMobileOpen: (open: boolean) => void;
 }
 
-interface SubItem {
-  title: string;
-  href: string;
-  badge?: number;
-}
-
-interface SidebarItem {
-  title: string;
-  href?: string;
-  icon?: any;
-  badge?: number;
-  submenu?: SubItem[];
-}
-
-interface MenuSection {
-  title: string;
-  items: SidebarItem[];
-}
-
 export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
-  const { user } = useAuth();
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const menuSections: MenuSection[] = [
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const menuSections = [
     {
       title: "ZGRADA",
       items: [
@@ -84,114 +71,118 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         {
           title: "Ostalo",
           icon: Grid,
-          submenu: [
-            { title: "Telefoni", href: "/telefoni" },
-          ],
+          submenu: [{ title: "Telefoni", href: "/telefoni" }],
         },
       ],
     },
   ];
 
-  useEffect(() => {
-    menuSections.forEach((section) =>
-      section.items.forEach((item) => {
-        if (item.submenu) {
-          const activeSub = item.submenu.find((sub) =>
-            pathname.startsWith(sub.href)
-          );
-          if (activeSub) setOpenMenu(item.title);
-        }
-      })
-    );
-  }, [pathname]);
-
+  /* 🔥 COMPACT MENU */
   const itemBase =
+<<<<<<< HEAD
     "group relative w-full flex items-center px-3 py-1 text-[15px] transition";
+=======
+    `
+    group flex items-center w-full rounded-lg transition
+    px-3 py-1 md:py-1.5
+    text-[13px] md:text-[13.5px]
+    leading-tight
+    `;
+>>>>>>> refs/remotes/origin/main
 
-  const iconClass = "w-5 h-5 shrink-0 text-slate-400";
-
-  const Badge = ({ value }: { value?: number }) =>
-    value !== undefined ? (
-      <span className="ml-auto text-[11px] bg-slate-600 text-white px-1.5 py-0.5">
-        {value}
-      </span>
-    ) : null;
+  const itemClass = (active: boolean) =>
+    `${itemBase} ${
+      active
+        ? "bg-white/10 text-white"
+        : "text-slate-300 hover:bg-white/5 hover:text-white"
+    }`;
 
   return (
     <>
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={`
-          fixed md:static top-0 left-0 z-50 h-screen
-          bg-slate-900 text-white border-r border-slate-800
+          fixed md:static top-0 left-0 z-50
+          h-[100dvh]
+          bg-[#0B1120]
           flex flex-col
+          overflow-hidden
           transition-all duration-300
-          ${collapsed ? "md:w-16" : "md:w-64"}
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+
+          ${collapsed ? "w-20" : "w-72"}
+
+          ${
+            mobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }
         `}
       >
-        {/* HEADER */}
-        <div className={`flex items-center p-4 ${collapsed ? "justify-center" : "justify-between"}`}>
-          {!collapsed && (
-            <span className="text-lg font-semibold truncate text-slate-200">
-              {user?.name}
-            </span>
-          )}
+        {/* HEADER (malo manji = više prostora za meni) */}
+        <div className="h-11 md:h-12 flex items-center border-b border-slate-800 px-3 shrink-0">
           <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-2 hover:bg-slate-800 transition"
+            onClick={() => {
+              if (isMobile) setMobileOpen(!mobileOpen);
+              else setCollapsed(!collapsed);
+            }}
+            className="p-2 text-slate-300 hover:text-white"
           >
             <Menu className="w-5 h-5" />
           </button>
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 mt-2 overflow-y-auto">
+        <nav className="flex-1 overflow-y-auto px-2 py-1 md:py-2">
           {menuSections.map((section) => (
-            <div key={section.title} className="mb-4">
+            <div key={section.title} className="mb-2 md:mb-4">
               {!collapsed && (
-                <div className="px-4 mb-2 text-xs font-semibold text-slate-500 tracking-wider">
+                <div className="px-3 mb-1 text-[10px] md:text-[11px] font-semibold uppercase text-slate-500">
                   {section.title}
                 </div>
               )}
 
-              <ul className="space-y-1 px-2">
+              {/* tighter spacing */}
+              <ul className="space-y-0.5 md:space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
+                  const isActive = pathname === item.href;
                   const isOpen = openMenu === item.title;
-                  const isParentActive =
-                    item.submenu &&
-                    item.submenu.some((sub) =>
-                      pathname.startsWith(sub.href)
-                    );
+                  const hasSub = item.submenu;
 
                   return (
                     <li key={item.title}>
-                      {item.submenu ? (
-                        <>
-                          <button
-                            onClick={() => setOpenMenu(isOpen ? null : item.title)}
-                            className={`${itemBase} ${
-                              isParentActive ? "bg-slate-800" : "hover:bg-slate-800"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              {Icon && <Icon className={iconClass} />}
-                              {!collapsed && <span>{item.title}</span>}
-                            </div>
+                      {hasSub ? (
+                        <button
+                          onClick={() =>
+                            setOpenMenu(isOpen ? null : item.title)
+                          }
+                          className={itemClass(false)}
+                        >
+                          {/* ICON CENTER (kept clean) */}
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {Icon && (
+                              <Icon className="w-5 h-5 block mx-auto text-slate-500 group-hover:text-white transition-colors" />
+                            )}
+                          </div>
 
-                            {!collapsed && (
+                          {!collapsed && (
+                            <>
+                              <span className="ml-3 flex-1 text-left">
+                                {item.title}
+                              </span>
+
                               <ChevronDown
-                                className={`w-4 h-4 ml-auto transition-transform ${
+                                className={`w-4 h-4 transition-transform ${
                                   isOpen ? "rotate-180" : ""
                                 }`}
                               />
+<<<<<<< HEAD
                             )}
                           </button>
 
@@ -225,23 +216,57 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                             )}
                           </div>
                         </>
+=======
+                            </>
+                          )}
+                        </button>
+>>>>>>> refs/remotes/origin/main
                       ) : (
                         <Link
                           href={item.href || "#"}
-                          onClick={() => {
-                            setMobileOpen(false);
-                            setOpenMenu(null);
-                          }}
-                          className={`${itemBase} ${
-                            pathname === item.href
-                              ? "bg-slate-800 text-white"
-                              : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                          className={itemClass(isActive)}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {Icon && (
+                              <Icon className="w-5 h-5 block mx-auto text-slate-500 group-hover:text-white transition-colors" />
+                            )}
+                          </div>
+
+                          {!collapsed && (
+                            <span className="ml-3 flex-1 text-left">
+                              {item.title}
+                            </span>
+                          )}
+                        </Link>
+                      )}
+
+                      {hasSub && !collapsed && (
+                        <div
+                          className={`overflow-hidden transition-all ${
+                            isOpen ? "max-h-96 mt-1" : "max-h-0"
                           }`}
                         >
-                          {Icon && <Icon className={iconClass} />}
-                          {!collapsed && <span className="ml-3 flex-1">{item.title}</span>}
-                          {!collapsed && item.badge !== undefined && <Badge value={item.badge} />}
-                        </Link>
+                          <ul className="ml-5 pl-3 border-l border-slate-800 space-y-0.5">
+                            {item.submenu!.map((sub) => (
+                              <li key={sub.href}>
+                                <Link
+                                  href={sub.href}
+                                  className="
+                                    flex items-center px-3 py-1
+                                    text-[12.5px] md:text-[13px]
+                                    text-slate-400
+                                    hover:text-white hover:bg-white/5
+                                    rounded-lg
+                                    leading-tight
+                                  "
+                                >
+                                  {sub.title}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
                     </li>
                   );
