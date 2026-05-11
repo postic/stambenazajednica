@@ -31,11 +31,14 @@ export function useDashboardStats() {
         setLoading(true);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         const res = await fetch("/api/dashboard");
         const data = await res.json();
 
         setStats(data);
 =======
+=======
+>>>>>>> parent of 4ee7d89 (Dashboard)
         const [kvarovi, obavestenja, ankete, stanari, stanovi, transakcije, telefoni] =
           await Promise.all([
             fetch(`${base}/jsonapi/node/kvar`).then((r) => r.json()),
