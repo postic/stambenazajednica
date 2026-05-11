@@ -121,11 +121,12 @@ export default function Sidebar({
     );
   }, [pathname]);
 
+  // KOMPAKTNIJI MENU
   const itemBase =
-    "group flex items-center w-full px-3 py-2 text-[14px] rounded-xl transition";
+    "group flex items-center w-full px-3 py-1 min-h-[32px] text-[14px] rounded-lg transition";
 
   const iconClass =
-    "w-5 h-5 shrink-0 text-slate-500 group-hover:text-white transition";
+    "w-4 h-4 shrink-0 text-slate-500 group-hover:text-white transition";
 
   const isActive = (href?: string) => href && pathname === href;
 
@@ -144,7 +145,7 @@ export default function Sidebar({
           h-[100dvh] bg-[#0B1120]
           flex flex-col overflow-hidden
           transition-all duration-300
-          w-72 md:${collapsed ? "w-20" : "w-72"}
+          ${collapsed ? "w-20" : "w-72"}
           ${
             mobileOpen
               ? "translate-x-0"
@@ -152,29 +153,31 @@ export default function Sidebar({
           }
         `}
       >
-        <div className="h-12 flex items-center border-b border-slate-800 px-3 shrink-0">
+        {/* HEADER */}
+        <div className="h-10 flex items-center justify-center border-b border-slate-800 px-2 shrink-0">
           <button
             onClick={() =>
               isMobile
                 ? setMobileOpen(!mobileOpen)
                 : setCollapsed(!collapsed)
             }
-            className="p-2 text-slate-300 hover:text-white"
+            className="p-1 text-slate-300 hover:text-white transition"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 py-2">
+        {/* NAV */}
+        <nav className="flex-1 overflow-y-auto px-2 py-1">
           {menuSections.map((section) => (
-            <div key={section.title} className="mb-4">
+            <div key={section.title} className="my-6">
               {!collapsed && (
-                <div className="px-3 mb-2 text-[11px] font-semibold uppercase text-slate-500">
+                <div className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {section.title}
                 </div>
               )}
 
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {section.items.map((item: SidebarItem) => {
                   const Icon = item.icon;
                   const isOpen = openMenu === item.title;
@@ -208,12 +211,12 @@ export default function Sidebar({
 
                           {(!collapsed || mobileOpen) && (
                             <>
-                              <span className="ml-3 flex-1">
+                              <span className="ml-3 flex-1 text-left">
                                 {item.title}
                               </span>
 
                               <ChevronDown
-                                className={`w-4 h-4 transition-transform ${
+                                className={`w-3.5 h-3.5 transition-transform ${
                                   isOpen ? "rotate-180" : ""
                                 }`}
                               />
@@ -222,13 +225,13 @@ export default function Sidebar({
                         </button>
 
                         {isOpen && (!collapsed || mobileOpen) && (
-                          <ul className="ml-6 mt-1 pl-3 border-l border-slate-800 space-y-1">
+                          <ul className="ml-4 mt-1 pl-3 border-l border-slate-800 space-y-0.5">
                             {item.submenu.map((sub) => (
                               <li key={sub.href}>
                                 <Link
                                   href={sub.href}
                                   onClick={() => setMobileOpen(false)}
-                                  className={`block px-3 py-2 text-[13px] rounded-lg transition ${
+                                  className={`block px-3 py-1 text-[14px] rounded-md transition ${
                                     pathname === sub.href
                                       ? "bg-white/10 text-white"
                                       : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -266,7 +269,7 @@ export default function Sidebar({
                         )}
 
                         {(!collapsed || mobileOpen) && (
-                          <span className="ml-3 flex-1">
+                          <span className="ml-3 flex-1 text-left">
                             {item.title}
                           </span>
                         )}
