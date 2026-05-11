@@ -98,7 +98,7 @@ export default function Sidebar({
   ];
 
   const itemBase =
-    "group flex items-center justify-start w-full px-4 py-3 text-[15px] rounded-xl transition";
+    "group flex items-center justify-start w-full px-3 py-2 text-[14px] rounded-xl transition";
 
   const iconClass =
     "w-5 h-5 shrink-0 text-slate-500 group-hover:text-white transition-colors";
@@ -150,17 +150,17 @@ export default function Sidebar({
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 overflow-y-auto px-2 py-4">
+        <nav className="flex-1 overflow-y-auto px-2 py-2">
           {menuSections.map((section) => (
-            <div key={section.title} className="mb-6">
+            <div key={section.title} className="mb-4">
 
               {!collapsed && (
-                <div className="px-3 mb-3 text-[11px] font-semibold uppercase text-slate-500">
+                <div className="px-3 mb-2 text-[11px] font-semibold uppercase text-slate-500">
                   {section.title}
                 </div>
               )}
 
-              <ul className="space-y-2">
+              <ul className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
@@ -224,7 +224,7 @@ export default function Sidebar({
                               <li key={sub.href}>
                                 <Link
                                   href={sub.href}
-                                  className={`flex items-center px-3 py-2 text-[14px] rounded-lg transition ${
+                                  className={`flex items-center px-3 py-1.5 text-[13px] rounded-lg transition ${
                                     pathname === sub.href
                                       ? "bg-white/10 text-white"
                                       : "text-slate-400 hover:text-white hover:bg-white/5"
