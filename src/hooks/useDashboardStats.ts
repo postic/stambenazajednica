@@ -30,36 +30,23 @@ export function useDashboardStats() {
       try {
         setLoading(true);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         const res = await fetch("/api/dashboard");
+
+        if (!res.ok) {
+          throw new Error("Failed to load dashboard stats");
+        }
+
         const data = await res.json();
 
-        setStats(data);
-=======
-=======
->>>>>>> parent of 4ee7d89 (Dashboard)
-        const [kvarovi, obavestenja, ankete, stanari, stanovi, transakcije, telefoni] =
-          await Promise.all([
-            fetch(`${base}/jsonapi/node/kvar`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/obavestenje`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/anketa`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/user/user`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/stan`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/transakcija`).then((r) => r.json()),
-            fetch(`${base}/jsonapi/node/telefon`).then((r) => r.json()),
-          ]);
-
         setStats({
-          kvarovi: kvarovi?.data?.length ?? 0,
-          obavestenja: obavestenja?.data?.length ?? 0,
-          ankete: ankete?.data?.length ?? 0,
-          stanari: stanari?.data?.length ?? 0,
-          stanovi: stanovi?.data?.length ?? 0,
-          transakcije: transakcije?.data?.length ?? 0,
-          telefoni: transakcije?.data?.length ?? 0,
+          kvarovi: data.kvarovi ?? 0,
+          obavestenja: data.obavestenja ?? 0,
+          ankete: data.ankete ?? 0,
+          stanari: data.stanari ?? 0,
+          stanovi: data.stanovi ?? 0,
+          telefoni: data.telefoni ?? 0,
+          transakcije: data.transakcije ?? 0,
         });
->>>>>>> parent of 4ee7d89 (Dashboard)
       } catch (e) {
         console.error("Dashboard stats error:", e);
       } finally {
