@@ -24,6 +24,7 @@ interface SidebarProps {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
 =======
 interface SubItem {
@@ -50,6 +51,9 @@ export default function Sidebar({
   setMobileOpen,
 }: SidebarProps) {
 >>>>>>> parent of b5d2742 (Dashboard)
+=======
+export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
+>>>>>>> refs/remotes/origin/main
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -104,6 +108,9 @@ export default function Sidebar({
   ];
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> refs/remotes/origin/main
   /* 🔥 COMPACT MENU */
   const itemBase =
 <<<<<<< HEAD
@@ -116,6 +123,7 @@ export default function Sidebar({
     leading-tight
     `;
 >>>>>>> refs/remotes/origin/main
+<<<<<<< HEAD
 =======
   useEffect(() => {
     menuSections.forEach((section) =>
@@ -143,6 +151,8 @@ export default function Sidebar({
         {value}
       </span>
     ) : null;
+=======
+>>>>>>> refs/remotes/origin/main
 
   const itemClass = (active: boolean) =>
     `${itemBase} ${
@@ -182,12 +192,17 @@ export default function Sidebar({
         `}
       >
 <<<<<<< HEAD
+<<<<<<< HEAD
         {/* HEADER (malo manji = više prostora za meni) */}
         <div className="h-11 md:h-12 flex items-center border-b border-slate-800 px-3 shrink-0">
 =======
         {/* HEADER (FINAL PIXEL PERFECT ALIGN) */}
         <div className="h-16 shrink-0 flex items-center border-b border-slate-800 px-3">
 >>>>>>> parent of b5d2742 (Dashboard)
+=======
+        {/* HEADER (malo manji = više prostora za meni) */}
+        <div className="h-11 md:h-12 flex items-center border-b border-slate-800 px-3 shrink-0">
+>>>>>>> refs/remotes/origin/main
           <button
             onClick={() => {
               if (isMobile) {
@@ -204,6 +219,7 @@ export default function Sidebar({
 
         {/* NAV */}
 <<<<<<< HEAD
+<<<<<<< HEAD
         <nav className="flex-1 overflow-y-auto px-2 py-1 md:py-2">
           {menuSections.map((section) => (
             <div key={section.title} className="mb-2 md:mb-4">
@@ -217,6 +233,13 @@ export default function Sidebar({
               {(!collapsed || mobileOpen) && (
                 <div className="px-3 mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
 >>>>>>> parent of b5d2742 (Dashboard)
+=======
+        <nav className="flex-1 overflow-y-auto px-2 py-1 md:py-2">
+          {menuSections.map((section) => (
+            <div key={section.title} className="mb-2 md:mb-4">
+              {!collapsed && (
+                <div className="px-3 mb-1 text-[10px] md:text-[11px] font-semibold uppercase text-slate-500">
+>>>>>>> refs/remotes/origin/main
                   {section.title}
                 </div>
               )}
@@ -253,12 +276,16 @@ export default function Sidebar({
                           className={itemClass(!!isParentActive)}
                         >
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> refs/remotes/origin/main
                           {/* ICON CENTER (kept clean) */}
                           <div className="w-6 h-6 flex items-center justify-center">
                             {Icon && (
                               <Icon className="w-5 h-5 block mx-auto text-slate-500 group-hover:text-white transition-colors" />
                             )}
                           </div>
+<<<<<<< HEAD
 =======
                           {Icon && (
                             <Icon
@@ -268,6 +295,8 @@ export default function Sidebar({
                             />
                           )}
 >>>>>>> parent of b5d2742 (Dashboard)
+=======
+>>>>>>> refs/remotes/origin/main
 
                           {(!collapsed || mobileOpen) && (
                             <>
@@ -319,6 +348,9 @@ export default function Sidebar({
                           )}
                         </button>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> refs/remotes/origin/main
 >>>>>>> refs/remotes/origin/main
                       ) : (
                         <Link
@@ -331,8 +363,11 @@ export default function Sidebar({
                               <Icon className="w-5 h-5 block mx-auto text-slate-500 group-hover:text-white transition-colors" />
                             )}
                           </div>
+<<<<<<< HEAD
 =======
 >>>>>>> parent of b5d2742 (Dashboard)
+=======
+>>>>>>> refs/remotes/origin/main
 
                         {(!collapsed || mobileOpen) && (
                           <div
@@ -421,9 +456,12 @@ export default function Sidebar({
                           </ul>
                         </div>
                       )}
+<<<<<<< HEAD
 =======
                       </Link>
 >>>>>>> parent of b5d2742 (Dashboard)
+=======
+>>>>>>> refs/remotes/origin/main
                     </li>
                   );
                 })}
