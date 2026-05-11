@@ -101,7 +101,7 @@ export default function TelefoniSidebar() {
               const isOpen = openCategories[kategorija];
 
               return (
-                <div key={kategorija} className="mb-4">
+                <div key={kategorija} className="mb-2">
 
                   {/* HEADER */}
                   <button
@@ -124,7 +124,7 @@ export default function TelefoniSidebar() {
                         <a
                           key={t.id}
                           href={`tel:${t.phone}`}
-                          className="flex items-center px-3 py-2 text-[15px] rounded-lg hover:bg-slate-100 transition"
+                          className="flex items-center py-1 text-[15px] rounded-lg hover:bg-slate-100 transition"
                         >
                           <span className="flex-1 truncate">{t.title}</span>
                           <span className="text-slate-500 ml-2">

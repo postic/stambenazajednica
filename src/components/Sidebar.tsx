@@ -106,7 +106,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   }, [pathname]);
 
   const itemBase =
-    "group relative w-full flex items-center px-3 py-2 text-[15px] transition";
+    "group relative w-full flex items-center px-3 py-1 text-[15px] transition";
 
   const iconClass = "w-5 h-5 shrink-0 text-slate-400";
 
@@ -210,7 +210,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                                         setMobileOpen(false);
                                         setOpenMenu(null);
                                       }}
-                                      className={`flex items-center px-3 py-2 text-[14px] ${
+                                      className={`flex items-center px-3 py-1 text-[14px] ${
                                         pathname === sub.href
                                           ? "text-white border-l-2 border-red-500 bg-slate-800"
                                           : "text-slate-400 hover:text-white hover:bg-slate-800"
