@@ -139,10 +139,6 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
                 Profile
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => router.push("/settings")}>
-                Settings
-              </DropdownMenuItem>
-
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="text-red-500 cursor-pointer"

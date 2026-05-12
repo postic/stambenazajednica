@@ -53,7 +53,6 @@ export default function AnketePage() {
           <p className="mt-1 text-sm text-slate-500">
             Transparentno donošenje odluka kroz ankete i glasanje</p>
         </div>
-
       </div>
 
       {/* TABLE */}

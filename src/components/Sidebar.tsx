@@ -154,7 +154,7 @@ export default function Sidebar({
         `}
       >
         {/* HEADER */}
-        <div className="h-10 flex items-center justify-center border-b border-slate-800 px-2 shrink-0">
+        <div className="h-16 flex items-center justify-center border-b border-slate-800 px-2 shrink-0">
           <button
             onClick={() =>
               isMobile

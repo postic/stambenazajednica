@@ -6,6 +6,7 @@ type Stats = {
   kvarovi: number;
   obavestenja: number;
   ankete: number;
+  sednice: number;
   stanari: number;
   stanovi: number;
   telefoni: number;
@@ -17,6 +18,7 @@ export function useDashboardStats() {
     kvarovi: 0,
     obavestenja: 0,
     ankete: 0,
+    sednice: 0,
     stanari: 0,
     stanovi: 0,
     telefoni: 0,
@@ -42,6 +44,7 @@ export function useDashboardStats() {
           kvarovi: data.kvarovi ?? 0,
           obavestenja: data.obavestenja ?? 0,
           ankete: data.ankete ?? 0,
+          sednice: data.sednice ?? 0,
           stanari: data.stanari ?? 0,
           stanovi: data.stanovi ?? 0,
           telefoni: data.telefoni ?? 0,
