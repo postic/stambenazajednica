@@ -123,10 +123,10 @@ export default function Sidebar({
 
   // KOMPAKTNIJI MENU
   const itemBase =
-    "group flex items-center w-full px-3 py-1 min-h-[32px] text-[14px] rounded-lg transition";
+    "group flex items-center w-full px-3 py-2 text-[14px] font-medium rounded-xl transition-all duration-200";
 
   const iconClass =
-    "w-4 h-4 shrink-0 text-slate-500 group-hover:text-white transition";
+    "w-[18px] h-[18px] shrink-0 text-slate-400 group-hover:text-white transition";
 
   const isActive = (href?: string) => href && pathname === href;
 
@@ -145,7 +145,7 @@ export default function Sidebar({
           h-[100dvh] bg-[#0B1120]
           flex flex-col overflow-hidden
           transition-all duration-300
-          ${collapsed ? "w-20" : "w-72"}
+          ${collapsed ? "w-16" : "w-64"}
           ${
             mobileOpen
               ? "translate-x-0"
@@ -154,7 +154,7 @@ export default function Sidebar({
         `}
       >
         {/* HEADER */}
-        <div className="h-16 flex items-center justify-center border-b border-slate-800 px-2 shrink-0">
+        <div className="h-16 md:h-12 flex items-center justify-center border-b border-slate-800 px-2 shrink-0">
           <button
             onClick={() =>
               isMobile
@@ -163,14 +163,14 @@ export default function Sidebar({
             }
             className="p-1 text-slate-300 hover:text-white transition"
           >
-            <Menu className="w-4 h-4" />
+            <Menu className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
 
         {/* NAV */}
         <nav className="flex-1 overflow-y-auto px-2 py-1">
           {menuSections.map((section) => (
-            <div key={section.title} className="my-6">
+            <div key={section.title} className="my-4">
               {!collapsed && (
                 <div className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {section.title}

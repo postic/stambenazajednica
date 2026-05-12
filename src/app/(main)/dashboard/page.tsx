@@ -10,6 +10,7 @@ import {
   Wallet,
   FileText,
   CircleEllipsis,
+  CalendarCheck,
   Grid,
   Phone
 } from "lucide-react";
@@ -48,7 +49,7 @@ export default function DashboardPage() {
     {
       title: "Sednice",
       value: stats.sednice,
-      icon: Users,
+      icon: CalendarCheck,
       href: "/sednice",
     },
     {
