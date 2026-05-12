@@ -23,7 +23,6 @@ export default function RootLayout({
   return (
     <html lang="sr">
       <body className="bg-light overflow-hidden h-dvh">
-
         <AuthProvider>
 
           {/* NAVBAR */}
@@ -43,16 +42,23 @@ export default function RootLayout({
             {/* MAIN CONTENT */}
             <main className="flex-1 overflow-y-auto bg-gray-100 p-4 min-h-0">
 
+              {/* BREADCRUMB */}
               <div className="mb-3 text-sm text-gray-500">
                 <AppBreadcrumb />
               </div>
 
+              {/* MOBILE BALANCE */}
+              <div className="xl:hidden mb-4">
+                <BalancePill />
+              </div>
+
+              {/* PAGE CONTENT */}
               {children}
 
             </main>
 
-            {/* RIGHT SIDEBAR */}
-            <aside className="hidden xl:flex w-64 flex-col bg-white min-h-0">
+            {/* RIGHT SIDEBAR DESKTOP */}
+            <aside className="hidden xl:flex w-64 flex-col bg-white min-h-0 border-l border-gray-200">
 
               {/* TOP STATIC BLOCK */}
               <div className="shrink-0 border-b border-gray-100">
@@ -71,7 +77,6 @@ export default function RootLayout({
           <Toaster position="top-center" richColors />
 
         </AuthProvider>
-
       </body>
     </html>
   );
