@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
     // Fetch svih stanari (bez count=true)
     // const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stanar?include=field_user_image`);
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user?include=field_stan`);
     if (!response.ok) {
       const text = await response.text();
       console.log("Drupal API error:", response.status, text);
@@ -51,7 +51,14 @@ export async function GET(req: Request) {
         }
       }
 
-      console.error('USER',item);
+      // Stan
+      const stanRef = item?.relationships?.field_stan?.data;
+      const stan = data.included?.find(
+      (i: any) =>
+        i.id === stanRef?.id &&
+        i.type === stanRef?.type
+      );
+      const stan_title = stan?.attributes?.title ?? "-";
 
       return {
         id: item.id,
@@ -63,6 +70,7 @@ export async function GET(req: Request) {
         status: Boolean(item.attributes.field_status_stanara),
         tip: Boolean(item.attributes.field_podstanar),
         image: imageUrl, // <-- pick first image,
+        stan: stan_title,
       };
     });
 

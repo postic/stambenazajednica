@@ -10,5 +10,6 @@ export interface Stanar {
   vozilo?: string;
   status?: boolean;
   tip?: boolean;
+  stan? string;
 }
 

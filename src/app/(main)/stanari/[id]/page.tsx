@@ -11,7 +11,7 @@ const NEXT_PUBLIC_DRUPAL_BASE_URL =
 async function getStanar(id: string): Promise<Stanar | null> {
   try {
     const res = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stanar/${id}?include=field_user_image`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user/${id}?include=user_picture,field_stan`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -25,8 +25,16 @@ async function getStanar(id: string): Promise<Stanar | null> {
 
     if (!item) return null;
 
-    const images: string[] =
-      extractImages(item, data.included, "field_user_image") ?? [];
+    const images: string[] = extractImages(item, data.included, "user_picture") ?? [];
+
+    const stanRef = item?.relationships?.field_stan?.data;
+    const stan = data.included?.find(
+    (i: any) =>
+      i.id === stanRef?.id &&
+      i.type === stanRef?.type
+    );
+    const stan_title = stan?.attributes?.title ?? "";
+
 
     return {
       id: item.id,
@@ -42,6 +50,7 @@ async function getStanar(id: string): Promise<Stanar | null> {
       vozilo: item.attributes.field_vozilo ?? "",
       status: Boolean(item.attributes.field_status_stanara),
       tip: Boolean(item.attributes.field_podstanar),
+      stan: stan_title,
       image: images,
     };
   } catch {
@@ -97,10 +106,7 @@ export default async function StanarPage({ params }: PageProps) {
               {stanar.ime_prezime}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {stanovi.length > 0 &&
-                stanovi.map((stan: any) => (
-                  stan.title || "-"
-              ))}
+              {stanar.stan}
             </p>
 
           </div>

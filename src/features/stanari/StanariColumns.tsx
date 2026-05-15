@@ -19,6 +19,13 @@ export const stanariColumns: Column<Stanar>[] = [
     ),
   },
   {
+    key: "stan",
+    header: "Stan",
+    render: (stanar) => (
+      stanar.stan
+    ),
+  },
+  {
     key: "status",
     header: "Status",
     render: (stanar) =>
