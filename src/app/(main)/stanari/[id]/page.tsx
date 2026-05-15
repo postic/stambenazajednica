@@ -30,10 +30,11 @@ async function getStanar(id: string): Promise<Stanar | null> {
 
     return {
       id: item.id,
-      title: item.attributes.title,
-      body: item.attributes.body?.value ?? "",
+      ime_prezime:
+        item.attributes.field_ime_prezime ||
+        item.attributes.display_name ||
+        "",
       created: item.attributes.created,
-      ime_prezime: item.attributes.field_ime_prezime ?? "",
       email: item.attributes.field_email ?? "",
       telefon: item.attributes.field_telefon ?? "",
       jmbg: item.attributes.field_jmbg ?? "",
@@ -93,7 +94,7 @@ export default async function StanarPage({ params }: PageProps) {
         <div className="flex items-start justify-between gap-4">
           <div data-field>
             <h1 className="text-xl font-semibold">
-              {stanar.ime_prezime || stanar.title}
+              {stanar.ime_prezime}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               {stanovi.length > 0 &&
@@ -124,7 +125,7 @@ export default async function StanarPage({ params }: PageProps) {
             {stanar.image && stanar.image.length > 0 ? (
               <img
                 src={stanar.image[0]}
-                alt={stanar.title}
+                alt={stanar.ime_prezime}
                 className="w-full h-40 object-cover"
               />
             ) : (
