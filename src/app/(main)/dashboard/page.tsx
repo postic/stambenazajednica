@@ -96,7 +96,7 @@ export default function DashboardPage() {
       {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((s, i) => (
-          <Card key={i} className="hover:shadow-md transition">
+          <Card key={i} className="transition">
             <CardContent className="flex items-center justify-between">
               <div>
                 <Link

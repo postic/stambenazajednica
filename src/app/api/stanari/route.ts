@@ -12,13 +12,13 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     // Fetch svih stanari (bez count=true)
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stanar?include=field_user_image`);
-
+    // const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stanar?include=field_user_image`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user`);
     if (!response.ok) {
       const text = await response.text();
       console.log("Drupal API error:", response.status, text);
       return new Response(
-        JSON.stringify({ error: "Greška pri dohvaćanju obavestenja" }),
+        JSON.stringify({ error: "Greška pri dohvaćanju stanara" }),
         { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -51,10 +51,14 @@ export async function GET(req: Request) {
         }
       }
 
+      console.error('USER',item);
+
       return {
         id: item.id,
-        title: item.attributes.title,
-        body: item.attributes.body?.value || "",
+        ime_prezime:
+          item.attributes.field_ime_prezime ||
+          item.attributes.display_name ||
+          "",
         created: item.attributes.created,
         status: Boolean(item.attributes.field_status_stanara),
         tip: Boolean(item.attributes.field_podstanar),

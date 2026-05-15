@@ -1,7 +1,5 @@
 export interface Stanar {
   id: string;
-  title: string;
-  body: string;
   created: string;
   image?: string[] | null;
   licna_karta?: string;

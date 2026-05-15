@@ -18,7 +18,7 @@ export async function GET() {
       fetch(`${base}/jsonapi/node/obavestenje`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/anketa`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/sednica`).then((r) => r.json()),
-      fetch(`${base}/jsonapi/node/stanar`).then((r) => r.json()),
+      fetch(`${base}/jsonapi/user/user`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/stan`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/transakcija`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/telefon`).then((r) => r.json()),

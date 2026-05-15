@@ -12,9 +12,9 @@ export const stanariColumns: Column<Stanar>[] = [
       <Link
         href={`/stanari/${stanar.id}`}
         className=" hover:underline"
-        title={stanar.title}
+        title={stanar.ime_prezime}
       >
-        {stanar.title}
+        {stanar.ime_prezime}
       </Link>
     ),
   },
