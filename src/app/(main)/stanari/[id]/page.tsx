@@ -11,9 +11,8 @@ const NEXT_PUBLIC_DRUPAL_BASE_URL =
 async function getStanar(id: string): Promise<Stanar | null> {
   try {
     const res = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/user/user/${id}?include=user_picture,field_stan`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/api/stanar/${id}`,
       {
-        headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
       }
     );
@@ -21,38 +20,30 @@ async function getStanar(id: string): Promise<Stanar | null> {
     if (!res.ok) return null;
 
     const data = await res.json();
-    const item = data?.data;
 
-    if (!item) return null;
-
-    const images: string[] = extractImages(item, data.included, "user_picture") ?? [];
-
-    const stanRef = item?.relationships?.field_stan?.data;
-    const stan = data.included?.find(
-    (i: any) =>
-      i.id === stanRef?.id &&
-      i.type === stanRef?.type
-    );
-    const stan_title = stan?.attributes?.title ?? "";
-
+    if (!data) return null;
 
     return {
-      id: item.id,
-      ime_prezime:
-        item.attributes.field_ime_prezime ||
-        item.attributes.display_name ||
-        "",
-      created: item.attributes.created,
-      email: item.attributes.field_email ?? "",
-      telefon: item.attributes.field_telefon ?? "",
-      jmbg: item.attributes.field_jmbg ?? "",
-      licna_karta: item.attributes.field_licna_karta ?? "",
-      vozilo: item.attributes.field_vozilo ?? "",
-      status: Boolean(item.attributes.field_status_stanara),
-      tip: Boolean(item.attributes.field_podstanar),
-      stan: stan_title,
-      image: images,
+      id: data.id,
+      uuid: data.uuid,
+
+      ime_prezime: data.ime_prezime || "",
+      created: data.created,
+
+      email: data.email || "",
+      telefon: data.telefon || "",
+      jmbg: data.jmbg || "",
+      licna_karta: data.licna_karta || "",
+      vozilo: data.vozilo || "",
+
+      status: Boolean(data.status),
+      tip: Boolean(data.tip),
+
+      stan: data.stan?.naziv || "",
+
+      image: data.avatar ? [data.avatar] : [],
     };
+
   } catch {
     return null;
   }
@@ -158,13 +149,13 @@ export default async function StanarPage({ params }: PageProps) {
             </div>
 
             <div className="border-b border-gray-200 py-2">
-              <p className="text-xs text-gray-500">JMBG</p>
-              <p>{stanar.jmbg ? `****${stanar.jmbg.slice(-4)}` : "-"}</p>
+              <p className="text-xs text-gray-500">Lična karta</p>
+              <p>{stanar.licna_karta ? `****${stanar.jmbg.slice(-4)}` : "-"}</p>
             </div>
 
             <div className="py-2">
-              <p className="text-xs text-gray-500">Lična karta</p>
-              <p>{stanar.licna_karta || "-"}</p>
+              <p className="text-xs text-gray-500">JMBG</p>
+              <p>{stanar.jmbg || "-"}</p>
             </div>
 
           </div>
