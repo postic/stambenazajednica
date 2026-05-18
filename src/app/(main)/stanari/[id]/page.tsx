@@ -158,7 +158,7 @@ export default async function StanarPage({ params }: PageProps) {
             <div className="py-2">
               <p className="text-xs text-gray-500">JMBG</p>
               <p>
-                {stanar.jmbg && typeof stanar.jmbg === "string" ? `****${stanar.jmbg.slice(-4)}` : "-"}
+                {stanar.jmbg && typeof stanar.jmbg === "string" ? `*********${stanar.jmbg.slice(-4)}` : "-"}
               </p>
             </div>
 

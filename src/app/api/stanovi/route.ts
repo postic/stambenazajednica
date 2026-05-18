@@ -39,25 +39,24 @@ export async function GET(req: Request) {
 
     // ✅ Mapiraj stanove
     const stanovi: Stan[] = currentPageData.map((item: any) => {
-      const vlasnikId = item.relationships?.field_vlasnik?.data?.id;
-      const vlasnikEntity = vlasniciMap.get(vlasnikId);
+    const vlasnikId = item.relationships?.field_vlasnik?.data?.id;
+    const vlasnikEntity = vlasniciMap.get(vlasnikId);
 
-      return {
-        id: item.id,
-        title: item.attributes?.title || "",
-        body: item.attributes?.body?.value || "",
-        created: item.attributes?.created || "",
-        sprat: item.attributes?.field_sprat ?? null,
-        kvadratura: item.attributes?.field_kvadratura ?? null,
-        broj_stanara: item.attributes.field_stan_broj_stanara,
-
-        // Ako je node → title, ako je taxonomy → name
-        vlasnik:
-          vlasnikEntity?.attributes?.title ??
-          vlasnikEntity?.attributes?.name ??
-          null,
-      };
-    });
+    return {
+      id: item.id,
+      title: item.attributes?.title || "",
+      body: item.attributes?.body?.value || "",
+      created: item.attributes?.created || "",
+      sprat: item.attributes?.field_sprat ?? null,
+      kvadratura: item.attributes?.field_kvadratura ?? null,
+      broj_stanara: item.attributes.field_stan_broj_stanara,
+      vlasnik:
+        vlasnikEntity?.attributes?.field_ime_prezime ??
+        vlasnikEntity?.attributes?.display_name ??
+        vlasnikEntity?.attributes?.name ??
+        null,
+    };
+  });
 
     return new Response(
       JSON.stringify({

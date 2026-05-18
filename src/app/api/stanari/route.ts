@@ -40,7 +40,7 @@ export async function GET(req: Request) {
 
     const data = await response.json();
 
-    // console.error('ERROR',data);
+    console.error('ERROR',data);
 
     // Drupal endpoint već vraća gotove rezultate
     const stanari: Stanar[] = (data.results || []).map((item: any) => ({

@@ -45,6 +45,7 @@ async function getStan(id: string): Promise<Stan | null> {
         (i: any) => i.type === vlasnikRel.type && i.id === vlasnikRel.id
       );
     const vlasnik =
+      vlasnikIncluded?.attributes?.field_ime_prezime ||
       vlasnikIncluded?.attributes?.display_name ||
       vlasnikIncluded?.attributes?.name ||
       null;
@@ -63,6 +64,7 @@ async function getStan(id: string): Promise<Stan | null> {
           id: user.id, // UUID
           uid: user.attributes?.drupal_internal__uid, // ako ti treba numeric
           title:
+            user.attributes?.field_ime_prezime ||
             user.attributes?.display_name ||
             user.attributes?.name ||
             "Nepoznat",
