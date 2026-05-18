@@ -150,12 +150,16 @@ export default async function StanarPage({ params }: PageProps) {
 
             <div className="border-b border-gray-200 py-2">
               <p className="text-xs text-gray-500">Lična karta</p>
-              <p>{stanar.licna_karta ? `****${stanar.jmbg.slice(-4)}` : "-"}</p>
+              <p>
+                {stanar.licna_karta && typeof stanar.licna_karta === "string" ? `****${stanar.licna_karta.slice(-4)}` : "-"}
+              </p>
             </div>
 
             <div className="py-2">
               <p className="text-xs text-gray-500">JMBG</p>
-              <p>{stanar.jmbg || "-"}</p>
+              <p>
+                {stanar.jmbg && typeof stanar.jmbg === "string" ? `****${stanar.jmbg.slice(-4)}` : "-"}
+              </p>
             </div>
 
           </div>
