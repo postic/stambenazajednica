@@ -153,6 +153,7 @@ export default function Sidebar({
           }
         `}
       >
+
         {/* HEADER */}
         <div className="h-16 md:h-12 flex justify-left border-b border-slate-800 px-4 shrink-0">
           <button
@@ -163,7 +164,7 @@ export default function Sidebar({
             }
             className="p-1 text-slate-300 hover:text-white transition"
           >
-            <Menu className="w-5 h-5 md:w-6 md:h-6" />
+            <Menu className="w-[18px] h-[18px]" />
           </button>
         </div>
 

@@ -77,7 +77,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
           className="md:hidden p-2 -ml-[3px] rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
           onClick={() => setMobileOpen(true)}
         >
-          <Menu size={22} />
+          <Menu size={18} />
         </button>
 
         {/* LOGO (mobile shifted right ~10px) */}
