@@ -1,62 +1,45 @@
-// app/api/me/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
-import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-
-// 🔵 decode OAuth JWT (bez verify)
 function decodeOAuth(token: string) {
   try {
-    return JSON.parse(
-      Buffer.from(token.split(".")[1], "base64").toString()
-    );
+    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
   } catch {
     return null;
   }
 }
 
 export async function GET(request: NextRequest) {
-  const token = request.cookies.get("access_token")?.value;
+  const token = request.cookies.get('token')?.value;
 
   if (!token) {
-    return NextResponse.json({ user: null }, { status: 401 });
-  }
-
-  // 🟢 =========================
-  // 1. STANAR (tvoj JWT)
-  // =========================
-  try {
-    const decoded: any = jwt.verify(
-      token,
-      process.env.JWT_SECRET!
-    );
-
     return NextResponse.json(
-      {
-        user: {
-          uid: String(decoded.uid),
-          name: decoded.name || "Stanar",
-          role: decoded.roles?.[0] || "stanar",
-          picture: decoded.picture,
-        },
-      },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": "no-store", // 🔥 bez cache → nema bugova u navbaru
-        },
-      }
+      { success: false, user: null },
+      { status: 200 }
     );
-  } catch (e) {
-    // nije tvoj JWT → pokušaj OAuth
   }
 
-  // 🔵 =========================
-  // 2. UPRAVNIK (OAuth)
-  // =========================
+  try {
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        uid: String(decoded.uid),
+        name: decoded.name || 'Stanar',
+        role: decoded.roles?.[0] || 'stanar',
+        picture: decoded.picture,
+      },
+    });
+  } catch {}
+
   const oauth = decodeOAuth(token);
 
   if (!oauth?.sub) {
-    return NextResponse.json({ user: null }, { status: 401 });
+    return NextResponse.json(
+      { success: false, user: null },
+      { status: 200 }
+    );
   }
 
   try {
@@ -66,42 +49,36 @@ export async function GET(request: NextRequest) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        cache: "no-store",
+        cache: 'no-store',
       }
     );
 
     if (!res.ok) {
-      const text = await res.text();
-      console.log("UPRAVNIK /api/me ERROR:", text);
-
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json(
+        { success: false, user: null },
+        { status: 200 }
+      );
     }
 
     const data = await res.json();
 
-    return NextResponse.json(
-      {
-        user: {
-          uid: String(data.uid),
-          name: data.name || "Upravnik",
-          role: "upravnik",
-          picture:
-            data.picture ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              data.name || "Upravnik"
-            )}`,
-        },
+    return NextResponse.json({
+      success: true,
+      user: {
+        uid: String(data.uid),
+        name: data.name || 'Upravnik',
+        role: 'upravnik',
+        picture:
+          data.picture ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            data.name || 'Upravnik'
+          )}`,
       },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+    });
+  } catch {
+    return NextResponse.json(
+      { success: false, user: null },
+      { status: 200 }
     );
-  } catch (err) {
-    console.log("UPRAVNIK ERROR:", err);
-
-    return NextResponse.json({ user: null }, { status: 401 });
   }
 }
