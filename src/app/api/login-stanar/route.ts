@@ -11,9 +11,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
     const res = await fetch(
-      `${API}/api/pin-login`,
+      `https://dev-stambena-zajednica.pantheonsite.io/api/pin-login`,
+      //`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/pin-login`,
       {
         method: "POST",
         headers: {

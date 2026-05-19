@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 👉 OVDE zoveš backend (Drupal / API / custom auth)
-    const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
     const res = await fetch(
-      `${API}/api/login-upravnik`,
+      `https://dev-stambena-zajednica.pantheonsite.io/api/login-upravnik`,
+      //`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/login-upravnik`,
       {
         method: "POST",
         headers: {
