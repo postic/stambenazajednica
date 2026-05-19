@@ -27,5 +27,7 @@ export interface VlasnikEntity {
   attributes?: {
     title?: string;
     name?: string;
+    display_name?: string;
+    field_ime_prezime?: string;
   };
 };
