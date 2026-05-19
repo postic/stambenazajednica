@@ -1,107 +1,126 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+
+import { useRouter } from "next/navigation";
+
+type Role = "stanar" | "upravnik" | string;
 
 type User = {
   uid: string;
   name: string;
-  picture?: string;
-  role?: string;
-};
-
-type LoginPayload = {
-  identifier: string;
-  pin: string;
+  display_name?: string;
+  mail?: string;
+  roles: Role[];
 };
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (data: LoginPayload) => Promise<boolean>;
+  login: () => Promise<void>;
   logout: () => Promise<void>;
-  refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = async () => {
+  /**
+   * 🔐 AUTO LOAD USER (ON APP START)
+   */
+  useEffect(() => {
+    async function loadMe() {
+      try {
+        const res = await fetch("/api/me", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadMe();
+  }, []);
+
+  /**
+   * 🔐 LOGIN - samo refresh /me (token već dolazi iz login API-ja)
+   */
+  const login = async () => {
     try {
       const res = await fetch("/api/me", {
+        method: "GET",
         credentials: "include",
-        cache: "no-store",
       });
 
-      if (!res.ok) {
-        setUser(null);
-        return;
-      }
-
       const data = await res.json();
-      setUser(data.user ?? null);
-    } catch (err) {
-      console.error("Auth error:", err);
+
+      if (data.success) {
+        setUser(data.user);
+      }
+    } catch {
       setUser(null);
     }
   };
 
-  useEffect(() => {
-    fetchUser().finally(() => setLoading(false));
-  }, []);
-
-  // ✅ LOGIN (PIN → JWT cookie)
-  const login = async (data: LoginPayload): Promise<boolean> => {
+  /**
+   * 🚪 LOGOUT
+   */
+  const logout = async () => {
     try {
-      const res = await fetch("/api/pin-login", {
+      await fetch("/api/logout", {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
       });
-
-      if (!res.ok) {
-        return false;
-      }
-
-      // Nakon login-a povuci user-a iz /api/me
-      await fetchUser();
-
-      return true;
-    } catch (err) {
-      console.error("Login error:", err);
-      return false;
-    }
-  };
-
-  // 🚪 LOGOUT
-  const logout = async () => {
-    await fetch("/api/logout", {
-      method: "POST",
-      credentials: "include",
-    });
+    } catch {}
 
     setUser(null);
-  };
-
-  // 🔄 REFRESH USER
-  const refresh = async () => {
-    await fetchUser();
+    router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
+/**
+ * 🔥 Hook
+ */
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+
+  return context;
 }

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import {
   Card,
   CardContent,
@@ -29,7 +30,7 @@ export default function LoginPage() {
   // STANAR
   const [stanarPin, setStanarPin] = useState("");
 
-  // UPRAVNIK (OSTAJE KAO PRE)
+  // UPRAVNIK
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
@@ -51,9 +52,7 @@ export default function LoginPage() {
   const isDisabled =
     loading ||
     isLocked ||
-    (role === "stanar"
-      ? !stanarPin
-      : !identifier || !password);
+    (role === "stanar" ? !stanarPin : !identifier || !password);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -62,12 +61,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const endpoint =
+        role === "stanar"
+          ? "/api/login-stanar"
+          : "/api/login-upravnik";
+
       const payload =
         role === "stanar"
-          ? { role, pin: stanarPin }
-          : { role, identifier, password };
+          ? { pin: stanarPin }
+          : { username: identifier, password };
 
-      const res = await fetch("/api/login", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -160,13 +164,12 @@ export default function LoginPage() {
                   onChange={(e) => setStanarPin(e.target.value)}
                   type="password"
                   className="h-11 text-sm text-center"
-                  required
                   maxLength={4}
                 />
               </div>
             )}
 
-            {/* UPRAVNIK (NE MENJA SE) */}
+            {/* UPRAVNIK */}
             {role === "upravnik" && (
               <>
                 <div className="space-y-2 text-center">
@@ -180,7 +183,6 @@ export default function LoginPage() {
                     onChange={(e) => setIdentifier(e.target.value)}
                     type="text"
                     className="h-11 text-sm text-center"
-                    required
                   />
                 </div>
 
@@ -195,7 +197,6 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
                     className="h-11 text-sm text-center"
-                    required
                   />
                 </div>
               </>

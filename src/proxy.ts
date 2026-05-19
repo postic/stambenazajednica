@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function proxy(req: NextRequest) {
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || "dev-secret"
+);
+
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 🚫 PWA files MUST bypass auth
+  // 🚫 PWA bypass
   if (
     pathname === "/manifest.json" ||
     pathname === "/sw.js" ||
@@ -13,16 +18,27 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get("access_token")?.value;
+  const token = req.cookies.get("token")?.value;
 
   const publicPaths = ["/login", "/register", "/forgot-password"];
   const isPublic = publicPaths.some(path =>
     pathname.startsWith(path)
   );
 
-  // 🔐 auth guard
+  // 🔐 ako nema tokena
   if (!token && !isPublic) {
     return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  // 🔐 ako postoji token → validacija
+  if (token) {
+    try {
+      await jwtVerify(token, secret);
+    } catch (e) {
+      const res = NextResponse.redirect(new URL("/login", req.url));
+      res.cookies.set("access_token", "", { expires: new Date(0) });
+      return res;
+    }
   }
 
   return NextResponse.next();
