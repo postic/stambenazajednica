@@ -36,7 +36,7 @@ export async function proxy(req: NextRequest) {
       await jwtVerify(token, secret);
     } catch (e) {
       const res = NextResponse.redirect(new URL("/login", req.url));
-      res.cookies.set("access_token", "", { expires: new Date(0) });
+      res.cookies.set("token", "", { expires: new Date(0) });
       return res;
     }
   }

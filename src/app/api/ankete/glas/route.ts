@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     const token = cookieHeader
       .split("; ")
-      .find((c) => c.startsWith("access_token="))
+      .find((c) => c.startsWith("token="))
       ?.split("=")[1];
 
     if (!token) {
