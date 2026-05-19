@@ -43,8 +43,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
     const res = await fetch(
-      `https://dev-stambena-zajednica.pantheonsite.io/api/me`,
+      `${API}/api/me`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
