@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const data = await res.json();
 
-    console.info('TK',data);
+    //console.info('TK',data);
 
     if (!res.ok) {
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       response.cookies.set("token", data.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",//"lax",
+        sameSite: "lax",
         path: "/",
       });
     }
