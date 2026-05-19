@@ -11,8 +11,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/pin-login`,
+      `${API}/api/pin-login`,
       {
         method: "POST",
         headers: {
