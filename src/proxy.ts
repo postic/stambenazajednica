@@ -31,15 +31,16 @@ export async function proxy(req: NextRequest) {
   }
 
   // 🔐 ako postoji token → validacija
-  /*if (token) {
+  if (token) {
     try {
       await jwtVerify(token, secret);
     } catch (e) {
-      const res = NextResponse.redirect(new URL("/login", req.url));
-      res.cookies.set("token", "", { expires: new Date(0) });
-      return res;
+      //const res = NextResponse.redirect(new URL("/login", req.url));
+      //res.cookies.set("token", "", { expires: new Date(0) });
+      //return res;
+      return null;
     }
-  }*/
+  }
 
   return NextResponse.next();
 }
