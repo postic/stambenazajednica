@@ -32,6 +32,9 @@ export async function proxy(req: NextRequest) {
 
   // 🔐 ako postoji token → validacija
   if (token) {
+
+    const secret = 'R0QDKGCnXSRFOQ06rg3LpW7iWr2H1fJYxMgaalLtwPA';
+
     try {
       await jwtVerify(token, secret);
     } catch (e) {
