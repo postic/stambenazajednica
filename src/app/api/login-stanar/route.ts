@@ -41,17 +41,14 @@ export async function POST(req: NextRequest) {
     /**
      * 🔐 TOKEN COOKIE (stanar)
      */
-
-    //console.error('TK',data.token);
-
-    //if (data.token) {
+    if (data.token) {
       response.cookies.set("token", data.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
       });
-    //}
+    }
 
     return response;
   } catch (err) {

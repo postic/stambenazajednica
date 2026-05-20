@@ -1,64 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 
-function decodeOAuth(token: string) {
-  try {
-    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-  } catch {
-    return null;
-  }
-}
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
+  const token = request.cookies.get("token")?.value;
 
+  // 🔴 NO TOKEN → normal response
   if (!token) {
-    return NextResponse.json(
-      { success: false, user: null },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: false,
+      user: null,
+    });
   }
 
+  // =========================
+  // 1. TRY JWT AUTH FIRST
+  // =========================
   try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    );
 
     return NextResponse.json({
       success: true,
       user: {
         uid: String(decoded.uid),
-        name: decoded.name || 'Stanar',
-        role: decoded.roles?.[0] || 'stanar',
-        picture: decoded.picture,
+        name: decoded.name || "User",
+        role: decoded.roles?.[0] || "stanar",
+        picture: decoded.picture || null,
       },
     });
-  } catch {}
-
-  const oauth = decodeOAuth(token);
-
-  if (!oauth?.sub) {
-    return NextResponse.json(
-      { success: false, user: null },
-      { status: 200 }
-    );
+  } catch (err) {
+    console.error("JWT VERIFY FAILED:", err);
   }
 
+  // =========================
+  // 2. OPTIONAL OAUTH FALLBACK
+  // =========================
   try {
     const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
-    const res = await fetch(
-      `${API}/api/me`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: 'no-store',
-      }
-    );
+
+    const res = await fetch(`${API}/api/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
 
     if (!res.ok) {
-      return NextResponse.json(
-        { success: false, user: null },
-        { status: 200 }
-      );
+      return NextResponse.json({
+        success: false,
+        user: null,
+      });
     }
 
     const data = await res.json();
@@ -67,19 +62,21 @@ export async function GET(request: NextRequest) {
       success: true,
       user: {
         uid: String(data.uid),
-        name: data.name || 'Upravnik',
-        role: 'upravnik',
+        name: data.name || "Upravnik",
+        role: "upravnik",
         picture:
           data.picture ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            data.name || 'Upravnik'
+            data.name || "Upravnik"
           )}`,
       },
     });
-  } catch {
-    return NextResponse.json(
-      { success: false, user: null },
-      { status: 200 }
-    );
+  } catch (err) {
+    console.error("OAUTH FALLBACK FAILED:", err);
+
+    return NextResponse.json({
+      success: false,
+      user: null,
+    });
   }
 }
