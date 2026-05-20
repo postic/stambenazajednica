@@ -82,6 +82,10 @@ export default function LoginPage() {
 
         const role = data.user?.roles;
 
+
+console.log("ROLES:", role);
+
+
         if (role?.includes("upravnik")) {
           router.push("/dashboard");
         } else {
