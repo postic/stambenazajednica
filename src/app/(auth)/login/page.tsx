@@ -84,9 +84,7 @@ export default function LoginPage() {
 
         await refresh(); // 🔥 KLJUČ
 
-        await new Promise(r => setTimeout(r, 200)); // 🔥 KLJUČ
-        //router.push(roleRoute);
-        toast.success("Uspešno ste prijavljeni");
+        //toast.success("Uspešno ste prijavljeni");
 
         router.push(role === "upravnik" ? "/transakcije" : "/kvarovi");
       } else {

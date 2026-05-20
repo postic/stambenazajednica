@@ -31,7 +31,7 @@ export async function proxy(req: NextRequest) {
   }
 
   // 🔐 ako postoji token → validacija
-  if (token) {
+  /*if (token) {
     try {
       await jwtVerify(token, secret);
     } catch (e) {
@@ -39,7 +39,7 @@ export async function proxy(req: NextRequest) {
       res.cookies.set("token", "", { expires: new Date(0) });
       return res;
     }
-  }
+  }*/
 
   return NextResponse.next();
 }
