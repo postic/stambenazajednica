@@ -39,6 +39,10 @@ export default function LoginPage() {
   const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (user) router.push("/dashboard");
+  }, [user, router]);
+
   const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
 
   const remainingSeconds = lockedUntil
@@ -77,18 +81,12 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+
         await refresh(); // 🔥 KLJUČ
+
         toast.success("Uspešno ste prijavljeni");
 
-        const role = data.user?.roles;
-
-        if (role?.includes("upravnik")) {
-          router.push("/dashboard");
-        } else {
-          router.push("/transakcije");
-        }
-
-        //router.push(role === "upravnik" ? "/transakcije" : "/kvarovi");
+        router.push(role === "upravnik" ? "/transakcije" : "/kvarovi");
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);

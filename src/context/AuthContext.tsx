@@ -15,15 +15,18 @@ type Role = 'stanar' | 'upravnik' | string;
 type User = {
   uid: string;
   name: string;
+  display_name?: string;
   mail?: string;
   role?: Role;
+  picture?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  refresh: () => Promise<void>;
+  login: () => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,11 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 single source of truth
   const loadMe = async () => {
     try {
-      setLoading(true);
-
       const res = await fetch('/api/me', {
         method: 'GET',
         credentials: 'include',
@@ -47,8 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
 
-      if (res.ok && data?.user) {
-        setUser(data.user);
+      if (res.ok && (data.user || data.success)) {
+        setUser(data.user ?? null);
       } else {
         setUser(null);
       }
@@ -59,12 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // initial load
   useEffect(() => {
     loadMe();
   }, []);
 
   const refresh = async () => {
+    await loadMe();
+  };
+
+  const login = async () => {
     await loadMe();
   };
 
@@ -81,31 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.refresh();
   };
 
-  /**
-   * 🔥 CENTRAL ROUTING LOGIC (KEY FIX)
-   * Ovo rešava "router.push ne radi" problem
-   */
-  useEffect(() => {
-    if (loading) return;
-    if (!user) return;
-
-    router.replace('/dashboard');
-    //if (user.role === 'upravnik') {
-    //  router.replace('/dashboard');
-    //} else {
-    //  router.replace('/transakcije');
-    //}
-  }, [user, loading, router]);
-
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        refresh,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );
@@ -113,8 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used inside AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used inside AuthProvider');
   return context;
 }
