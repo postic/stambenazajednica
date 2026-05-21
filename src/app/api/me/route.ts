@@ -1,85 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { NextResponse } from "next/server";
 
-function decodeOAuth(token: string) {
+export async function GET(req: Request) {
+  const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
+
+  if (!API) {
+    return NextResponse.json(
+      { error: "Missing DRUPAL base URL" },
+      { status: 500 }
+    );
+  }
+
+  // 🔐 uzmi Bearer token iz request-a
+  const authHeader = req.headers.get("token");
+
+  if (!authHeader) {
+    return NextResponse.json(
+      { error: "Missing Authorization header" },
+      { status: 401 }
+    );
+  }
+
+  const res = await fetch(`${API}/api/me`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: authHeader,
+    },
+  });
+
+  const text = await res.text();
+
+  let data;
   try {
-    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    data = JSON.parse(text);
   } catch {
-    return null;
-  }
-}
-
-export async function GET(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
-
-  if (!token) {
-    return NextResponse.json(
-      { success: false, user: null },
-      { status: 200 }
-    );
+    data = { raw: text };
   }
 
-  try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        uid: String(decoded.uid),
-        name: decoded.name || 'Stanar',
-        role: decoded.roles?.[0] || 'stanar',
-        picture: decoded.picture,
-      },
-    });
-  } catch {}
-
-  const oauth = decodeOAuth(token);
-
-  if (!oauth?.sub) {
-    return NextResponse.json(
-      { success: false, user: null },
-      { status: 200 }
-    );
-  }
-
-  try {
-    const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
-    const res = await fetch(
-      `${API}/api/me`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: 'no-store',
-      }
-    );
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { success: false, user: null },
-        { status: 200 }
-      );
-    }
-
-    const data = await res.json();
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        uid: String(data.uid),
-        name: data.name || 'Upravnik',
-        role: 'upravnik',
-        picture:
-          data.picture ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            data.name || 'Upravnik'
-          )}`,
-      },
-    });
-  } catch {
-    return NextResponse.json(
-      { success: false, user: null },
-      { status: 200 }
-    );
-  }
+  return NextResponse.json(data, {
+    status: res.status,
+  });
 }

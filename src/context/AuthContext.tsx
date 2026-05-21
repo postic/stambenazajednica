@@ -1,98 +1,78 @@
-'use client';
+"use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from 'react';
-
-import { useRouter } from 'next/navigation';
-
-type Role = 'stanar' | 'upravnik' | string;
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 type User = {
-  uid: string;
+  uid: number;
   name: string;
-  display_name?: string;
-  mail?: string;
-  role?: Role;
+  display_name: string;
+  roles: string[];
   picture?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  refresh: async () => {},
+  logout: async () => {},
+});
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
-
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadMe = async () => {
+  const refresh = useCallback(async () => {
+    setLoading(true);
+
     try {
-      const res = await fetch('/api/me', {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store',
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/me`,
+        {
+          method: "GET",
+          credentials: "include", // 🔥 ključ za cookie auth
+        }
+      );
 
       const data = await res.json();
 
-      if (res.ok && (data.user || data.success)) {
-        setUser(data.user ?? null);
+      if (res.ok && data?.success) {
+        setUser(data.user);
       } else {
         setUser(null);
       }
     } catch (err) {
+      console.error("Auth refresh error:", err);
       setUser(null);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const logout = async () => {
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    setUser(null);
   };
 
   useEffect(() => {
-    loadMe();
-  }, []);
-
-  const refresh = async () => {
-    await loadMe();
-  };
-
-  const login = async () => {
-    await loadMe();
-  };
-
-  const logout = async () => {
-    try {
-      await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch {}
-
-    setUser(null);
-    router.push('/login');
-    router.refresh();
-  };
+    refresh();
+  }, [refresh]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, refresh, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used inside AuthProvider');
-  return context;
-}
+export const useAuth = () => useContext(AuthContext);

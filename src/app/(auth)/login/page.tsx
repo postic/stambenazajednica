@@ -27,10 +27,7 @@ export default function LoginPage() {
 
   const [role, setRole] = useState<Role>("stanar");
 
-  // STANAR
   const [stanarPin, setStanarPin] = useState("");
-
-  // UPRAVNIK
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
@@ -38,11 +35,6 @@ export default function LoginPage() {
 
   const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (user) router.push("/dashboard");
-  }, [user, router]);
-
   const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
 
   const remainingSeconds = lockedUntil
@@ -56,18 +48,26 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+
     if (isLocked) return;
+
+    // 🔥 SNAPSHOT ROLE (GLAVNI FIX)
+    const currentRole = role;
+
+    // console.log("SUBMIT ROLE:", currentRole);
 
     setLoading(true);
 
     try {
       const endpoint =
-        role === "stanar"
+        currentRole === "stanar"
           ? "/api/login-stanar"
           : "/api/login-upravnik";
 
+      //console.log("ENDPOINT:", endpoint);
+
       const payload =
-        role === "stanar"
+        currentRole === "stanar"
           ? { pin: stanarPin }
           : { username: identifier, password };
 
@@ -80,13 +80,14 @@ export default function LoginPage() {
 
       const data = await res.json();
 
+      //console.log("DATA:", res.ok);
+
       if (res.ok) {
+        await refresh();
 
-        await refresh(); // 🔥 KLJUČ
-
-        //toast.success("Uspešno ste prijavljeni");
-
-        router.push(role === "upravnik" ? "/transakcije" : "/kvarovi");
+        router.replace(
+          currentRole === "upravnik" ? "/dashboard" : "/transakcije"
+        );
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
@@ -148,11 +149,15 @@ export default function LoginPage() {
             </button>
 
           </div>
+
         </CardHeader>
 
         <CardContent className="px-5 pb-7">
 
-          <form className="flex flex-col gap-3 text-center" onSubmit={handleLogin}>
+          <form
+            className="flex flex-col gap-3 text-center"
+            onSubmit={handleLogin}
+          >
 
             {/* STANAR */}
             {role === "stanar" && (
@@ -166,9 +171,11 @@ export default function LoginPage() {
                   value={stanarPin}
                   onChange={(e) => setStanarPin(e.target.value)}
                   type="password"
-                  className="h-11 text-sm text-center"
                   maxLength={4}
+                  className="h-11 text-sm text-center"
+                  autoComplete="current-password"
                 />
+
               </div>
             )}
 
@@ -178,7 +185,8 @@ export default function LoginPage() {
                 <div className="space-y-2 text-center">
 
                   <Label className="text-gray-600 text-sm block">
-                    Korisničko ime ili email <span className="text-red-500">*</span>
+                    Korisničko ime ili email{" "}
+                    <span className="text-red-500">*</span>
                   </Label>
 
                   <Input
@@ -186,7 +194,9 @@ export default function LoginPage() {
                     onChange={(e) => setIdentifier(e.target.value)}
                     type="text"
                     className="h-11 text-sm text-center"
+                    autoComplete="username"
                   />
+
                 </div>
 
                 <div className="space-y-2 text-center">
@@ -200,7 +210,9 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
                     className="h-11 text-sm text-center"
+                    autoComplete="current-password"
                   />
+
                 </div>
               </>
             )}
