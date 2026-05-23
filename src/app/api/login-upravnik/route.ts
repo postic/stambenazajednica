@@ -6,33 +6,30 @@ export async function POST(req: NextRequest) {
 
     const API = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
 
-    const res = await fetch(`${API}/api/login-upravnik`, {
+    const res = await fetch(`/user/login?_format=json`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: username, pass: password }),
+      credentials: "include",
     });
 
     const data = await res.json();
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: data?.error || "Login error" },
+        { error: data?.message || "Login error" },
         { status: 401 }
       );
     }
 
-    const response = NextResponse.json({
-      user: data.user,
-    });
+    // ❌ NO JWT COOKIE
+    // ❌ NO token storage
 
-    response.cookies.set("token", data.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
+    return NextResponse.json({
+      user: data.current_user,
     });
-
-    return response;
 
   } catch (err) {
     return NextResponse.json(

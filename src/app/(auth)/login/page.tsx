@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -23,7 +23,7 @@ type Role = "stanar" | "upravnik";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, refresh } = useAuth();
+  const { refresh } = useAuth();
 
   const [role, setRole] = useState<Role>("stanar");
 
@@ -33,7 +33,6 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
 
-  const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
 
@@ -46,59 +45,105 @@ export default function LoginPage() {
     isLocked ||
     (role === "stanar" ? !stanarPin : !identifier || !password);
 
+  // 🔐 CSRF TOKEN
+  async function getCsrfToken() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/session/token`,
+      {
+        credentials: "include",
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("CSRF token error");
+    }
+
+    return await res.text();
+  }
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    if (isLocked) return;
-
-    // 🔥 SNAPSHOT ROLE (GLAVNI FIX)
-    const currentRole = role;
-
-    // console.log("SUBMIT ROLE:", currentRole);
+    if (loading) return;
 
     setLoading(true);
 
     try {
-      const endpoint =
-        currentRole === "stanar"
-          ? "/api/login-stanar"
-          : "/api/login-upravnik";
+      let endpoint = "";
+      let payload: any = {};
+      let csrfToken = "";
 
-      //console.log("ENDPOINT:", endpoint);
+      // 🔐 DRUPAL LOGIN REQUIRES CSRF
+      if (role === "upravnik") {
+        csrfToken = await getCsrfToken();
+      }
 
-      const payload =
-        currentRole === "stanar"
-          ? { pin: stanarPin }
-          : { username: identifier, password };
+      // 🔀 ROLE ROUTING
+      if (role === "stanar") {
+        endpoint = `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/login-stanar`;
+        payload = { pin: stanarPin };
+      } else {
+        endpoint = `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/user/login?_format=json`;
+        payload = {
+          name: identifier,
+          pass: password,
+        };
+      }
 
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(role === "upravnik" && {
+            "X-CSRF-Token": csrfToken,
+          }),
+        },
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      // 🔥 safe parse (Drupal sometimes returns HTML on error)
+      const text = await res.text();
+      let data: any = null;
 
-      //console.log("DATA:", res.ok);
-
-      if (res.ok) {
-        await refresh();
-
-        router.replace(
-          currentRole === "upravnik" ? "/dashboard" : "/transakcije"
-        );
-      } else {
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-
-        toast.error(data.error || "Neispravni podaci.");
-
-        if (newAttempts >= 3) {
-          setLockedUntil(Date.now() + 30000);
-        }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
       }
-    } catch {
+
+      if (!res.ok) {
+        toast.error(data?.message || data?.error || "Neispravni podaci");
+        return;
+      }
+
+      // 🔄 refresh auth context
+      await refresh();
+
+      // 👤 ROLE CHECK
+      const resMe = await fetch(
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/me`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const me = await resMe.json();
+      const roles = me?.user?.roles || [];
+
+      const isUpravnik = roles.includes("upravnik");
+      const isStanar = roles.includes("stanar");
+
+      if (isUpravnik) {
+        router.replace("/dashboard");
+      } else if (isStanar) {
+        router.replace("/transakcije");
+      } else {
+        router.replace("/");
+      }
+    } catch (err) {
+      //console.error(err);
       toast.error("Greška pri povezivanju sa serverom.");
     } finally {
       setLoading(false);
@@ -107,11 +152,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-3">
-
       <Card className="w-[340px] max-w-[92vw] shadow-xl rounded-2xl border-0 bg-white">
-
         <CardHeader className="text-center pt-6 pb-3">
-
           <CardTitle className="text-2xl font-bold text-gray-800">
             Prijava
           </CardTitle>
@@ -121,7 +163,6 @@ export default function LoginPage() {
           </CardDescription>
 
           <div className="flex bg-gray-100 rounded-xl p-1 mt-4">
-
             <button
               type="button"
               onClick={() => setRole("stanar")}
@@ -147,22 +188,16 @@ export default function LoginPage() {
               <Shield size={16} />
               Upravnik
             </button>
-
           </div>
-
         </CardHeader>
 
         <CardContent className="px-5 pb-7">
-
           <form
             className="flex flex-col gap-3 text-center"
             onSubmit={handleLogin}
           >
-
-            {/* STANAR */}
             {role === "stanar" && (
               <div className="space-y-2 text-center">
-
                 <Label className="text-gray-600 text-sm block">
                   PIN <span className="text-red-500">*</span>
                 </Label>
@@ -175,15 +210,12 @@ export default function LoginPage() {
                   className="h-11 text-sm text-center"
                   autoComplete="current-password"
                 />
-
               </div>
             )}
 
-            {/* UPRAVNIK */}
             {role === "upravnik" && (
               <>
                 <div className="space-y-2 text-center">
-
                   <Label className="text-gray-600 text-sm block">
                     Korisničko ime ili email{" "}
                     <span className="text-red-500">*</span>
@@ -196,11 +228,9 @@ export default function LoginPage() {
                     className="h-11 text-sm text-center"
                     autoComplete="username"
                   />
-
                 </div>
 
                 <div className="space-y-2 text-center">
-
                   <Label className="text-gray-600 text-sm block">
                     Lozinka <span className="text-red-500">*</span>
                   </Label>
@@ -212,7 +242,6 @@ export default function LoginPage() {
                     className="h-11 text-sm text-center"
                     autoComplete="current-password"
                   />
-
                 </div>
               </>
             )}
@@ -238,12 +267,9 @@ export default function LoginPage() {
                 "Prijava"
               )}
             </Button>
-
           </form>
-
         </CardContent>
       </Card>
-
     </div>
   );
 }

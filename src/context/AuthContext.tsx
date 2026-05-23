@@ -1,12 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
 type User = {
-  uid: number;
+  uid: string;
   name: string;
-  display_name: string;
-  roles: string[];
+  mail?: string;
   picture?: string;
 };
 
@@ -17,62 +22,80 @@ type AuthContextType = {
   logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  refresh: async () => {},
-  logout: async () => {},
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-
+  // 🔐 LOAD USER FROM DRUPAL SESSION
+  async function refresh() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/me`,
         {
-          method: "GET",
-          credentials: "include", // 🔥 ključ za cookie auth
+          credentials: "include",
+          cache: "no-store",
         }
       );
 
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
+
       const data = await res.json();
 
-      if (res.ok && data?.success) {
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      console.error("Auth refresh error:", err);
+      setUser(data.user);
+    } catch (e) {
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
-  const logout = async () => {
-    await fetch("/api/logout", {
-      method: "POST",
-      credentials: "include",
-    });
+  // 🚪 LOGOUT (SESSION DESTROY)
+  async function logout() {
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/user/logout?_format=json`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
-    setUser(null);
-  };
+      setUser(null);
+    } catch (e) {
+      console.error("Logout error", e);
+    }
+  }
 
+  // 🔄 INIT ON APP START
   useEffect(() => {
     refresh();
-  }, [refresh]);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, refresh, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        refresh,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+
+  if (!ctx) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+
+  return ctx;
+}
