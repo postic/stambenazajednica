@@ -34,9 +34,9 @@ console.error('DATA',data);
   res.cookies.set({
     name: "next_auth",
     value: JSON.stringify({
-      uid: data.user.uid,
-      name: data.user.name,
-      roles: data.user.roles,
+      uid: data.uid,
+      name: data.name,
+      roles: data.roles,
     }),
     httpOnly: true,
     sameSite: "lax",
