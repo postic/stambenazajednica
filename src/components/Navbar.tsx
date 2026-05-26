@@ -130,7 +130,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
               />
 
               <span className="hidden md:block text-gray-900 dark:text-white text-sm font-medium">
-                {user?.name}
+                {user?.full_name || user?.name}
               </span>
             </DropdownMenuTrigger>
 
