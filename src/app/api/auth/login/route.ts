@@ -28,13 +28,15 @@ export async function POST(req: Request) {
     user: data,
   });
 
+console.error('DATA',data);
+
   // 🧠 jednostavan auth cookie (Next owns session)
   res.cookies.set({
     name: "next_auth",
     value: JSON.stringify({
-      uid: data.uid,
-      name: data.name,
-      roles: data.roles,
+      uid: data.user.uid,
+      name: data.user.name,
+      roles: data.user.roles,
     }),
     httpOnly: true,
     sameSite: "lax",
