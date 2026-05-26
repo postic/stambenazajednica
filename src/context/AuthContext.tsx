@@ -7,79 +7,80 @@ import {
   useState,
 } from "react";
 
-type User = {
-  uid: number;
+interface User {
+  uid: string;
   name: string;
-  mail: string;
-};
+  mail?: string;
+  picture?: string;
+}
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
-  login: (name: string, pass: string) => Promise<boolean>;
+  loading: boolean;
   logout: () => Promise<void>;
-};
+  refreshUser: () => Promise<void>;
+}
 
-const AuthContext = createContext<AuthContextType>(
-  {} as AuthContextType
-);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  logout: async () => {},
+  refreshUser: async () => {},
+});
 
 export function AuthProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refreshUser = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
+
+      const data = await res.json();
+
+      setUser(data.user);
+    } catch (err) {
+      console.error(err);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then(r => r.json())
-      .then(data => {
-        if (data.logged_in) {
-          setUser(data);
-        }
-      });
+    refreshUser();
   }, []);
 
-  async function login(name: string, pass: string) {
-
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        pass,
-      }),
-    });
-
-    if (!res.ok) {
-      return false;
-    }
-
-    const data = await res.json();
-
-    setUser(data);
-
-    return true;
-  }
-
-  async function logout() {
-
+  const logout = async () => {
     await fetch("/api/auth/logout", {
       method: "POST",
+      credentials: "include",
     });
 
     setUser(null);
-  }
+  };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        login,
+        loading,
         logout,
+        refreshUser,
       }}
     >
       {children}
