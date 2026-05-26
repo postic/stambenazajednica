@@ -30,7 +30,7 @@ type Role = "stanar" | "upravnik";
 export default function LoginPage() {
 
   const router = useRouter();
-  const { refresh } = useAuth();
+  const { refreshUser } = useAuth();
 
   const [role, setRole] = useState<Role>("stanar");
 
@@ -115,7 +115,7 @@ export default function LoginPage() {
       }
 
       // 🔄 refresh auth state
-      //await refresh();
+      await refreshUser();
 
       const roles = data?.user?.roles || [];
       if (roles.includes("upravnik")) {
