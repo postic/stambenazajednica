@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     user: data,
   });
 
-console.error('DATA',data);
+  // console.error('DATA',data);
 
   // 🧠 jednostavan auth cookie (Next owns session)
   res.cookies.set({

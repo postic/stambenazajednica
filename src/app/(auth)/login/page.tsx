@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -20,24 +21,15 @@ import {
 
 import {
   Loader2,
-  Home,
-  Shield,
   ShieldAlert,
 } from "lucide-react";
 
-type Role = "stanar" | "upravnik";
-
 export default function LoginPage() {
-
   const router = useRouter();
   const { refreshUser } = useAuth();
 
-  const [role, setRole] = useState<Role>("stanar");
-
-  const [stanarPin, setStanarPin] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const [lockedUntil] = useState<number | null>(null);
@@ -53,16 +45,9 @@ export default function LoginPage() {
     : 0;
 
   const isDisabled =
-    loading ||
-    isLocked ||
-    (role === "stanar"
-      ? !stanarPin
-      : !identifier || !password);
+    loading || isLocked || !identifier || !password;
 
-  async function handleLogin(
-    e: React.FormEvent
-  ) {
-
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
     if (loading) return;
@@ -70,54 +55,30 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-
-      let payload: any = {};
-
-      if (role === "stanar") {
-
-        payload = {
-          role,
-          pin: stanarPin,
-        };
-
-      } else {
-
-        payload = {
-          role,
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
           name: identifier,
           pass: password,
-        };
-      }
-
-      // ✅ IDE SAMO NA NEXT API
-      const res = await fetch(
-        "/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+        }),
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-
-        toast.error(
-          data?.message ||
-          "Neispravni podaci"
-        );
-
+        toast.error(data?.message || "Neispravni podaci");
+        setLoading(false);
         return;
       }
 
-      // 🔄 refresh auth state
       await refreshUser();
 
       const roles = data?.user?.roles || [];
+
       if (roles.includes("upravnik")) {
         router.replace("/dashboard");
       } else if (roles.includes("stanar")) {
@@ -127,13 +88,8 @@ export default function LoginPage() {
       }
 
     } catch (err) {
-
-      toast.error(
-        "Greška pri povezivanju sa serverom."
-      );
-
+      toast.error("Greška pri povezivanju sa serverom.");
     } finally {
-
       setLoading(false);
     }
   }
@@ -150,121 +106,61 @@ export default function LoginPage() {
           </CardTitle>
 
           <CardDescription className="text-sm text-gray-500 mt-1">
-            Izaberite tip pristupa
+            Unesite korisničke podatke
           </CardDescription>
-
-          {/* ROLE SWITCH */}
-          <div className="flex bg-gray-100 rounded-xl p-1 mt-4">
-
-            <button
-              type="button"
-              onClick={() => setRole("stanar")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm rounded-lg transition font-medium ${
-                role === "stanar"
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-500"
-              }`}
-            >
-              <Home size={16} />
-              Stanar
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setRole("upravnik")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm rounded-lg transition font-medium ${
-                role === "upravnik"
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-500"
-              }`}
-            >
-              <Shield size={16} />
-              Upravnik
-            </button>
-
-          </div>
 
         </CardHeader>
 
-        <CardContent className="px-5 pb-7">
+        <CardContent className="px-5 pb-6">
 
           <form
             className="flex flex-col gap-3 text-center"
             onSubmit={handleLogin}
           >
 
-            {/* STANAR */}
-            {role === "stanar" && (
+            {/* IDENTIFIER */}
+            <div className="space-y-2 text-center">
 
-              <div className="space-y-2 text-center">
+              <Label className="text-gray-600 text-sm block">
+                Korisničko ime ili email
+              </Label>
 
-                <Label className="text-gray-600 text-sm block">
-                  PIN
-                </Label>
+              <Input
+                value={identifier}
+                onChange={(e) =>
+                  setIdentifier(e.target.value)
+                }
+                type="text"
+                autoComplete="username"
+                className="h-11 text-sm text-center"
+              />
 
-                <Input
-                  value={stanarPin}
-                  onChange={(e) =>
-                    setStanarPin(e.target.value)
-                  }
-                  type="password"
-                  maxLength={4}
-                  className="h-11 text-sm text-center"
-                />
+            </div>
 
-              </div>
-            )}
+            {/* PASSWORD */}
+            <div className="space-y-2 text-center">
 
-            {/* UPRAVNIK */}
-            {role === "upravnik" && (
-              <>
+              <Label className="text-gray-600 text-sm block">
+                Lozinka
+              </Label>
 
-                <div className="space-y-2 text-center">
+              <Input
+                value={password}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
+                type="password"
+                autoComplete="current-password"
+                className="h-11 text-sm text-center"
+              />
 
-                  <Label className="text-gray-600 text-sm block">
-                    Korisničko ime ili email
-                  </Label>
-
-                  <Input
-                    value={identifier}
-                    onChange={(e) =>
-                      setIdentifier(e.target.value)
-                    }
-                    type="text"
-                    className="h-11 text-sm text-center"
-                  />
-
-                </div>
-
-                <div className="space-y-2 text-center">
-
-                  <Label className="text-gray-600 text-sm block">
-                    Lozinka
-                  </Label>
-
-                  <Input
-                    value={password}
-                    onChange={(e) =>
-                      setPassword(e.target.value)
-                    }
-                    type="password"
-                    className="h-11 text-sm text-center"
-                  />
-
-                </div>
-
-              </>
-            )}
+            </div>
 
             {/* LOCK */}
             {isLocked && (
-
               <div className="flex items-center justify-center gap-2 text-xs text-gray-600 bg-gray-100 p-2 rounded-lg">
-
                 <ShieldAlert size={16} />
-
                 Sačekajte {remainingSeconds}s
-
               </div>
             )}
 
@@ -274,7 +170,6 @@ export default function LoginPage() {
               disabled={isDisabled}
               className="w-full h-11 rounded-xl bg-gray-800 hover:bg-gray-900 text-white font-semibold mt-1"
             >
-
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -283,10 +178,19 @@ export default function LoginPage() {
               ) : (
                 "Prijava"
               )}
-
             </Button>
 
           </form>
+
+          {/* FOOTER LINK */}
+          <div className="mt-5 text-center">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-gray-500 hover:text-gray-900 transition"
+            >
+              Zaboravljena lozinka?
+            </Link>
+          </div>
 
         </CardContent>
 
