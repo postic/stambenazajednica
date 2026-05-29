@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -19,33 +18,24 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-import {
-  Loader2,
-  ShieldAlert,
-} from "lucide-react";
+import { Loader2, ShieldAlert } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const { refreshUser } = useAuth();
 
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [lockedUntil] = useState<number | null>(null);
 
-  const isLocked =
-    !!(lockedUntil && Date.now() < lockedUntil);
+  const isLocked = !!(lockedUntil && Date.now() < lockedUntil);
 
   const remainingSeconds = lockedUntil
-    ? Math.max(
-        0,
-        Math.ceil((lockedUntil - Date.now()) / 1000)
-      )
+    ? Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000))
     : 0;
 
-  const isDisabled =
-    loading || isLocked || !identifier || !password;
+  const isDisabled = loading || isLocked || !pin;
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -62,15 +52,14 @@ export default function LoginPage() {
         },
         credentials: "include",
         body: JSON.stringify({
-          name: identifier,
-          pass: password,
+          pin, // 👈 samo PIN ide
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data?.message || "Neispravni podaci");
+        toast.error(data?.message || "Neispravan PIN");
         setLoading(false);
         return;
       }
@@ -86,7 +75,6 @@ export default function LoginPage() {
       } else {
         router.replace("/");
       }
-
     } catch (err) {
       toast.error("Greška pri povezivanju sa serverom.");
     } finally {
@@ -96,64 +84,34 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-3">
-
       <Card className="w-[340px] max-w-[92vw] shadow-xl rounded-2xl border-0 bg-white">
-
         <CardHeader className="text-center pt-6 pb-3">
-
           <CardTitle className="text-2xl font-bold text-gray-800">
-            Prijava
+            PIN Prijava
           </CardTitle>
 
           <CardDescription className="text-sm text-gray-500 mt-1">
-            Unesite korisničke podatke
+            Unesite vaš PIN
           </CardDescription>
-
         </CardHeader>
 
         <CardContent className="px-5 pb-6">
-
-          <form
-            className="flex flex-col gap-3 text-center"
-            onSubmit={handleLogin}
-          >
-
-            {/* IDENTIFIER */}
+          <form className="flex flex-col gap-3 text-center" onSubmit={handleLogin}>
+            {/* PIN */}
             <div className="space-y-2 text-center">
-
               <Label className="text-gray-600 text-sm block">
-                Korisničko ime ili email
+                PIN
               </Label>
 
               <Input
-                value={identifier}
-                onChange={(e) =>
-                  setIdentifier(e.target.value)
-                }
-                type="text"
-                autoComplete="username"
-                className="h-11 text-sm text-center"
-              />
-
-            </div>
-
-            {/* PASSWORD */}
-            <div className="space-y-2 text-center">
-
-              <Label className="text-gray-600 text-sm block">
-                Lozinka
-              </Label>
-
-              <Input
-                value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
                 type="password"
-                autoComplete="current-password"
-                className="h-11 text-sm text-center"
+                inputMode="numeric"
+                maxLength={6}
+                autoComplete="one-time-code"
+                className="h-11 text-sm text-center tracking-widest"
               />
-
             </div>
 
             {/* LOCK */}
@@ -179,23 +137,9 @@ export default function LoginPage() {
                 "Prijava"
               )}
             </Button>
-
           </form>
-
-          {/* FOOTER LINK */}
-          <div className="mt-5 text-center">
-            <Link
-              href="/forgot-password"
-              className="text-xs text-gray-500 hover:text-gray-900 transition"
-            >
-              Zaboravljena lozinka?
-            </Link>
-          </div>
-
         </CardContent>
-
       </Card>
-
     </div>
   );
 }
