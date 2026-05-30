@@ -87,7 +87,7 @@ export default function LoginPage() {
       <Card className="w-[340px] max-w-[92vw] shadow-xl rounded-2xl border-0 bg-white">
         <CardHeader className="text-center pt-6 pb-3">
           <CardTitle className="text-2xl font-bold text-gray-800">
-            PIN Prijava
+            Prijava
           </CardTitle>
 
           <CardDescription className="text-sm text-gray-500 mt-1">
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 onChange={(e) => setPin(e.target.value)}
                 type="password"
                 inputMode="numeric"
-                maxLength={6}
+                maxLength={4}
                 autoComplete="one-time-code"
                 className="h-11 text-sm text-center tracking-widest"
               />
