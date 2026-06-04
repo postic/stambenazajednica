@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/login`,
     {
       method: "POST",
+      credentials: "include", // 🔥 KLJUČNO
       headers: {
         "Content-Type": "application/json",
       },

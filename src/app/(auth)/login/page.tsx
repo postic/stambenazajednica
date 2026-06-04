@@ -91,7 +91,7 @@ export default function LoginPage() {
           </CardTitle>
 
           <CardDescription className="text-sm text-gray-500 mt-1">
-            Unesite vaš PIN
+            Unesite Vaš PIN
           </CardDescription>
         </CardHeader>
 
@@ -107,7 +107,6 @@ export default function LoginPage() {
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 type="password"
-                inputMode="numeric"
                 maxLength={4}
                 autoComplete="one-time-code"
                 className="h-11 text-sm text-center tracking-widest"
