@@ -41,3 +41,13 @@ export function addRunningBalance<
 
   return withBalanceAsc.reverse();
 }
+
+// lib/transactions.ts
+
+export function getTransactionsWithBalance(data) {
+  const sorted = [...data].sort(
+    (a, b) => new Date(a.created) - new Date(b.created)
+  );
+
+  return addRunningBalance(sorted);
+}

@@ -36,9 +36,7 @@ export default function TransakcijePage() {
   }, [page]);
 
   // 🔥 KLJUČNO: računanje stanja
-  const data = useMemo(() => {
-    return addRunningBalance(transakcije, 0);
-  }, [transakcije]);
+  const data = transakcije;
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
