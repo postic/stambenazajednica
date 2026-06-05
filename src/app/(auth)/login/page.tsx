@@ -59,7 +59,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data?.message || "Neispravan PIN");
+        toast.error(data?.message || "Došlo je do greške");
         setLoading(false);
         return;
       }

@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const drupalRes = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/login`,
+    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/auth/login`,
     {
       method: "POST",
       credentials: "include", // 🔥 KLJUČNO
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     user: data,
   });
 
-  // console.error('DATA',data);
+  console.error('DATA',data);
 
   // 🧠 jednostavan auth cookie (Next owns session)
   res.cookies.set({
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
       uid: data.uid,
       name: data.name,
       roles: data.roles,
+      picture: data.picture,
     }),
     httpOnly: true,
     sameSite: "lax",
