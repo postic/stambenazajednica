@@ -1,15 +1,7 @@
 // src/app/api/transakcije/route.ts
 
 import { addRunningBalance } from "@/lib/transactions";
-
-interface Transakcija {
-  id: string;
-  title: string;
-  body?: string;
-  amount: number;
-  type?: string;
-  created: string;
-}
+import type { Transakcija } from "@/types/transakcija";
 
 export async function GET(req: Request) {
   try {
@@ -20,12 +12,12 @@ export async function GET(req: Request) {
 
     const offset = (page - 1) * limit;
 
-    const NEXT_PUBLIC_DRUPAL_BASE_URL =
+    const baseUrl =
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
       "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/transakcija?sort=-created`,
+      `${baseUrl}/jsonapi/node/transakcija?sort=-created`,
       {
         cache: "no-store",
       }
@@ -34,11 +26,7 @@ export async function GET(req: Request) {
     if (!response.ok) {
       const text = await response.text();
 
-      console.error(
-        "Drupal API error:",
-        response.status,
-        text
-      );
+      console.error("Drupal API error:", response.status, text);
 
       return new Response(
         JSON.stringify({
@@ -46,37 +34,33 @@ export async function GET(req: Request) {
         }),
         {
           status: 502,
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
 
     const json = await response.json();
 
-    const allTransactions: Transakcija[] = (
-      json.data || []
-    ).map((item: any) => ({
-      id: item.id,
-      title: item.attributes?.title ?? "",
-      body: item.attributes?.body?.value ?? "",
-      created: item.attributes?.created ?? "",
-      type: item.attributes?.field_tip ?? "",
-      amount: Number(item.attributes?.field_iznos ?? 0),
-    }));
+    // 🔹 RAW DATA (bez balance)
+    const allTransactions: Transakcija[] = (json.data || []).map(
+      (item: any) => ({
+        id: item.id,
+        title: item.attributes?.title ?? "",
+        body: item.attributes?.body?.value ?? "",
+        created: item.attributes?.created ?? "",
+        type: item.attributes?.field_tip ?? undefined,
+        amount: Number(item.attributes?.field_iznos ?? 0),
+      })
+    );
 
-    // Izračunaj stanje za CELOKUPAN skup transakcija
+    // 🔹 ADD RUNNING BALANCE
     const withBalance = addRunningBalance(allTransactions);
 
     const total = withBalance.length;
     const totalPages = Math.ceil(total / limit);
 
-    // Tek sada paginacija
-    const paginated = withBalance.slice(
-      offset,
-      offset + limit
-    );
+    // 🔹 PAGINATION
+    const paginated = withBalance.slice(offset, offset + limit);
 
     return new Response(
       JSON.stringify({
@@ -87,16 +71,11 @@ export async function GET(req: Request) {
       }),
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       }
     );
   } catch (error) {
-    console.error(
-      "Server error fetching transakcije:",
-      error
-    );
+    console.error("Server error fetching transakcije:", error);
 
     return new Response(
       JSON.stringify({
@@ -104,9 +83,7 @@ export async function GET(req: Request) {
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

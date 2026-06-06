@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { isEmptyHtml, formatRSD } from "@/lib/text";
 import StatusBadge from "@/components/StatusBadge";
-import type { TransakcijaDetail, FileItem } from "@/types/transakcija";
+import type { TransakcijaDetail } from "@/types/transakcija";
+import type { FileItem } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
 
 import {
@@ -158,7 +159,7 @@ export default async function TransakcijaPage({
 
       {/* BODY */}
       {!isEmptyHtml(tx.body) && (
-        <div className="border border-slate-200 p-4 mb-6">
+        <div className="border border-slate-200 bg-slate-50 p-4 mb-6">
           <div
             className="text-sm text-slate-700 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: tx.body }}
@@ -175,7 +176,7 @@ export default async function TransakcijaPage({
           </div>
 
           <ul>
-            {tx.files.map((file, i) => {
+            {tx.files.map((file: FileItem, i: number) => {
               const mime = file.mime || "";
 
               let Icon = File;

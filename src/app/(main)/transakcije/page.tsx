@@ -7,10 +7,11 @@ import type { Transakcija } from "@/types/transakcija";
 import { addRunningBalance } from "@/lib/transactions";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import type { TransakcijaWithBalance } from "@/types/transakcija";
 
 
 export default function TransakcijePage() {
-  const [transakcije, setTransakcije] = useState<Transakcija[]>([]);
+  const [transakcije, setTransakcije] = useState<TransakcijaWithBalance[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
