@@ -43,7 +43,7 @@ export default function BalancePill() {
     <button
       onClick={() => router.push("/transakcije")}
       className={`
-        fixed bottom-5 right-5 z-50
+        fixed bottom-5 right-5 z-1
         flex items-center gap-3
         px-4 py-3
         border
