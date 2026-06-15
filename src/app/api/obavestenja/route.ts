@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     // Fetch svih obavestenja (bez count=true)
-    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_image`);
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje?sort=-created&include=field_image`);
 
     if (!response.ok) {
       const text = await response.text();
