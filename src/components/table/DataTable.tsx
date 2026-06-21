@@ -36,16 +36,16 @@ export function DataTable<T extends HasId>({
   }
 
   if (!data || data.length === 0) {
-    return (
-      <div className="w-full py-8 flex items-center justify-center border border-gray-100 rounded-lg bg-gray-50/60">
-        <div className="text-center">
-          <div className="text-gray-400 text-sm">
-            Nema podataka
-          </div>
+  return (
+    <div className="w-full py-6 text-sm text-gray-500 text-center bg-yellow-50/50 border border-yellow-100 rounded-lg">
+      <div className="text-center">
+        <div className="text-gray-400 text-sm">
+          Nema podataka
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const getAlignClass = (align?: string) => {
     switch (align) {
