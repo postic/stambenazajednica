@@ -31,7 +31,7 @@ export function DataTable<T extends HasId>({
 
   if (loading) {
     return (
-      <div className="w-full py-6 text-sm text-center bg-grey-50/40 border border-grey-100 rounded-lg">
+      <div className="w-full py-6 text-sm text-center">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-5 h-5 text-grey-400 animate-spin" />
           <div className="text-grey-400 text-sm">Podaci se učitavaju...</div>
@@ -42,7 +42,7 @@ export function DataTable<T extends HasId>({
 
 if (!data || data.length === 0) {
   return (
-    <div className="w-full py-6 text-sm text-center bg-grey-50/40 border border-grey-100 rounded-lg">
+    <div className="w-full py-6 text-sm text-center">
       <div className="flex flex-col items-center gap-2">
         <Database className="w-5 h-5 text-gray-400" />
         <div className="text-gray-400 text-sm">
