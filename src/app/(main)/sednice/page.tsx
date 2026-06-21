@@ -27,7 +27,7 @@ export default function SednicePage() {
       .catch((err) => {
         if (ignore) return;
 
-        console.error("Greška pri učitavanju kvarova:", err);
+        console.error("Greška pri učitavanju sednica:", err);
         setSednice([]);
       })
       .finally(() => {
