@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Database } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -29,16 +31,20 @@ export function DataTable<T extends HasId>({
 
   if (loading) {
     return (
-      <div className="w-full py-6 text-sm text-gray-500 text-center">
-        <span className="animate-pulse">Podaci se učitavaju...</span>
+      <div className="w-full py-6 text-sm text-center bg-blue-50/40 border border-blue-100 rounded-lg">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-9 h-9 text-blue-400 animate-spin" />
+          <div className="text-blue-400 text-sm">Podaci se učitavaju...</div>
+        </div>
       </div>
     );
   }
 
-  if (!data || data.length === 0) {
+if (!data || data.length === 0) {
   return (
-    <div className="w-full py-6 text-sm text-gray-500 text-center bg-yellow-50/50 border border-yellow-100 rounded-lg">
-      <div className="text-center">
+    <div className="w-full py-6 text-sm text-center bg-red-50/40 border border-red-100 rounded-lg">
+      <div className="flex flex-col items-center gap-2">
+        <Database className="w-9 h-9 text-gray-400" />
         <div className="text-gray-400 text-sm">
           Nema podataka
         </div>
