@@ -61,7 +61,6 @@ export default function TransakcijePage() {
         data={data}
         columns={transakcijeColumns}
         loading={loading}
-        emptyMessage="Nema transakcija."
       />
 
       {/* PAGINATION */}

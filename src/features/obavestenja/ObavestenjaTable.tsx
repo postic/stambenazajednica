@@ -21,9 +21,6 @@ export default function ObavestenjaTable({
       loading={loading}
       data={safeData}
       columns={obavestenjaColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema podataka."
-      }
     />
   );
 }

@@ -21,9 +21,6 @@ export default function KvaroviTable({
       loading={loading}
       data={safeData}
       columns={kvaroviColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema prijavljenih kvarova."
-      }
     />
   );
 }

@@ -18,14 +18,12 @@ interface HasId {
 interface DataTableProps<T extends HasId> {
   data: T[];
   columns: Column<T>[];
-  emptyMessage?: string;
   loading?: boolean;
 }
 
 export function DataTable<T extends HasId>({
   data,
   columns,
-  emptyMessage = "Nema podataka.",
   loading = false,
 }: DataTableProps<T>) {
 
@@ -40,18 +38,18 @@ export function DataTable<T extends HasId>({
     );
   }
 
-if (!data || data.length === 0) {
-  return (
-    <div className="w-full py-6 text-sm text-center">
-      <div className="flex flex-col items-center gap-2">
-        <Database className="w-5 h-5 text-gray-400" />
-        <div className="text-gray-400 text-sm">
-          Nema podataka
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full py-6 text-sm text-center">
+        <div className="flex flex-col items-center gap-2">
+          <Database className="w-5 h-5 text-gray-400" />
+          <div className="text-gray-400 text-sm">
+            Nema podataka
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   const getAlignClass = (align?: string) => {
     switch (align) {

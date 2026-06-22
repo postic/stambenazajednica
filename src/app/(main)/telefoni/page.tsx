@@ -64,7 +64,6 @@ export default function TelefoniPage() {
         data={telefoni}
         columns={telefoniColumns}
         loading={loading}
-        emptyMessage="Nema telefona."
       />
 
       {/* Numerička paginacija */}

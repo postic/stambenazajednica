@@ -14,7 +14,6 @@ export default function DokumentiTable({ dokumenti }: DokumentiTableProps) {
     <DataTable
       data={dokumenti}
       columns={dokumentiColumns}
-      emptyMessage="Nema dokumenata."
     />
   );
 }

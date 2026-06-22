@@ -18,9 +18,6 @@ export default function AnketeTable({
       loading={loading}
       data={safeData}
       columns={anketeColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema podataka."
-      }
     />
   );
 }

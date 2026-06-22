@@ -20,9 +20,6 @@ export default function StanoviTable({
       loading={loading}
       data={safeData}
       columns={stanoviColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema podataka."
-      }
     />
   );
 }

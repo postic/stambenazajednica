@@ -63,7 +63,6 @@ export default function StanoviPage() {
         data={stanovi}
         columns={stanoviColumns}
         loading={loading}
-        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

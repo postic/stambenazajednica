@@ -22,9 +22,6 @@ export default function SedniceTable({
       loading={loading}
       data={safeData}
       columns={sedniceColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema podataka."
-      }
     />
   );
 }

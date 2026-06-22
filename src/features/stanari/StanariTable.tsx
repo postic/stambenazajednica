@@ -19,9 +19,6 @@ export default function StanariTable({
       loading={loading}
       data={safeData}
       columns={stanariColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema podataka."
-      }
     />
   );
 }

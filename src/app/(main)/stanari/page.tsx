@@ -64,7 +64,6 @@ export default function StanariPage() {
         data={stanari}
         columns={stanariColumns}
         loading={loading}
-        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

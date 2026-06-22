@@ -21,9 +21,6 @@ export default function TelefoniTable({
       loading={loading}
       data={safeData}
       columns={telefoniColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema telefona."
-      }
     />
   );
 }

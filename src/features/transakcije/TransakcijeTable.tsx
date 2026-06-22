@@ -24,9 +24,6 @@ export default function TransakcijeTable({
       loading={loading}
       data={safeData}
       columns={transakcijeColumns}
-      emptyMessage={
-        loading ? "Učitavanje..." : "Nema transakcija."
-      }
     />
   );
 }

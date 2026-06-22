@@ -63,7 +63,6 @@ export default function SednicePage() {
         data={sednice}
         columns={sedniceColumns}
         loading={loading}
-        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

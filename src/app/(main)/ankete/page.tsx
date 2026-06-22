@@ -60,7 +60,6 @@ export default function AnketePage() {
         data={ankete}
         columns={anketeColumns}
         loading={loading}
-        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}

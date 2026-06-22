@@ -78,7 +78,6 @@ export default function KvaroviPage() {
         data={kvarovi}
         columns={kvaroviColumns}
         loading={loading}
-        emptyMessage="Nema prijavljenih kvarova."
       />
 
       {/* PAGINATION */}

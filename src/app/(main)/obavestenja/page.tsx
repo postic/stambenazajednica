@@ -79,7 +79,6 @@ export default function ObavestenjaPage() {
         data={obavestenja}
         columns={obavestenjaColumns}
         loading={loading}
-        emptyMessage="Nema podataka."
       />
 
       {/* Numerička paginacija */}
