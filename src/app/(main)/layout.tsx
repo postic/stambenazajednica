@@ -5,12 +5,11 @@ import { ReactNode, useState } from "react";
 
 import { AuthProvider } from "@/context/AuthContext";
 
+import Statistics from "@/components/Statistics";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import TelefoniSidebar from "@/components/TelefoniSidebar";
 import { AppBreadcrumb } from "@/components/AppBreadcrumb";
-import BalancePill from "@/components/BalancePill";
-
 import { Toaster } from "sonner";
 
 export default function RootLayout({
@@ -47,23 +46,16 @@ export default function RootLayout({
                 <AppBreadcrumb />
               </div>
 
-              {/* MOBILE BALANCE */}
-              <div className="xl:hidden mb-4">
-                <BalancePill />
-              </div>
-
               {/* PAGE CONTENT */}
-              {children}
+              <Statistics />
+              <div className="mt-4">
+                {children}
+              </div>
 
             </main>
 
             {/* RIGHT SIDEBAR DESKTOP */}
             <aside className="hidden xl:flex w-64 flex-col bg-white min-h-0 border-l border-gray-200">
-
-              {/* TOP STATIC BLOCK */}
-              <div className="shrink-0 border-b border-gray-100">
-                <BalancePill />
-              </div>
 
               {/* SCROLL AREA */}
               <div className="flex-1 overflow-y-auto min-h-0">
