@@ -17,7 +17,7 @@ export default function StatCard({
         {icon}
       </div>
 
-      <div className="text-lg md:text-2xl font-bold text-slate-900 text-center md:text-left">
+      <div className="text-lg md:text-xl font-bold text-slate-900 text-center md:text-left">
         {value}
       </div>
 
