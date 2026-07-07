@@ -44,45 +44,27 @@ export default function Statistics() {
   }, []);
 
 
-  const formattedBalance = new Intl.NumberFormat(
-    "sr-Latn-RS",
-    {
-      style: "currency",
-      currency: "RSD",
-      minimumFractionDigits: 0,
-    }
-  ).format(balance);
-
+  const formattedBalance = new Intl.NumberFormat("sr-RS").format(balance);
 
   return (
-    <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="mb-4 grid grid-cols-3 gap-2">
+  <StatCard
+    icon={<Home className="h-5 w-5 text-green-600" />}
+    value={stats.stanovi}
+    label="Stanovi"
+  />
 
-      <StatCard
-        icon={
-          <Home className="h-6 w-6 text-green-600" />
-        }
-        value={stats.stanovi}
-        label="Ukupno stanova"
-      />
+  <StatCard
+    icon={<Users className="h-5 w-5 text-blue-600" />}
+    value={stats.stanari}
+    label="Stanari"
+  />
 
-
-      <StatCard
-        icon={
-          <Users className="h-6 w-6 text-blue-600" />
-        }
-        value={stats.stanari}
-        label="Prijavljenih stanara"
-      />
-
-
-      <StatCard
-        icon={
-          <Wallet className="h-6 w-6 text-emerald-600" />
-        }
-        value={formattedBalance}
-        label="Stanje računa"
-      />
-
-    </div>
+  <StatCard
+    icon={<Wallet className="h-5 w-5 text-emerald-600" />}
+    value={formattedBalance}
+    label="Račun"
+  />
+</div>
   );
 }

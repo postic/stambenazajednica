@@ -12,16 +12,16 @@ export default function StatCard({
   label,
 }: StatCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
-      <div className="mb-2">
+    <div className="rounded-xl border border-slate-200 bg-white p-2 md:p-3">
+      <div className="mb-1 flex justify-center md:justify-start">
         {icon}
       </div>
 
-      <div className="text-2xl font-bold text-slate-900">
+      <div className="text-lg md:text-2xl font-bold text-slate-900 text-center md:text-left">
         {value}
       </div>
 
-      <div className="mt-1 text-gray-400 text-[11px] uppercase font-normal tracking-normal">
+      <div className="mt-1 text-[12px] md:text-[14px] uppercase font-normal tracking-normal text-gray-400 text-center md:text-left leading-tight">
         {label}
       </div>
     </div>
