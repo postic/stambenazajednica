@@ -45,7 +45,7 @@ export default function AnketeResults({
                 {o.label} {isUserVote && "✔"}
               </span>
               <span>
-                {percent}%xxxxxxx ({o.votes})
+                {percent}% ({o.votes})
               </span>
             </div>
 

@@ -1,20 +1,10 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-
-    const cookieStore = await cookies();
-    const auth = cookieStore.get("next_auth");
-
-    if (!auth) {
-      return NextResponse.json({ vote: null });
-    }
-
-    const user = JSON.parse(auth.value);
-    const uid = user.uid;
-    const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL!;
-
     // =========================
     // 1. INPUT
     // =========================
@@ -28,14 +18,79 @@ export async function POST(req: Request) {
     }
 
     // =========================
+    // 2. COOKIE PARSING
+    // =========================
+    const cookieHeader = req.headers.get("cookie");
+
+    if (!cookieHeader) {
+      return NextResponse.json(
+        { error: "No cookies found" },
+        { status: 401 }
+      );
+    }
+
+    const token = cookieHeader
+      .split("; ")
+      .find((c) => c.startsWith("token="))
+      ?.split("=")[1];
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "No access token" },
+        { status: 401 }
+      );
+    }
+
+    // =========================
+    // 3. JWT VERIFY → stan_id
+    // =========================
+    let stanId: string;
+
+    try {
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+
+      stanId = decoded.stan_id;
+
+      if (!stanId) {
+        return NextResponse.json(
+          { error: "Missing stan_id in token" },
+          { status: 401 }
+        );
+      }
+    } catch (err) {
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // =========================
+    // 4. DRUPAL CONFIG
+    // =========================
+    const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL;
+    const drupalToken = process.env.DRUPAL_INTERNAL_TOKEN;
+
+    if (!baseUrl || !drupalToken) {
+      return NextResponse.json(
+        { error: "Missing Drupal config" },
+        { status: 500 }
+      );
+    }
+
+    const headers = {
+      "Content-Type": "application/vnd.api+json",
+      Accept: "application/vnd.api+json",
+      "X-API-KEY": drupalToken,
+    };
+
+
+    // =========================
     // 4. CHECK IF USER ALREADY VOTED
     // =========================
     const checkRes = await fetch(
-      `${baseUrl}/jsonapi/node/glas?filter[field_glas_anketa.id]=${anketaId}&filter[field_glas_stanar.id]=${uid}`,
+      `${baseUrl}/jsonapi/node/glas?filter[field_glas_anketa.id]=${anketaId}&filter[field_glas_stanar.id]=${stanId}`,
       {
-        headers: {
-          Cookie: auth, // 🔥 KLJUČNO
-        },
+        headers,
         cache: "no-store",
       }
     );
@@ -54,9 +109,7 @@ export async function POST(req: Request) {
     // =========================
     const res = await fetch(`${baseUrl}/jsonapi/node/glas`, {
       method: "POST",
-      headers: {
-        Cookie: auth, // 🔥 KLJUČNO
-      },
+      headers,
       body: JSON.stringify({
         data: {
           type: "node--glas",
@@ -67,7 +120,7 @@ export async function POST(req: Request) {
             field_glas_stanar: {
               data: {
                 type: "node--stan",
-                id: uid,
+                id: stanId,
               },
             },
             field_glas_anketa: {
@@ -103,9 +156,7 @@ export async function POST(req: Request) {
     const opcijaRes = await fetch(
       `${baseUrl}/jsonapi/node/opcija/${opcijaId}`,
       {
-        headers: {
-          Cookie: auth, // 🔥 KLJUČNO
-        },
+        headers,
         cache: "no-store",
       }
     );
@@ -131,9 +182,7 @@ export async function POST(req: Request) {
       `${baseUrl}/jsonapi/node/opcija/${opcijaId}`,
       {
         method: "PATCH",
-        headers: {
-          Cookie: auth, // 🔥 KLJUČNO
-        },
+        headers,
         body: JSON.stringify({
           data: {
             type: "node--opcija",
