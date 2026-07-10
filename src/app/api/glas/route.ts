@@ -8,7 +8,9 @@ export async function POST(
 
   try {
 
+
     const body = await request.json();
+
 
     const {
       anketaId,
@@ -16,33 +18,37 @@ export async function POST(
     } = body;
 
 
+
     if (!anketaId || !opcijaId) {
 
       return NextResponse.json(
         {
-          error: "Nedostaje anketa ili opcija"
+          error:"Nedostaje anketa ili opcija"
         },
         {
-          status: 400
+          status:400
         }
       );
 
     }
 
 
-    const cookieStore = await cookies();
 
-console.log(
-  "COOKIES:",
-  cookieStore.getAll()
-);
+    const cookieStore =
+      await cookies();
+
+
+
     /*
-      Next auth cookie
+      Next auth korisnik
     */
 
-    const authCookie = cookieStore.get(
-      "next_auth"
-    );
+
+    const authCookie =
+      cookieStore.get(
+        "next_auth"
+      );
+
 
 
     if (!authCookie) {
@@ -60,12 +66,15 @@ console.log(
 
 
 
-    const session = JSON.parse(
-      authCookie.value
-    );
+    const session =
+      JSON.parse(
+        authCookie.value
+      );
 
 
-    const uid = session.uid;
+
+    const uid =
+      session.uid;
 
 
 
@@ -73,7 +82,81 @@ console.log(
 
       return NextResponse.json(
         {
-          error:"Nema korisničkog ID-a"
+          error:"Nema UID"
+        },
+        {
+          status:401
+        }
+      );
+
+    }
+
+
+
+    const baseUrl =
+      process.env.NEXT_PUBLIC_DRUPAL_BASE_URL!;
+
+
+
+    /*
+      Drupal login
+    */
+
+
+    const loginResponse =
+      await fetch(
+
+        `${baseUrl}/user/login?_format=json`,
+
+        {
+
+          method:"POST",
+
+          headers:{
+
+            "Content-Type":
+              "application/json",
+
+            Accept:
+              "application/json"
+
+          },
+
+
+          body:JSON.stringify({
+
+            name:
+              process.env.DRUPAL_API_USER,
+
+            pass:
+              process.env.DRUPAL_API_PASSWORD
+
+          })
+
+        }
+
+      );
+
+
+
+    const loginData =
+      await loginResponse.json();
+
+
+
+    if (!loginResponse.ok) {
+
+
+      console.error(
+        "Drupal login error",
+        loginData
+      );
+
+
+      return NextResponse.json(
+        {
+          error:"Drupal login neuspešan",
+          details:loginData
         },
         {
           status:401
@@ -88,48 +171,103 @@ console.log(
       Drupal session cookie
     */
 
-    const drupalCookie = cookieStore
-      .getAll()
-      .filter(cookie =>
-        cookie.name.startsWith("SESS") ||
-        cookie.name.startsWith("SSESS")
-      )
-      .map(cookie =>
-        `${cookie.name}=${cookie.value}`
-      )
-      .join("; ");
+
+    const setCookie =
+      loginResponse.headers.get(
+        "set-cookie"
+      );
 
 
 
+    if (!setCookie) {
 
-    const baseUrl =
-      process.env
-        .NEXT_PUBLIC_DRUPAL_BASE_URL!;
+      return NextResponse.json(
+        {
+          error:"Drupal nije vratio session cookie"
+        },
+        {
+          status:401
+        }
+      );
+
+    }
+
+
+
+    const drupalCookie =
+      setCookie.split(";")[0];
 
 
 
 
     /*
-      Pronalaženje Drupal UUID korisnika
+      Drupal CSRF token
     */
 
-    const userResponse = await fetch(
 
-      `${baseUrl}/jsonapi/user/user` +
-      `?filter[drupal_internal__uid]=${uid}`,
+    const csrfResponse =
+      await fetch(
 
-      {
-        headers:{
+        `${baseUrl}/session/token`,
 
-          Cookie:drupalCookie
+        {
 
-        },
+          headers:{
 
-        cache:"no-store"
+            Cookie:
+              drupalCookie
 
-      }
+          },
 
+          cache:"no-store"
+
+        }
+
+      );
+
+
+
+    const csrfToken =
+      await csrfResponse.text();
+
+
+
+    console.log(
+      "CSRF TOKEN:",
+      csrfToken
     );
+
+
+
+
+
+    /*
+      Pronađi Drupal UUID korisnika
+      preko next_auth uid
+    */
+
+
+    const userResponse =
+      await fetch(
+
+        `${baseUrl}/jsonapi/user/user` +
+        `?filter[drupal_internal__uid]=${uid}`,
+
+        {
+
+          headers:{
+
+            Cookie:
+              drupalCookie
+
+          },
+
+          cache:"no-store"
+
+        }
+
+      );
+
 
 
     const userData =
@@ -144,7 +282,7 @@ console.log(
 
       return NextResponse.json(
         {
-          error:"Drupal korisnik nije pronađen"
+          error:"Korisnik nije pronađen"
         },
         {
           status:404
@@ -157,61 +295,6 @@ console.log(
 
     const userUuid =
       userData.data[0].id;
-
-
-
-
-    /*
-      Provera postojećeg glasa
-    */
-
-    const checkVote =
-      await fetch(
-
-        `${baseUrl}/jsonapi/node/glas` +
-
-        `?filter[field_glas_anketa.id]=${anketaId}` +
-
-        `&filter[field_glas_stanar.id]=${userUuid}`,
-
-        {
-
-          headers:{
-
-            Cookie:drupalCookie
-
-          },
-
-          cache:"no-store"
-
-        }
-
-      );
-
-
-
-    const existingVote =
-      await checkVote.json();
-
-
-
-
-    if (
-      existingVote.data &&
-      existingVote.data.length > 0
-    ) {
-
-      return NextResponse.json(
-        {
-          error:"Već ste glasali"
-        },
-        {
-          status:400
-        }
-      );
-
-    }
-
 
 
 
@@ -239,11 +322,14 @@ console.log(
             Accept:
               "application/vnd.api+json",
 
+            Cookie:
+              drupalCookie,
 
-            Cookie:drupalCookie
+
+            "X-CSRF-Token":
+              csrfToken
 
           },
-
 
 
           body:JSON.stringify({
@@ -261,8 +347,21 @@ console.log(
               },
 
 
-
               relationships:{
+
+
+                uid:{
+
+                  data:{
+
+                    type:"user--user",
+
+                    id:userUuid
+
+                  }
+
+                },
+
 
 
                 field_glas_anketa:{
@@ -278,6 +377,7 @@ console.log(
                 },
 
 
+
                 field_glas_opcija:{
 
                   data:{
@@ -285,19 +385,6 @@ console.log(
                     type:"node--opcija",
 
                     id:opcijaId
-
-                  }
-
-                },
-
-
-                field_glas_stanar:{
-
-                  data:{
-
-                    type:"user--user",
-
-                    id:userUuid
 
                   }
 
@@ -327,7 +414,7 @@ console.log(
 
 
       console.error(
-        "Drupal error:",
+        "Drupal create glas error",
         JSON.stringify(
           result,
           null,
@@ -338,7 +425,7 @@ console.log(
 
       return NextResponse.json(
         {
-          error:"Greška prilikom upisa glasa",
+          error:"Greška pri kreiranju glasa",
           details:result
         },
         {
@@ -370,7 +457,7 @@ console.log(
 
 
     console.error(
-      "POST /api/glas error:",
+      "POST /api/glas error",
       error
     );
 
@@ -383,7 +470,6 @@ console.log(
         status:500
       }
     );
-
 
   }
 
