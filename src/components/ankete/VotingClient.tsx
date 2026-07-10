@@ -393,29 +393,6 @@ export default function VotingClient({
 
       )}
 
-
-
-
-
-
-
-      {message && (
-
-        <div className="
-          rounded-lg
-          bg-slate-100
-          p-3
-          text-sm
-        ">
-
-          {message}
-
-        </div>
-
-      )}
-
-
-
     </div>
 
   );
