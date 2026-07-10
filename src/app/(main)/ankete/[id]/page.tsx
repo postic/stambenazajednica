@@ -1,66 +1,170 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
+import VotingForm from "@/components/ankete/VotingClient";
+import Rezultati from "@/components/ankete/Results";
 import StatusBadge from "@/components/StatusBadge";
-import { isEmptyHtml } from "@/lib/text";
-import VotingClient from "./VotingClient";
 
-// ---------------- ANKETA ----------------
-async function getAnketa(id: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/anketa/${id}`,
-    { cache: "no-store" }
-  );
 
-  if (!res.ok) return null;
+interface Anketa {
 
-  const json = await res.json();
-  const item = json.data;
+  id:string;
+  title:string;
+  pitanje:string;
+  body:string;
+  status:string;
+  created:string;
 
-  if (!item) return null;
-
-  return {
-    id: item.id,
-    title: item.attributes.title,
-    created: item.attributes.created,
-    body: item.attributes.body?.value || "",
-    pitanje: item.attributes.field_anketa_pitanje,
-    status: item.attributes.field_status_ankete,
-  };
 }
 
-// ---------------- OPCIJE ----------------
-async function getOpcije(anketaId: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/opcija?filter[field_opcija_anketa.id]=${anketaId}`,
-    { cache: "no-store" }
-  );
 
-  if (!res.ok) return [];
 
-  const json = await res.json();
+interface Opcija {
 
-  return json.data.map((o: any) => ({
-    id: o.id,
-    label: o.attributes.title,
-    votes: o.attributes.field_opcija_broj_glasova || 0,
-  }));
+  id:string;
+  title:string;
+
 }
 
-// ---------------- PAGE ----------------
-export default async function AnketeDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
 
-  const anketa = await getAnketa(id);
-  if (!anketa) notFound();
 
-  const opcije = await getOpcije(id);
+export default function AnketaDetaljPage(){
 
-  return (
-    <div className="max-w-4xl">
-      {/* HEADER */}
+
+const params = useParams();
+
+const id = params.id as string;
+
+
+
+const [anketa,setAnketa] =
+useState<Anketa | null>(null);
+
+
+const [opcije,setOpcije] =
+useState<Opcija[]>([]);
+
+
+const [glasao,setGlasao] =
+useState<boolean | null>(null);
+
+
+
+useEffect(()=>{
+
+
+async function load(){
+
+
+try{
+
+
+// anketa
+
+const anketaResponse =
+await fetch(
+ `/api/ankete/${id}`,
+ {
+  cache:"no-store"
+ }
+);
+
+
+
+const anketaData =
+await anketaResponse.json();
+
+
+setAnketa(anketaData);
+
+
+
+
+// opcije ankete
+
+const opcijeResponse =
+await fetch(
+ `/api/ankete/${id}/opcije`,
+ {
+  cache:"no-store"
+ }
+);
+
+
+const opcijeData =
+await opcijeResponse.json();
+
+
+setOpcije(opcijeData);
+
+
+
+
+// provera glasa
+
+const glasResponse =
+await fetch(
+ `/api/ankete/${id}/glasao`,
+ {
+  cache:"no-store"
+ }
+);
+
+
+const glasData =
+await glasResponse.json();
+
+
+setGlasao(
+ glasData.voted
+);
+
+
+
+}catch(error){
+
+console.error(error);
+
+}
+
+
+}
+
+
+if(id){
+
+load();
+
+}
+
+
+},[id]);
+
+
+
+
+
+if(!anketa || glasao === null){
+
+return (
+
+<div className="p-6 text-center">
+
+Učitavanje ankete...
+
+</div>
+
+);
+
+}
+
+return (
+
+  <div className="max-w-4xl">
+
+    {/* HEADER */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
           <div data-field>
@@ -81,24 +185,69 @@ export default async function AnketeDetailPage({
         </div>
       </div>
 
-      <div className="border border-gray-300 bg-slate-50 p-4 mb-6">
-        <h2 className="text-sm text-gray-500 leading-snug">
+    <div className="border border-slate-200 bg-slate-50 p-4 mb-6">
+
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">
           {anketa.pitanje}
         </h2>
+
+        <p className="text-slate-600">
+          {anketa.body}
+        </p>
       </div>
+{
+glasao ?
 
-      {!isEmptyHtml(anketa.body) && (
-        <div className="border border-gray-300 bg-slate-50 p-4 mb-6">
-          <div
-            className="text-sm text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: anketa.body }}
-          />
-        </div>
-      )}
 
-      {/* 🔥 CLIENT PART */}
-      <VotingClient anketaId={anketa.id} opcije={opcije} />
+(
 
+<div>
+
+<h3 className="font-semibold mb-4">
+
+Rezultati glasanja
+
+</h3>
+
+
+<Rezultati
+ anketaId={id}
+/>
+
+
+</div>
+
+
+)
+
+
+:
+
+
+(
+
+<div>
+
+
+<h3 className="font-semibold mb-4">
+
+Vaš odgovor
+
+</h3>
+
+
+<VotingForm
+
+anketaId={id}
+
+opcije={opcije}
+
+      />
+      </div>
+      )
+    }
     </div>
+  </div>
   );
 }

@@ -1,46 +1,64 @@
-import { NextRequest, NextResponse } from "next/server";
-import type { Anketa, Opcija } from "@/types/anketa";
+import type { Anketa } from "@/types/anketa";
 
-const DRUPAL_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
-
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
-    const { searchParams } = req.nextUrl;
+    const { searchParams } = new URL(req.url);
+
+    // page i limit iz query-ja (default: 1 i 5)
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
-    const res = await fetch(`${DRUPAL_URL}/jsonapi/node/anketa?sort=-created&page[limit]=${limit}&page[offset]=${offset}`, {
-      cache: "no-store",
-    });
+    const NEXT_PUBLIC_DRUPAL_BASE_URL = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
-    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+    // Fetch svih anketa (bez count=true)
+    const response = await fetch(`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/anketa`);
 
-    const json = await res.json();
-    const total = json.meta?.count || json.data.length || 0;
+    if (!response.ok) {
+      const text = await response.text();
+      console.log("Drupal API error:", response.status, text);
+      return new Response(
+        JSON.stringify({ error: "Greška pri dohvaćanju sednica" }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const data = await response.json();
+
+    // ukupno sednica
+    const total = (data.data || []).length;
     const totalPages = Math.ceil(total / limit);
 
-    const ankete: Anketa[] = json.data.map((node: any) => ({
-      id: node.id, // UUID
-      title: node.attributes.title,
-      //title: node.attributes.field_anketa_pitanje || "Bez pitanja",
-      body: node.attributes.body?.value || "",
-      created: node.attributes.created,
-      status: node.attributes.field_status_ankete || undefined,
-      options: Array.isArray(node.attributes.field_opcija_anketa)
-        ? node.attributes.field_opcija_anketa.map((opt: string, index: number) => ({
-            id: `${node.id}-${index}`,
-            title: opt,
-            anketaId: node.id,
-            votes: 0,
-            order: index,
-          }))
-        : [],
-    }));
+    // uzmi samo tekuću stranu
+    const currentPageData = (data.data || []).slice(offset, offset + limit);
 
-    return NextResponse.json({ data: ankete, total, page, totalPages });
-  } catch (err) {
-    console.log("Greška pri fetch-u anketa:", err);
-    return NextResponse.json({ error: "Interna greška servera" }, { status: 500 });
+    const ankete: Anketa[] = currentPageData.map((item: any) => {
+
+      return {
+        id: item.id,
+        title: item.attributes.title,
+        created: item.attributes.created,
+        status: item.attributes.field_status_ankete ?? "",
+      };
+    });
+
+    return new Response(
+      JSON.stringify({
+        data: ankete,
+        total,
+        page,
+        totalPages,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.log("Server error fetching anketa:", error);
+    return new Response(
+      JSON.stringify({ error: "Interna greška servera" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }

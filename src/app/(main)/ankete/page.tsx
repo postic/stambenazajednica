@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/DataTable";
 import { anketeColumns } from "@/features/ankete/AnketeColumns";
 import type { Anketa } from "@/types/anketa";
+import { Plus, Wrench, TriangleAlert, Hammer } from "lucide-react";
+import Link from "next/link";
+
 
 export default function AnketePage() {
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,7 @@ export default function AnketePage() {
       .catch((err) => {
         if (ignore) return;
 
-        console.error("Greška pri učitavanju kvarova:", err);
+        console.error("Greška pri učitavanju anketa:", err);
         setAnkete([]);
       })
       .finally(() => {
@@ -38,7 +41,6 @@ export default function AnketePage() {
     };
   }, [page]);
 
-  // generiše niz brojeva [1, 2, 3, ... totalPages]
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
@@ -50,6 +52,7 @@ export default function AnketePage() {
           <h1 className="text-xl font-semibold">
             Ankete
           </h1>
+
           <p className="mt-1 text-sm text-slate-500">
             Transparentno donošenje odluka kroz ankete i glasanje</p>
         </div>
@@ -62,18 +65,20 @@ export default function AnketePage() {
         loading={loading}
       />
 
-      {/* Numerička paginacija */}
+      {/* PAGINATION */}
       <div className="flex justify-center mt-8 gap-2 flex-wrap">
         {pages.map((p) => (
           <button
             key={p}
-            onClick={() => setPage(p)}
+            onClick={() => !loading && setPage(p)}
+            disabled={loading}
             className={`px-3 py-2 rounded-md border text-sm font-medium transition
               ${
                 page === p
                   ? "bg-primary text-white border-primary"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
               }
+              ${loading ? "opacity-50 pointer-events-none" : ""}
             `}
           >
             {p}

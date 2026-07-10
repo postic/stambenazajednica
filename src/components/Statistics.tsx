@@ -47,24 +47,24 @@ export default function Statistics() {
   const formattedBalance = new Intl.NumberFormat("sr-RS").format(balance);
 
   return (
-    <div className="mb-4 grid grid-cols-3 gap-2">
-  <StatCard
-    icon={<Home className="h-5 w-5 text-green-600" />}
-    value={stats.stanovi}
-    label="Stanovi"
-  />
+    <div className="mb-4 grid grid-cols-3 gap-4">
+      <StatCard
+        icon={<Home className="h-5 w-5 text-green-600" />}
+        value={stats.stanovi}
+        label="Stanovi"
+      />
 
-  <StatCard
-    icon={<Users className="h-5 w-5 text-blue-600" />}
-    value={stats.stanari}
-    label="Stanari"
-  />
+      <StatCard
+        icon={<Users className="h-5 w-5 text-blue-600" />}
+        value={stats.stanari}
+        label="Stanari"
+      />
 
-  <StatCard
-    icon={<Wallet className="h-5 w-5 text-emerald-600" />}
-    value={formattedBalance}
-    label="Račun"
-  />
-</div>
+      <StatCard
+        icon={<Wallet className="h-5 w-5 text-emerald-600" />}
+        value={formattedBalance}
+        label="Račun"
+      />
+    </div>
   );
 }
