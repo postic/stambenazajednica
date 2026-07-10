@@ -83,17 +83,6 @@ export default function Results({
 
     <div className="mt-6 space-y-4">
 
-
-      <h2 className="
-        text-lg
-        font-semibold
-        text-slate-900
-      ">
-        Rezultati
-      </h2>
-
-
-
       {rezultati.map((item) => (
 
         <div

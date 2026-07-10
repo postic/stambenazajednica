@@ -23,41 +23,53 @@ export default function VotingClient({
   const [opcije, setOpcije] =
     useState<Opcija[]>([]);
 
+
   const [selected, setSelected] =
     useState<string | null>(null);
+
 
   const [glasao, setGlasao] =
     useState(false);
 
+
   const [loading, setLoading] =
     useState(true);
 
+
   const [sending, setSending] =
     useState(false);
+
 
   const [message, setMessage] =
     useState("");
 
 
 
+
   useEffect(() => {
+
 
     async function load() {
 
+
       try {
+
 
         const [
           opcijeRes,
           glasaoRes
         ] = await Promise.all([
 
+
           fetch(
             `/api/ankete/${anketaId}/opcije`
           ),
 
+
           fetch(
             `/api/ankete/${anketaId}/glasao`
           ),
+
 
         ]);
 
@@ -67,8 +79,10 @@ export default function VotingClient({
           await opcijeRes.json();
 
 
+
         const glasaoData =
           await glasaoRes.json();
+
 
 
         setOpcije(
@@ -76,27 +90,37 @@ export default function VotingClient({
         );
 
 
+
         setGlasao(
           glasaoData.glasao
         );
 
 
-      } catch (error) {
+
+      } catch(error) {
+
 
         console.error(
+          "Load voting error:",
           error
         );
 
+
       } finally {
+
 
         setLoading(false);
 
+
       }
+
 
     }
 
 
+
     load();
+
 
 
   }, [anketaId]);
@@ -104,34 +128,58 @@ export default function VotingClient({
 
 
 
+
+
   async function vote() {
 
+
     if (!selected) {
+
       return;
+
     }
 
 
+
     setSending(true);
+
     setMessage("");
+
 
 
     try {
 
-      const res = await fetch(
-        "/api/glas",
-        {
-          method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const res =
+        await fetch(
 
-          body: JSON.stringify({
-            anketaId,
-            opcijaId: selected,
-          }),
-        }
-      );
+          "/api/glas",
+
+          {
+
+            method:"POST",
+
+
+            headers:{
+
+              "Content-Type":
+                "application/json"
+
+            },
+
+
+            body:JSON.stringify({
+
+              anketaId,
+
+              opcijaId:selected
+
+            })
+
+          }
+
+        );
+
 
 
       const data =
@@ -139,27 +187,42 @@ export default function VotingClient({
 
 
 
+
       if (!res.ok) {
+
 
         setMessage(
           data.error ||
-          "Greška"
+          "Greška prilikom glasanja"
         );
+
 
         return;
 
+
       }
+
+
+
 
 
       setGlasao(true);
 
 
+
       setMessage(
-        "Glas je uspešno sačuvan."
+        "Vaš glas je uspešno sačuvan."
       );
 
 
-    } catch {
+
+    } catch(error) {
+
+
+      console.error(
+        error
+      );
+
 
       setMessage(
         "Greška servera"
@@ -168,41 +231,38 @@ export default function VotingClient({
 
     } finally {
 
+
       setSending(false);
+
 
     }
 
+
   }
+
+
+
 
 
 
   if (loading) {
 
+
     return (
+
       <div className="text-sm text-gray-500">
+
         Učitavanje...
+
       </div>
+
     );
+
 
   }
 
 
 
-  if (glasao) {
-
-    return (
-      <div className="
-        rounded-lg
-        bg-green-50
-        p-4
-        text-sm
-        text-green-700
-      ">
-        Već ste glasali za ovu anketu.
-      </div>
-    );
-
-  }
 
 
 
@@ -212,12 +272,38 @@ export default function VotingClient({
     <div className="space-y-4">
 
 
+
+      {glasao && (
+
+        <div className="
+          rounded-lg
+          bg-green-50
+          p-4
+          text-sm
+          text-green-700
+        ">
+
+          Vaš glas je uspešno sačuvan.
+
+        </div>
+
+      )}
+
+
+
+
+
+
       <div className="space-y-2">
+
 
         {opcije.map((opcija) => (
 
+
           <label
+
             key={opcija.id}
+
             className="
               flex
               cursor-pointer
@@ -228,54 +314,88 @@ export default function VotingClient({
               p-3
               hover:bg-slate-50
             "
+
           >
 
+
             <input
+
               type="radio"
+
               name="opcija"
+
+              disabled={glasao}
+
               checked={
                 selected === opcija.id
               }
+
+
               onChange={() =>
                 setSelected(opcija.id)
               }
+
             />
 
 
+
             <span>
+
               {opcija.title}
+
             </span>
+
+
 
           </label>
 
+
         ))}
+
 
       </div>
 
 
 
-      <button
-        onClick={vote}
-        disabled={
-          sending ||
-          !selected
-        }
-        className="
-          rounded-lg
-          bg-blue-600
-          px-5
-          py-2
-          text-white
-          disabled:opacity-50
-        "
-      >
 
-        {sending
-          ? "Slanje..."
-          : "Glasaj"
-        }
 
-      </button>
+
+      {!glasao && (
+
+        <button
+
+          onClick={vote}
+
+          disabled={
+            sending ||
+            !selected
+          }
+
+
+          className="
+            rounded-lg
+            bg-blue-600
+            px-5
+            py-2
+            text-white
+            disabled:opacity-50
+          "
+
+        >
+
+          {sending
+            ? "Slanje..."
+            : "Glasaj"
+          }
+
+
+        </button>
+
+      )}
+
+
+
+
 
 
 
@@ -287,10 +407,13 @@ export default function VotingClient({
           p-3
           text-sm
         ">
+
           {message}
+
         </div>
 
       )}
+
 
 
     </div>
