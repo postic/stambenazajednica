@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?&sort=field_sprat`
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?&sort=field_broj_stana,field_broj_stana_sufiks`
     );
 
     if (!response.ok) {
