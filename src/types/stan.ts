@@ -8,26 +8,8 @@ export interface Stan {
   kvadratura?: number | string | null;
   tip?: number | string | null;
   vlasnik?: string | null;
-  vlasnikUuid?: string | null;
   broj_stanara?: number | string | null;
   telefon?: string;
   email?: string;
-  stanari: Osoba[];
+  stanari?: string;
 }
-
-export interface Osoba {
-  id: string;
-  title: string;
-  isVlasnik?: boolean; // true ako je vlasnik
-}
-
-export interface VlasnikEntity {
-  id: string;
-  type: string;
-  attributes?: {
-    title?: string;
-    name?: string;
-    display_name?: string;
-    field_ime_prezime?: string;
-  };
-};

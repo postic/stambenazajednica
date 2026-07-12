@@ -1,5 +1,4 @@
 import type { Stan } from "@/types/stan";
-import type { VlasnikEntity } from "@/types/stan";
 
 export async function GET(req: Request) {
   try {
@@ -13,7 +12,7 @@ export async function GET(req: Request) {
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?include=field_vlasnik&sort=field_sprat`
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?&sort=field_sprat`
     );
 
     if (!response.ok) {
@@ -32,15 +31,8 @@ export async function GET(req: Request) {
 
     const currentPageData = (json.data || []).slice(offset, offset + limit);
 
-    // ✅ Napravi mapu vlasnika sa tipom
-    const vlasniciMap: Map<string, VlasnikEntity> = new Map(
-      (json.included || []).map((item: any) => [item.id, item as VlasnikEntity])
-    );
-
     // ✅ Mapiraj stanove
     const stanovi: Stan[] = currentPageData.map((item: any) => {
-    const vlasnikId = item.relationships?.field_vlasnik?.data?.id;
-    const vlasnikEntity = vlasniciMap.get(vlasnikId);
 
     return {
       id: item.id,
@@ -50,11 +42,8 @@ export async function GET(req: Request) {
       sprat: item.attributes?.field_sprat ?? null,
       kvadratura: item.attributes?.field_kvadratura ?? null,
       broj_stanara: item.attributes.field_stan_broj_stanara,
-      vlasnik:
-        vlasnikEntity?.attributes?.field_ime_prezime ??
-        vlasnikEntity?.attributes?.display_name ??
-        vlasnikEntity?.attributes?.name ??
-        null,
+      vlasnik: item.attributes?.field_vlasnik || null,
+      stanari: item.attributes?.field_stanari || null,
     };
   });
 

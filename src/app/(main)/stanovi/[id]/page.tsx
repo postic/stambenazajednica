@@ -3,7 +3,6 @@ import { extractImages } from "@/lib/images";
 import { isEmptyHtml, toRoman } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import type { Stan } from "@/types/stan";
-import { parseStan } from "@/lib/drupal/getStan";
 import { Scaling, Layers3, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -13,7 +12,7 @@ const BASE_URL =
 async function getStan(id: string): Promise<Stan | null> {
   try {
     const res = await fetch(
-      `${BASE_URL}/jsonapi/node/stan/${id}?include=field_stan_images,field_tip_stana,field_vlasnik,field_stanari`,
+      `${BASE_URL}/jsonapi/node/stan/${id}?include=field_stan_images,field_tip_stana`,
       {
         headers: { Accept: "application/vnd.api+json" },
         cache: "no-store",
@@ -27,8 +26,6 @@ async function getStan(id: string): Promise<Stan | null> {
 
     if (!item) return null;
 
-    const stan = parseStan(data);
-
     const images = extractImages(item, data.included, "field_stan_images") ?? [];
 
     const tipRel = item.relationships?.field_tip_stana?.data;
@@ -37,41 +34,6 @@ async function getStan(id: string): Promise<Stan | null> {
       data.included?.find(
         (i: any) => i.type === tipRel.type && i.id === tipRel.id
       );
-
-    const vlasnikRel = item.relationships?.field_vlasnik?.data;
-    const vlasnikIncluded =
-      vlasnikRel &&
-      data.included?.find(
-        (i: any) => i.type === vlasnikRel.type && i.id === vlasnikRel.id
-      );
-    const vlasnik =
-      vlasnikIncluded?.attributes?.field_ime_prezime ||
-      vlasnikIncluded?.attributes?.display_name ||
-      vlasnikIncluded?.attributes?.name ||
-      null;
-    const vlasnikUuid = vlasnikIncluded?.id ?? null;
-
-    const stanariRel = item.relationships?.field_stanari?.data || [];
-    const stanari = stanariRel
-      .map((rel: any) => {
-        const user = data.included?.find(
-          (i: any) => i.type === rel.type && i.id === rel.id
-        );
-
-        if (!user) return null;
-
-        return {
-          id: user.id, // UUID
-          uid: user.attributes?.drupal_internal__uid, // ako ti treba numeric
-          title:
-            user.attributes?.field_ime_prezime ||
-            user.attributes?.display_name ||
-            user.attributes?.name ||
-            "Nepoznat",
-          isVlasnik: false, // možeš kasnije override
-        };
-      })
-      .filter(Boolean);
 
     return {
       id: item.id,
@@ -83,9 +45,9 @@ async function getStan(id: string): Promise<Stan | null> {
       kvadratura: item.attributes.field_kvadratura,
       broj_stanara: item.attributes.field_stan_broj_stanara,
       tip: tipIncluded?.attributes?.name || "-",
-      vlasnik: vlasnik,
-      vlasnikUuid: vlasnikUuid,
-      stanari: stanari,
+      vlasnik: item.attributes.field_vlasnik,
+      stanari: item.attributes.field_stanari ?? "",
+
     };
   } catch {
     return null;
@@ -141,92 +103,90 @@ export default async function StanPage({ params }: PageProps) {
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
-        {/* INFO */}
-        <div className="border border-gray-300 bg-gray-50 p-3">
-          <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
-            Info
-          </h3>
+  {/* INFO */}
+  <div className="border border-gray-300 bg-gray-50 p-3">
+    <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
+      Info
+    </h3>
 
-          <div className="text-sm space-y-2">
+    <div className="text-sm space-y-2">
 
-            <div className="border-b border-gray-200 py-2">
-              <p className="text-xs text-gray-500">Broj stanara</p>
-              <p>{stan.broj_stanara ?? "-"}</p>
-            </div>
+      <div className="border-b border-gray-200 py-2">
+        <p className="text-xs text-gray-500">Broj stanara</p>
+        <p className="leading-7">{stan.broj_stanara ?? "-"}</p>
+      </div>
 
-            <div className="border-b border-gray-200 py-2">
-              <p className="text-xs text-gray-500">Sprat</p>
-              <p>{spratRoman ?? "-"}</p>
-            </div>
+      <div className="border-b border-gray-200 py-2">
+        <p className="text-xs text-gray-500">Sprat</p>
+        <p className="leading-7">{spratRoman ?? "-"}</p>
+      </div>
 
-            <div className="border-b border-gray-200 py-2">
-              <p className="text-xs text-gray-500">Kvadratura</p>
-              <p>{stan.kvadratura ?? "-"} m²</p>
-            </div>
+      <div className="border-b border-gray-200 py-2">
+        <p className="text-xs text-gray-500">Kvadratura</p>
+        <p className="leading-7">{stan.kvadratura ?? "-"} m²</p>
+      </div>
 
-          </div>
-        </div>
+    </div>
+  </div>
 
-        {/* STANARI */}
-        <div className="border border-gray-300 bg-gray-50 p-3">
-          <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
-            Stanari
-          </h3>
 
-          <div className="text-sm space-y-2">
-            {stan.stanari.length ? (
-              stan.stanari.map((s: any) => (
-                <div key={s.id} className="border-b border-gray-200 py-2">
-                  <p className="text-xs text-gray-500">
-                    {s.isVlasnik ? "Vlasnik stana" : "Stanar"}
-                  </p>
+  {/* STANARI */}
+  <div className="border border-gray-300 bg-gray-50 p-3">
+    <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
+      Stanari
+    </h3>
 
-                  <Link
-                    href={`/stanari/${s.id}`}
-                    className="hover:underline text-inherit"
-                  >
-                    {s.title}
-                  </Link>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-500 py-2">Nema stanara</p>
-            )}
-          </div>
+    {stan.stanari ? (
+      <div className="text-sm border-b border-gray-200 py-2">
+        <p className="text-xs text-gray-500">
+          Ime i prezime
+        </p>
 
-        </div>
-
-        {/* VLASNIK */}
-        <div className="border border-gray-300 bg-gray-50 p-3">
-          <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
-            Vlasnik
-          </h3>
-
-          {!stan.vlasnik ? (
-            <p className="text-xs text-gray-500 py-2">
-              Nema unetog vlasnika
-            </p>
-          ) : (
-            <div className="text-sm border-b border-gray-200 py-2">
-              <p className="text-xs text-gray-500">Ime i prezime</p>
-
-              {stan.vlasnikUuid ? (
-                <Link
-                  href={`/stanari/${stan.vlasnikUuid}`}
-                  className="text-inherit hover:underline"
-                >
-                  {stan.vlasnik}
-                </Link>
-              ) : (
-                <p>{stan.vlasnik ?? "-"}</p>
-              )}
-            </div>
-          )}
-        </div>
+        <p className="whitespace-pre-line leading-7">
+          {Array.isArray(stan.stanari)
+            ? stan.stanari.join("\n")
+            : stan.stanari}
+        </p>
 
       </div>
+    ) : (
+      <p className="text-xs text-gray-500 py-2">
+        Nema unetog stanara
+      </p>
+    )}
+
+  </div>
+
+
+  {/* VLASNIK */}
+  <div className="border border-gray-300 bg-gray-50 p-3">
+    <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
+      Vlasnik
+    </h3>
+
+    {!stan.vlasnik ? (
+      <p className="text-xs text-gray-500 py-2">
+        Nema unetog vlasnika
+      </p>
+    ) : (
+      <div className="text-sm border-b border-gray-200 py-2">
+
+        <p className="text-xs text-gray-500">
+          Ime i prezime
+        </p>
+
+        <p className="leading-7">
+          {stan.vlasnik ?? "-"}
+        </p>
+
+      </div>
+    )}
+
+  </div>
+
+</div>
 
       {/* OPIS */}
       {!isEmptyHtml(stan.body) && (
