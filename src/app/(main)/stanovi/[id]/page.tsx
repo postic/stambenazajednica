@@ -47,6 +47,8 @@ async function getStan(id: string): Promise<Stan | null> {
       tip: tipIncluded?.attributes?.name || "-",
       vlasnik: item.attributes.field_vlasnik,
       stanari: item.attributes.field_stanari ?? "",
+      telefon: item.attributes.field_stan_telefon,
+      email: item.attributes.field_stan_email,
 
     };
   } catch {
@@ -103,7 +105,7 @@ export default async function StanPage({ params }: PageProps) {
       </div>
 
       {/* GRID */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
 
   {/* INFO */}
   <div className="border border-gray-300 bg-gray-50 p-3">
@@ -131,40 +133,13 @@ export default async function StanPage({ params }: PageProps) {
     </div>
   </div>
 
-
-  {/* STANARI */}
-  <div className="border border-gray-300 bg-gray-50 p-3">
-    <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
-      Stanari
-    </h3>
-
-    {stan.stanari ? (
-      <div className="text-sm border-b border-gray-200 py-2">
-        <p className="text-xs text-gray-500">
-          Ime i prezime
-        </p>
-
-        <p className="whitespace-pre-line leading-7">
-          {Array.isArray(stan.stanari)
-            ? stan.stanari.join("\n")
-            : stan.stanari}
-        </p>
-
-      </div>
-    ) : (
-      <p className="text-xs text-gray-500 py-2">
-        Nema unetog stanara
-      </p>
-    )}
-
-  </div>
-
-
   {/* VLASNIK */}
   <div className="border border-gray-300 bg-gray-50 p-3">
     <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
       Vlasnik
     </h3>
+
+    <div className="text-sm space-y-2">
 
     {!stan.vlasnik ? (
       <p className="text-xs text-gray-500 py-2">
@@ -184,6 +159,16 @@ export default async function StanPage({ params }: PageProps) {
       </div>
     )}
 
+      <div className="border-b border-gray-200 py-2">
+        <p className="text-xs text-gray-500">Telefon</p>
+        <p className="leading-7">{stan.telefon ?? "-"}</p>
+      </div>
+
+      <div className="border-b border-gray-200 py-2">
+        <p className="text-xs text-gray-500">E-mail</p>
+        <p className="leading-7">{stan.email ?? "-"}</p>
+      </div>
+</div>
   </div>
 
 </div>
