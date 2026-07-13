@@ -2,14 +2,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createKvar } from "@/lib/kvar";
+import { createObavestenje } from "@/lib/obavestenje";
 
 export default function ObavestenjeForm() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [prioritet, setPrioritet] = useState("");
-  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter(); // Next.js router
 
@@ -17,11 +15,11 @@ export default function ObavestenjeForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createKvar({ title, description, prioritet, status });
-      toast.success("Kvar je uspešno kreiran!");
-      router.push("/kvarovi");
+      await createObavestenje({ title, description });
+      toast.success("Obavestenje je uspešno kreirano!");
+      router.push("/obavestenja");
     } catch (err: any) {
-      toast.error(err.message || "Greška prilikom kreiranja kvara");
+      toast.error(err.message || "Greška prilikom kreiranja obavestenja");
     } finally {
       setLoading(false);
     }

@@ -18,7 +18,7 @@ export default function KvaroviPage() {
     let ignore = false;
     setLoading(true);
 
-    fetch(`/api/kvarovi?page=${page}&limit=10`)
+    fetch(`/api/kvarovi?sort=-created&page=${page}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
         if (ignore) return;

@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
     // Fetch kvarova sa paging parametrima
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar?include=field_image`,
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/kvar?sort=-created&include=field_image`,
       {
         headers: { Accept: "application/vnd.api+json" },
       }
