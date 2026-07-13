@@ -20,7 +20,7 @@ type DrupalObavestenjeResponse = {
 // ===============================
 // 🔹 FETCH SINGLE
 // ===============================
-export async function fetchObavestenje(id: string): Promise<Kvar> {
+export async function fetchObavestenje(id: string): Promise<Obavestenje> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}`,
     {
@@ -41,7 +41,6 @@ export async function fetchObavestenje(id: string): Promise<Kvar> {
   return {
     id: data.id,
     title: data.attributes.title ?? "",
-    description: data.attributes.body?.value ?? "",
     body: data.attributes.body?.value ?? "",
     created: data.attributes.created ?? "",
   };
@@ -107,11 +106,11 @@ export async function updateObavestenje(obavestenje: Obavestenje): Promise<boole
       body: JSON.stringify({
         data: {
           type: "node--obavestenje",
-          id: kvar.id,
+          id: obavestenje.id,
           attributes: {
             title: obavestenje.title,
             body: {
-              value: obavestenje.description,
+              value: obavestenje.body,
               format: "plain_text",
             },
           },
@@ -128,7 +127,7 @@ export async function updateObavestenje(obavestenje: Obavestenje): Promise<boole
 // ===============================
 export async function createObavestenje(data: {
   title: string;
-  description: string;
+  body: string;
 }) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje`,
@@ -145,7 +144,7 @@ export async function createObavestenje(data: {
           attributes: {
             title: data.title,
             body: {
-              value: data.description,
+              value: data.body,
               format: "plain_text",
             },
           },

@@ -7,7 +7,7 @@ import { createObavestenje } from "@/lib/obavestenje";
 export default function ObavestenjeForm() {
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter(); // Next.js router
 
@@ -15,7 +15,7 @@ export default function ObavestenjeForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createObavestenje({ title, description });
+      await createObavestenje({ title, body });
       toast.success("Obavestenje je uspešno kreirano!");
       router.push("/obavestenja");
     } catch (err: any) {
@@ -43,9 +43,9 @@ export default function ObavestenjeForm() {
       <div>
         <label className="block text-sm text-slate-600 mb-1">Opis</label>
         <textarea
-          value={description}
+          value={body}
           required
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setBody(e.target.value)}
           rows={4}
           className="w-full border-b py-2 outline-none resize-none border-slate-300 focus:border-blue-500 bg-transparent"
         />
