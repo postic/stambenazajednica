@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Home, Users, Wallet } from "lucide-react";
+import { Home, Users, Wallet, Key } from "lucide-react";
 import StatCard from "@/components/StatCard";
 
 export default function Statistics() {
@@ -47,7 +47,7 @@ export default function Statistics() {
   const formattedBalance = new Intl.NumberFormat("sr-RS").format(balance);
 
   return (
-    <div className="mb-4 grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <StatCard
         icon={<Home className="h-5 w-5 text-green-600" />}
         value={stats.stanovi}
@@ -64,6 +64,12 @@ export default function Statistics() {
         icon={<Wallet className="h-5 w-5 text-emerald-600" />}
         value={formattedBalance}
         label="Račun"
+      />
+
+      <StatCard
+        icon={<Key className="h-5 w-5 text-emerald-600" />}
+        value="3112#"
+        label="Šifra"
       />
     </div>
   );

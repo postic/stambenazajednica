@@ -40,7 +40,7 @@ export default function KvarForm({ kvar, prioritetOptions, statusOptions }: Prop
         id: kvar.id,
         type: "node--kvar",
         attributes: {
-          title,
+          title,node--
           body: {
             value: description,
             format: "plain_text",
