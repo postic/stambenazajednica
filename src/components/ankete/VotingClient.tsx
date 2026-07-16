@@ -339,7 +339,7 @@ export default function VotingClient({
 
 
 
-            <span class='text-sm text-slate-700 leading-relaxed'>
+            <span className="text-sm text-slate-700 leading-relaxed">
 
               {opcija.title}
 
