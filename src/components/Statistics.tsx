@@ -49,6 +49,18 @@ export default function Statistics() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <StatCard
+        icon={<Wallet className="h-5 w-5 text-emerald-600" />}
+        value={formattedBalance}
+        label="Račun"
+      />
+
+      <StatCard
+        icon={<Key className="h-5 w-5 text-yellow-600" />}
+        value="8743#"
+        label="Šifra"
+      />
+
+      <StatCard
         icon={<Home className="h-5 w-5 text-green-600" />}
         value={stats.stanovi}
         label="Stanovi"
@@ -58,18 +70,6 @@ export default function Statistics() {
         icon={<Users className="h-5 w-5 text-blue-600" />}
         value={stats.stanari}
         label="Stanari"
-      />
-
-      <StatCard
-        icon={<Wallet className="h-5 w-5 text-emerald-600" />}
-        value={formattedBalance}
-        label="Račun"
-      />
-
-      <StatCard
-        icon={<Key className="h-5 w-5 text-emerald-600" />}
-        value="3112#"
-        label="Šifra"
       />
     </div>
   );
