@@ -234,7 +234,7 @@ export default function AnketaDetaljPage() {
 
 
         <div
-          className="prose prose-slate max-w-none text-slate-600"
+          className="text-sm text-slate-700 leading-relaxed"
           dangerouslySetInnerHTML={{
             __html: anketa.body
           }}
