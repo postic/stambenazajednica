@@ -19,7 +19,7 @@ export default function Statistics() {
         const [statsRes, balanceRes, codeRes] = await Promise.all([
           fetch("/api/statistics"),
           fetch("/api/balance"),
-          fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/zgrada-config`),
+          fetch("/api/zgrada-config"),
         ]);
 
         if (statsRes.ok) {
