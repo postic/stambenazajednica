@@ -11,13 +11,15 @@ export default function Statistics() {
   });
 
   const [balance, setBalance] = useState<number>(0);
+  const [doorCode, setDoorCode] = useState<string>("****");
 
   useEffect(() => {
     async function loadStatistics() {
       try {
-        const [statsRes, balanceRes] = await Promise.all([
+        const [statsRes, balanceRes, codeRes] = await Promise.all([
           fetch("/api/statistics"),
           fetch("/api/balance"),
+          fetch(`${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/zgrada-config`),
         ]);
 
         if (statsRes.ok) {
@@ -31,8 +33,12 @@ export default function Statistics() {
 
         if (balanceRes.ok) {
           const data = await balanceRes.json();
-
           setBalance(data.balance ?? 0);
+        }
+
+        if (codeRes.ok) {
+          const data = await codeRes.json();
+          setDoorCode(data.door_code ?? "****");
         }
 
       } catch (error) {
@@ -42,7 +48,6 @@ export default function Statistics() {
 
     loadStatistics();
   }, []);
-
 
   const formattedBalance = new Intl.NumberFormat("sr-RS").format(balance);
 
@@ -56,7 +61,7 @@ export default function Statistics() {
 
       <StatCard
         icon={<Key className="h-5 w-5 text-yellow-600" />}
-        value="8743#"
+        value={doorCode}
         label="Šifra"
       />
 
