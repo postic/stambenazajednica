@@ -60,11 +60,11 @@ export default function Sidebar({
       title: "ZGRADA",
       items: [
         { title: "Transakcije", icon: Wallet, href: "/transakcije" },
+        { title: "Prostori", icon: Building, href: "/stanovi" },
         { title: "Ankete", icon: Vote, href: "/ankete" },
         { title: "Kvarovi", icon: Wrench, href: "/kvarovi" },
         { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja" },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
-        { title: "Stanovi", icon: Building, href: "/stanovi" },
         { title: "Stanari", icon: Users, href: "/stanari" },
       ],
     },

@@ -49,11 +49,11 @@ export default function StanoviPage() {
         <div className="flex items-start justify-between gap-4">
           <div data-field>
             <h1 className="text-xl font-semibold">
-              Stanovi
+              Prostori
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-            Pregled svih stanova u zgradi</p>
+            Pregled svih prostora u zgradi</p>
           </div>
         </div>
       </div>

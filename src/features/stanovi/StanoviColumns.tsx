@@ -7,7 +7,7 @@ import { toRoman } from "@/lib/text";
 export const stanoviColumns: Column<Stan>[] = [
   {
     key: "title",
-    header: "Naziv",
+    header: "Stan",
     render: (stan) => (
       <Link
         href={`/stanovi/${stan.id}`}

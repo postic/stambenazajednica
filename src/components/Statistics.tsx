@@ -68,7 +68,7 @@ export default function Statistics() {
       <StatCard
         icon={<Home className="h-5 w-5 text-green-600" />}
         value={stats.stanovi}
-        label="Stanovi"
+        label="Prostori"
       />
 
       <StatCard

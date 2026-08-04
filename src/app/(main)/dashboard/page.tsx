@@ -59,7 +59,7 @@ export default function DashboardPage() {
       href: "/stanari",
     },
     {
-      title: "Stanovi",
+      title: "Prostori",
       value: stats.stanovi,
       icon: Home,
       href: "/stanovi",
