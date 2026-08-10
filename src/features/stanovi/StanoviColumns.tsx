@@ -4,11 +4,6 @@ import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import { toRoman } from "@/lib/text";
 
-const TIP_PROSTORA = {
-  stan: "S",
-  poslovni_prostor: "PP",
-};
-
 export const stanoviColumns: Column<Stan>[] = [
   {
     key: "title",
@@ -19,7 +14,7 @@ export const stanoviColumns: Column<Stan>[] = [
         className="hover:underline"
         title={stan.title}
       >
-        {TIP_PROSTORA[stan.tip_prostora] ?? ""}
+        {stan.tip_prostora ?? ""}
       </Link>
     ),
   },

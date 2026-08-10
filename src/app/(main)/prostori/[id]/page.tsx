@@ -31,6 +31,7 @@ async function getProstor(id: string): Promise<Prostor | null> {
       title: item.attributes.title,
       body: item.attributes.body?.value ?? "",
       created: item.attributes.created,
+      tip_prostora: item.attributes.field_tip_prostora,
       sprat: item.attributes.field_prostor_sprat,
       kvadratura: item.attributes.field_prostor_kvadratura,
       broj_stanara: item.attributes.field_prostor_broj_stanara,

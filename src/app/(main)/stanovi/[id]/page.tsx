@@ -49,6 +49,7 @@ async function getStan(id: string): Promise<Stan | null> {
       stanari: item.attributes.field_stanari ?? "",
       telefon: item.attributes.field_stan_telefon,
       email: item.attributes.field_stan_email,
+      tip_prostora: item.attributes.field_vlasnik,
 
     };
   } catch {
