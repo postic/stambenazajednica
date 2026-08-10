@@ -6,7 +6,7 @@ import StatCard from "@/components/StatCard";
 
 export default function Statistics() {
   const [stats, setStats] = useState({
-    stanovi: 0,
+    prostori: 0,
     stanari: 0,
   });
 
@@ -26,7 +26,7 @@ export default function Statistics() {
           const data = await statsRes.json();
 
           setStats({
-            stanovi: data.stanovi ?? 0,
+            prostori: data.prostori ?? 0,
             stanari: data.stanari ?? 0,
           });
         }
@@ -67,7 +67,7 @@ export default function Statistics() {
 
       <StatCard
         icon={<Home className="h-5 w-5 text-green-600" />}
-        value={stats.stanovi}
+        value={stats.prostori}
         label="Prostori"
       />
 

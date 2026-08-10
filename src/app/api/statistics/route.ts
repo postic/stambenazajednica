@@ -15,7 +15,7 @@ export async function GET() {
     // =========================
 
     const stanoviRes = await fetch(
-      `${baseUrl}/jsonapi/node/stan?page[limit]=1000`,
+      `${baseUrl}/jsonapi/node/prostor?page[limit]=1000`,
       {
         cache: "no-store",
         headers: {
@@ -40,11 +40,11 @@ export async function GET() {
     let brojStanara = 0;
 
 
-    stanoviData.data?.forEach((stan: any) => {
+    stanoviData.data?.forEach((prostor: any) => {
 
       const broj =
         Number(
-          stan.attributes?.field_stan_broj_stanara
+          prostor.attributes?.field_prostor_broj_stanara
         ) || 0;
 
 
@@ -121,7 +121,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        stanovi: brojStanova,
+        prostori: brojStanova,
         stanari: brojStanara,
         balance,
       },

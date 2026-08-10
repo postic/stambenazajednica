@@ -1,5 +1,5 @@
 import { Column } from "@/components/table/types";
-import type { Stan } from "@/types/stan";
+import type { Prostor } from "@/types/prostor";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import { toRoman } from "@/lib/text";
@@ -9,17 +9,17 @@ const TIP_PROSTORA = {
   poslovni_prostor: "PP",
 };
 
-export const stanoviColumns: Column<Stan>[] = [
+export const prostoriColumns: Column<Prostor>[] = [
   {
     key: "title",
     header: "Tip",
-    render: (stan) => (
+    render: (prostor) => (
       <Link
-        href={`/stanovi/${stan.id}`}
+        href={`/prostori/${prostor.id}`}
         className="hover:underline"
-        title={stan.title}
+        title={prostor.title}
       >
-        {TIP_PROSTORA[stan.tip_prostora] ?? ""}
+        {prostor.broj_stanara ?? "-"}
       </Link>
     ),
   },
@@ -27,24 +27,24 @@ export const stanoviColumns: Column<Stan>[] = [
   {
     key: "vlasnik",
     header: "Korisnik",
-    render: (stan) => <span>{stan.vlasnik ?? "-"}</span>,
+    render: (prostor) => <span>{prostor.vlasnik ?? "-"}</span>,
   },
 
   {
     key: "stanari",
     header: "Stanari",
-    render: (stan) => <span>{stan.broj_stanara ?? "-"}</span>,
+    render: (prostor) => <span>{prostor.broj_stanara ?? "-"}</span>,
   },
 
   {
     key: "sprat",
     header: "Sprat",
-    render: (stan) => {
+    render: (prostor) => {
       const sprat =
-        typeof stan.sprat === "number"
-          ? toRoman(stan.sprat)
-          : stan.sprat != null
-            ? toRoman(Number(stan.sprat))
+        typeof prostor.sprat === "number"
+          ? toRoman(prostor.sprat)
+          : prostor.sprat != null
+            ? toRoman(Number(prostor.sprat))
             : null;
 
       return <span>{sprat ?? "-"}</span>;
@@ -54,10 +54,10 @@ export const stanoviColumns: Column<Stan>[] = [
   {
     key: "povrsina",
     header: "Površina",
-    render: (stan) => (
+    render: (prostor) => (
       <span>
-        {stan.kvadratura != null
-          ? `${Number(stan.kvadratura).toLocaleString("sr-Latn-RS")} m²`
+        {prostor.kvadratura != null
+          ? `${Number(prostor.kvadratura).toLocaleString("sr-Latn-RS")} m²`
           : "-"}
       </span>
     ),

@@ -1,4 +1,4 @@
-export interface Stan {
+export interface Prostor {
   id: string;
   title: string;
   body: string;

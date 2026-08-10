@@ -1,4 +1,4 @@
-import type { Stan } from "@/types/stan";
+import type { Prostor } from "@/types/prostor";
 
 export async function GET(req: Request) {
   try {
@@ -12,14 +12,15 @@ export async function GET(req: Request) {
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/stan?&sort=field_broj_stana,field_broj_stana_sufiks`
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/prostor`
+      //`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/prostor?&sort=field_broj_stana,field_broj_stana_sufiks`
     );
 
     if (!response.ok) {
       const text = await response.text();
       console.log("Drupal API error:", response.status, text);
       return new Response(
-        JSON.stringify({ error: "Greška pri dohvaćanju stanova" }),
+        JSON.stringify({ error: "Greška pri dohvaćanju prostora" }),
         { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -31,26 +32,26 @@ export async function GET(req: Request) {
 
     const currentPageData = (json.data || []).slice(offset, offset + limit);
 
-    // ✅ Mapiraj stanove
-    const stanovi: Stan[] = currentPageData.map((item: any) => {
+    // ✅ Mapiraj prostore
+    const prostori: Prostor[] = currentPageData.map((item: any) => {
 
     return {
       id: item.id,
       title: item.attributes?.title || "",
       body: item.attributes?.body?.value || "",
       created: item.attributes?.created || "",
-      sprat: item.attributes?.field_sprat ?? null,
-      kvadratura: item.attributes?.field_kvadratura ?? null,
-      broj_stanara: item.attributes.field_stan_broj_stanara,
+      sprat: item.attributes?.field_prostor_sprat ?? null,
+      kvadratura: item.attributes?.field_prostor_kvadratura ?? null,
+      broj_stanara: item.attributes.field_prostor_broj_stanara,
       vlasnik: item.attributes?.field_vlasnik || null,
       stanari: item.attributes?.field_stanari || null,
-      tip_prostora: item.attributes.field_tip_prostora || null,
+      tip_prostora: item.attributes.field_prostor_tip || null,
     };
   });
 
     return new Response(
       JSON.stringify({
-        data: stanovi,
+        data: prostori,
         total,
         page,
         totalPages,
@@ -61,7 +62,7 @@ export async function GET(req: Request) {
       }
     );
   } catch (error) {
-    console.log("Server error fetching stanovi:", error);
+    console.log("Server error fetching prostori:", error);
     return new Response(
       JSON.stringify({ error: "Interna greška servera" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
