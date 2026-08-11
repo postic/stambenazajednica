@@ -12,8 +12,8 @@ export async function GET(req: Request) {
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/prostor`
-      //`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/prostor?&sort=field_broj_stana,field_broj_stana_sufiks`
+      //`${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/prostor`
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/prostor?include=field_prostor_tip&sort=field_prostor_sprat`
     );
 
     if (!response.ok) {
@@ -35,19 +35,26 @@ export async function GET(req: Request) {
     // ✅ Mapiraj prostore
     const prostori: Prostor[] = currentPageData.map((item: any) => {
 
-    return {
-      id: item.id,
-      title: item.attributes?.title || "",
-      body: item.attributes?.body?.value || "",
-      created: item.attributes?.created || "",
-      sprat: item.attributes?.field_prostor_sprat ?? null,
-      kvadratura: item.attributes?.field_prostor_kvadratura ?? null,
-      broj_stanara: item.attributes.field_prostor_broj_stanara,
-      vlasnik: item.attributes?.field_vlasnik || null,
-      stanari: item.attributes?.field_stanari || null,
-      tip_prostora: item.attributes.field_prostor_tip || null,
-    };
-  });
+      const tipId = item.relationships?.field_prostor_tip?.data?.id;
+      const tipTerm = json.included?.find((included: any) =>
+        included.type === "taxonomy_term--tip_prostora" &&
+        included.id === tipId
+      );
+
+      return {
+        id: item.id,
+        title: item.attributes?.title || "",
+        body: item.attributes?.body?.value || "",
+        created: item.attributes?.created || "",
+        sprat: item.attributes?.field_prostor_sprat ?? null,
+        kvadratura: item.attributes?.field_prostor_kvadratura ?? null,
+        broj_stanara: item.attributes?.field_prostor_broj_stanara ?? null,
+        vlasnik: item.attributes?.field_vlasnik ?? null,
+        stanari: item.attributes?.field_stanari ?? null,
+        // naziv taxonomy termina
+        tip: tipTerm?.attributes?.name ?? null,
+      };
+    });
 
     return new Response(
       JSON.stringify({

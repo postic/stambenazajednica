@@ -15,7 +15,7 @@ export default function ProstoriPage() {
     let ignore = false;
     setLoading(true);
 
-    fetch(`/api/prostori?page=${page}&limit=10`)
+    fetch(`/api/prostori?page=${page}&limit=10?include=field_prostor_tip`)
       .then((res) => res.json())
       .then((data) => {
         if (ignore) return;

@@ -10,24 +10,25 @@ const TIP_PROSTORA = {
 };
 
 export const prostoriColumns: Column<Prostor>[] = [
+
   {
     key: "title",
-    header: "Tip",
+    header: "Korisnik",
     render: (prostor) => (
       <Link
         href={`/prostori/${prostor.id}`}
         className="hover:underline"
         title={prostor.title}
       >
-        {prostor.broj_stanara ?? "-"}
+        {prostor.title ?? "-"}
       </Link>
     ),
   },
 
   {
-    key: "vlasnik",
-    header: "Korisnik",
-    render: (prostor) => <span>{prostor.vlasnik ?? "-"}</span>,
+    key: "tip",
+    header: "Tip",
+    render: (prostor) => <span>{prostor.tip ?? "-"}</span>,
   },
 
   {
