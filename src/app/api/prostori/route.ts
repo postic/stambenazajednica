@@ -59,7 +59,7 @@ export async function GET(req: Request) {
     const included = json.included || [];
 
     // --------------------------------------------------
-    // Pomoćna funkcija za pronalaženje taxonomy termina
+    // Pronađi taxonomy termin
     // --------------------------------------------------
 
     const findIncluded = (
@@ -76,7 +76,7 @@ export async function GET(req: Request) {
     };
 
     // --------------------------------------------------
-    // Mapiranje svih prostora
+    // Mapiranje prostora
     // --------------------------------------------------
 
     const sviProstori = data.map((item: any) => {
@@ -121,7 +121,6 @@ export async function GET(req: Request) {
         sprat:
           spratTerm?.attributes?.name ?? null,
 
-        // Weight Taxonomy termina
         spratWeight:
           Number(
             spratTerm?.attributes?.weight ?? 0
@@ -182,21 +181,24 @@ export async function GET(req: Request) {
     // --------------------------------------------------
 
     sviProstori.sort((a: any, b: any) => {
-      // Prvo sprat
+
+      // 1. Sprat
       if (a.spratWeight !== b.spratWeight) {
         return a.spratWeight - b.spratWeight;
       }
 
-      // Zatim broj prostora
+      // 2. Broj prostora
       if (a.sortBroj !== b.sortBroj) {
         return a.sortBroj - b.sortBroj;
       }
 
-      // Ako je sve isto, sortiraj po nazivu
-      return a.title.localeCompare(
-        b.title,
-        "sr"
-      );
+      // 3. Ako imaju isti broj
+      //    npr. 24A i 24B
+      return String(a.broj_prostora ?? "")
+        .localeCompare(
+          String(b.broj_prostora ?? ""),
+          "sr"
+        );
     });
 
     // --------------------------------------------------
@@ -236,7 +238,9 @@ export async function GET(req: Request) {
         },
       }
     );
+
   } catch (error) {
+
     console.log(
       "Server error fetching prostori:",
       error
