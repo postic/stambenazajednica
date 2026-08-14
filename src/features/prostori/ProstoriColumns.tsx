@@ -2,25 +2,29 @@ import { Column } from "@/components/table/types";
 import type { Prostor } from "@/types/prostor";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
-import { toRoman } from "@/lib/text";
 
-const TIP_PROSTORA = {
-  stan: "S",
-  poslovni_prostor: "PP",
-};
+function skratiTip(tip: string | null | undefined) {
+  if (!tip) return "-";
+
+  return tip
+    .trim()
+    .split(/\s+/)
+    .map((rec) => rec.charAt(0).toUpperCase())
+    .join("");
+}
 
 export const prostoriColumns: Column<Prostor>[] = [
 
   {
     key: "title",
-    header: "Korisnik",
+    header: "Broj",
     render: (prostor) => (
       <Link
         href={`/prostori/${prostor.id}`}
         className="hover:underline"
         title={prostor.title}
       >
-        {prostor.title ?? "-"}
+        {skratiTip(prostor.tip)} {prostor.broj_prostora ?? "-"}
       </Link>
     ),
   },
@@ -32,25 +36,16 @@ export const prostoriColumns: Column<Prostor>[] = [
   },
 
   {
-    key: "stanari",
-    header: "Stanari",
-    render: (prostor) => <span>{prostor.broj_stanara ?? "-"}</span>,
-  },
-
-  {
     key: "sprat",
     header: "Sprat",
-    render: (prostor) => {
-      const sprat =
-        typeof prostor.sprat === "number"
-          ? toRoman(prostor.sprat)
-          : prostor.sprat != null
-            ? toRoman(Number(prostor.sprat))
-            : null;
-
-      return <span>{sprat ?? "-"}</span>;
-    },
+    render: (prostor) => <span>{prostor.sprat ?? "-"}</span>,
   },
+
+  //{
+  //  key: "stan",
+  //  header: "Stan",
+  //  render: (prostor) => <span>{prostor.broj_prostora ?? "-"}</span>,
+  //},
 
   {
     key: "povrsina",
@@ -62,5 +57,11 @@ export const prostoriColumns: Column<Prostor>[] = [
           : "-"}
       </span>
     ),
+  },
+
+  {
+    key: "stanari",
+    header: "Stanari",
+    render: (prostor) => <span>{prostor.broj_stanara ?? "-"}</span>,
   },
 ];
