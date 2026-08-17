@@ -80,15 +80,13 @@ export async function GET(req: Request) {
     // --------------------------------------------------
 
     const sviProstori = data.map((item: any) => {
+      // ------------------------------
+      // Tip
+      // ------------------------------
+
       const tipId =
         item.relationships
           ?.field_prostor_tip
-          ?.data
-          ?.id;
-
-      const spratId =
-        item.relationships
-          ?.field_prostor_sprat
           ?.data
           ?.id;
 
@@ -96,6 +94,16 @@ export async function GET(req: Request) {
         "taxonomy_term--tip_prostora",
         tipId
       );
+
+      // ------------------------------
+      // Sprat
+      // ------------------------------
+
+      const spratId =
+        item.relationships
+          ?.field_prostor_sprat
+          ?.data
+          ?.id;
 
       const spratTerm = findIncluded(
         "taxonomy_term--sprat",
@@ -123,8 +131,30 @@ export async function GET(req: Request) {
 
         spratWeight:
           Number(
-            spratTerm?.attributes?.weight ?? 0
+            spratTerm?.attributes?.weight ?? 999999
           ),
+
+        // ------------------------------
+        // Redni broj prostora
+        // ------------------------------
+
+        redniBroj:
+          item.attributes
+            ?.field_prostor_sprat_redni_broj ?? null,
+
+        sortRedniBroj:
+          Number(
+            item.attributes
+              ?.field_prostor_sprat_redni_broj ?? 999999
+          ),
+
+        // ------------------------------
+        // Broj prostora
+        // ------------------------------
+
+        broj_prostora:
+          item.attributes
+            ?.field_prostor_broj ?? null,
 
         // ------------------------------
         // Prostor
@@ -140,11 +170,23 @@ export async function GET(req: Request) {
 
         vlasnik:
           item.attributes
-            ?.field_vlasnik ?? null,
+            ?.field_prostor_vlasnik ?? null,
 
-        stanari:
+        korisnik:
           item.attributes
-            ?.field_stanari ?? null,
+            ?.field_prostor_korisnik ?? null,
+
+        telefon:
+          item.attributes
+            ?.field_prostor_telefon ?? null,
+
+        email:
+          item.attributes
+            ?.field_prostor_email ?? null,
+
+        pin:
+          item.attributes
+            ?.field_prostor_pin ?? null,
 
         // ------------------------------
         // Tip prostora
@@ -152,24 +194,6 @@ export async function GET(req: Request) {
 
         tip:
           tipTerm?.attributes?.name ?? null,
-
-        // ------------------------------
-        // Broj prostora
-        // ------------------------------
-
-        broj_prostora:
-          item.attributes
-            ?.field_prostor_broj ?? null,
-
-        // ------------------------------
-        // Broj za sortiranje
-        // ------------------------------
-
-        sortBroj:
-          Number(
-            item.attributes
-              ?.field_sort_broj ?? 999999
-          ),
       };
     });
 
@@ -177,28 +201,30 @@ export async function GET(req: Request) {
     // SORTIRANJE
     //
     // 1. Sprat
-    // 2. Broj prostora
+    // 2. Redni broj prostora na tom spratu
+    // 3. Broj prostora
     // --------------------------------------------------
 
     sviProstori.sort((a: any, b: any) => {
-
       // 1. Sprat
       if (a.spratWeight !== b.spratWeight) {
         return a.spratWeight - b.spratWeight;
       }
 
-      // 2. Broj prostora
-      if (a.sortBroj !== b.sortBroj) {
-        return a.sortBroj - b.sortBroj;
+      // 2. Redni broj prostora
+      if (a.sortRedniBroj !== b.sortRedniBroj) {
+        return a.sortRedniBroj - b.sortRedniBroj;
       }
 
-      // 3. Ako imaju isti broj
-      //    npr. 24A i 24B
-      return String(a.broj_prostora ?? "")
-        .localeCompare(
-          String(b.broj_prostora ?? ""),
-          "sr"
-        );
+      // 3. Broj prostora
+      return String(a.broj_prostora ?? "").localeCompare(
+        String(b.broj_prostora ?? ""),
+        "sr",
+        {
+          numeric: true,
+          sensitivity: "base",
+        }
+      );
     });
 
     // --------------------------------------------------
@@ -240,7 +266,6 @@ export async function GET(req: Request) {
     );
 
   } catch (error) {
-
     console.log(
       "Server error fetching prostori:",
       error

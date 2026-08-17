@@ -50,9 +50,12 @@ async function getProstor(id: string): Promise<Prostor | null> {
       kvadratura: item.attributes.field_prostor_kvadratura,
       broj_stanara: item.attributes.field_prostor_broj_stanara,
       vlasnik: item.attributes.field_prostor_vlasnik,
-      //stanari: item.attributes.field_stanari ?? "",
+      korisnik: item.attributes.field_prostor_korisnik,
       telefon: item.attributes.field_prostor_telefon,
       email: item.attributes.field_prostor_email,
+      broj_prostora: item.attributes?.field_prostor_broj ?? null,
+      redniBroj: item.attributes?.field_prostor_sprat_redni_broj ?? null,
+      //stanari: item.attributes.field_stanari ?? "",
     };
   } catch {
     return null;
@@ -61,6 +64,16 @@ async function getProstor(id: string): Promise<Prostor | null> {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+function skratiTip(tip: string | null | undefined) {
+  if (!tip) return "-";
+
+  return tip
+    .trim()
+    .split(/\s+/)
+    .map((rec) => rec.charAt(0).toUpperCase())
+    .join("");
 }
 
 export default async function ProstorPage({ params }: PageProps) {
@@ -76,7 +89,10 @@ export default async function ProstorPage({ params }: PageProps) {
 
       {/* HEADER */}
       <div className="mb-6">
-        <h1 className="text-xl font-semibold">{prostor.title}</h1>
+        <h1 className="text-xl font-semibold">
+          {skratiTip(prostor.tip)}
+          {prostor.broj_prostora ?? prostor.redniBroj}
+        </h1>
 
         <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
 
@@ -116,8 +132,13 @@ export default async function ProstorPage({ params }: PageProps) {
           <div className="text-sm space-y-2">
 
             <div className="border-b border-gray-200 py-2">
-              <p className="text-xs text-gray-500">Broj stanara</p>
-              <p className="leading-7">{prostor.broj_stanara ?? "-"}</p>
+              <p className="text-xs text-gray-500">Vlasnik</p>
+              <p className="leading-7">{prostor.vlasnik ?? "-"}</p>
+            </div>
+
+            <div className="border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Korisnik</p>
+              <p className="leading-7">{prostor.korisnik ?? "-"}</p>
             </div>
 
             <div className="border-b border-gray-200 py-2">
@@ -127,7 +148,7 @@ export default async function ProstorPage({ params }: PageProps) {
 
             <div className="border-b border-gray-200 py-2">
               <p className="text-xs text-gray-500">Kvadratura</p>
-              <p className="leading-7">{prostor.kvadratura ?? "-"} m²</p>
+              <p className="leading-7">{prostor.kvadratura != null ? `${Number(prostor.kvadratura).toLocaleString("sr-Latn-RS")} m²` : "-"}</p>
             </div>
 
           </div>
@@ -147,6 +168,11 @@ export default async function ProstorPage({ params }: PageProps) {
             </div>
 
             <div className="border-b border-gray-200 py-2">
+              <p className="text-xs text-gray-500">Stanari</p>
+              <p className="leading-7">{prostor.broj_stanara ?? "-"}</p>
+            </div>
+
+            <div className="border-b border-gray-200 py-2">
               <p className="text-xs text-gray-500">Telefon</p>
               <p className="leading-7">{prostor.telefon ?? "-"}</p>
             </div>
@@ -155,6 +181,7 @@ export default async function ProstorPage({ params }: PageProps) {
               <p className="text-xs text-gray-500">E-mail</p>
               <p className="leading-7">{prostor.email ?? "-"}</p>
             </div>
+
           </div>
         </div>
       </div>

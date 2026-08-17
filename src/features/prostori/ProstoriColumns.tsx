@@ -1,6 +1,5 @@
 import { Column } from "@/components/table/types";
 import type { Prostor } from "@/types/prostor";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link";
 
 function skratiTip(tip: string | null | undefined) {
@@ -14,38 +13,44 @@ function skratiTip(tip: string | null | undefined) {
 }
 
 export const prostoriColumns: Column<Prostor>[] = [
-
   {
-    key: "title",
-    header: "Broj",
+    key: "redni_broj",
+    header: "#",
     render: (prostor) => (
       <Link
         href={`/prostori/${prostor.id}`}
         className="hover:underline"
         title={prostor.title}
       >
-        {skratiTip(prostor.tip)}{prostor.broj_prostora ?? "-"}
+        {skratiTip(prostor.tip)}
+        {prostor.broj_prostora ?? prostor.redniBroj}
       </Link>
     ),
   },
 
   {
-    key: "tip",
-    header: "Tip",
-    render: (prostor) => <span>{prostor.tip ?? "-"}</span>,
+    key: "title",
+    header: "Stan",
+    render: (prostor) => (
+      <span>{prostor.broj_prostora ?? "-"}</span>
+    ),
   },
 
   {
     key: "sprat",
     header: "Sprat",
-    render: (prostor) => <span>{prostor.sprat ?? "-"}</span>,
+    render: (prostor) => (
+      <span>{prostor.sprat ?? "-"}</span>
+    ),
   },
 
-  //{
-  //  key: "stan",
-  //  header: "Stan",
-  //  render: (prostor) => <span>{prostor.broj_prostora ?? "-"}</span>,
-  //},
+  {
+    key: "korisnik",
+    header: "Korisnik",
+    render: (prostor) => (
+      <span>{prostor.korisnik ?? "-"}</span>
+    ),
+  },
 
   {
     key: "povrsina",
@@ -61,7 +66,9 @@ export const prostoriColumns: Column<Prostor>[] = [
 
   {
     key: "stanari",
-    header: "Stanari",
-    render: (prostor) => <span>{prostor.broj_stanara ?? "-"}</span>,
+    header: "Članova",
+    render: (prostor) => (
+      <span>{prostor.broj_stanara ?? "-"}</span>
+    ),
   },
 ];
