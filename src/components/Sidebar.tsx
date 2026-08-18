@@ -65,8 +65,8 @@ export default function Sidebar({
         { title: "Kvarovi", icon: Wrench, href: "/kvarovi" },
         { title: "Obaveštenja", icon: Megaphone, href: "/obavestenja" },
         { title: "Sednice", icon: CalendarCheck, href: "/sednice" },
-        { title: "Stanari", icon: Users, href: "/stanari" },
-        { title: "Stanovi", icon: Building, href: "/stanovi" },
+        //{ title: "Stanari", icon: Users, href: "/stanari" },
+        //{ title: "Stanovi", icon: Building, href: "/stanovi" },
       ],
     },
     {
