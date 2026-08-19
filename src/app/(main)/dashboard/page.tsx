@@ -26,55 +26,43 @@ export default function DashboardPage() {
       title: "Transakcije",
       value: stats.transakcije,
       icon: Wallet,
+      iconColor: "text-green-600",
       href: "/transakcije",
     },
     {
       title: "Ankete",
       value: stats.ankete,
       icon: ClipboardList,
+      iconColor: "text-red-600",
       href: "/ankete",
     },
     {
       title: "Kvarovi",
       value: stats.kvarovi,
       icon: AlertTriangle,
+      iconColor: "text-blue-600",
       href: "/kvarovi",
     },
     {
       title: "Obaveštenja",
       value: stats.obavestenja,
       icon: Megaphone,
+      iconColor: "text-yellow-600",
       href: "/obavestenja",
     },
     {
       title: "Sednice",
       value: stats.sednice,
       icon: CalendarCheck,
+      iconColor: "text-blue-600",
       href: "/sednice",
-    },
-    {
-      title: "Stanari",
-      value: stats.stanari,
-      icon: Users,
-      href: "/stanari",
     },
     {
       title: "Prostori",
       value: stats.stanovi,
       icon: Home,
-      href: "/stanovi",
-    },
-    {
-      title: "Dokumenta",
-      value: 0,
-      icon: FileText,
-      href: "/dokumenta",
-    },
-    {
-      title: "Telefoni",
-      value: stats.telefoni,
-      icon: Phone,
-      href: "/telefoni",
+      iconColor: "text-red-600",
+      href: "/prostori",
     },
   ];
 
@@ -111,7 +99,7 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <s.icon className="w-6 h-6 text-slate-600" />
+              <s.icon className={`w-6 h-6 ${s.iconColor}`} />
             </CardContent>
           </Card>
         ))}

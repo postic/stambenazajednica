@@ -33,7 +33,7 @@ export function AppBreadcrumb() {
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link href={item.href ?? "/"}>
-                  {item.label}
+                  {item.label.charAt(0).toUpperCase() + item.label.slice(1)}
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>

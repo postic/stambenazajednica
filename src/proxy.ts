@@ -27,5 +27,6 @@ export const config = {
     "/dokumenti/:path*",
     "/telefoni/:path*",
     "/profil/:path*",
+    "/prostori/:path*",
   ],
 };
