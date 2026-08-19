@@ -142,7 +142,11 @@ export function DataTable<T extends HasId>({
           </span>
 
           {/* VALUE */}
-          <span className={`text-sm text-gray-800 ${getAlignClass(col.align)}`}>
+          <span
+            className={`flex-1 text-right text-sm text-gray-800 ${getAlignClass(
+            col.align
+            )}`}
+          >
             {col.render(row)}
           </span>
         </div>
