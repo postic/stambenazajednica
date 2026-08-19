@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Home, Users, Wallet, Key } from "lucide-react";
 import StatCard from "@/components/StatCard";
 
@@ -11,7 +11,10 @@ export default function Statistics() {
   });
 
   const [balance, setBalance] = useState<number>(0);
-  const [doorCode, setDoorCode] = useState<string>("****");
+  const [doorCode, setDoorCode] = useState<string>("");
+  const [showDoorCode, setShowDoorCode] = useState(false);
+
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     async function loadStatistics() {
@@ -33,21 +36,40 @@ export default function Statistics() {
 
         if (balanceRes.ok) {
           const data = await balanceRes.json();
+
           setBalance(data.balance ?? 0);
         }
 
         if (codeRes.ok) {
           const data = await codeRes.json();
-          setDoorCode(data.door_code ?? "****");
-        }
 
+          setDoorCode(data.door_code ?? "");
+        }
       } catch (error) {
         console.error("Statistics error:", error);
       }
     }
 
     loadStatistics();
+
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+    };
   }, []);
+
+  const handleDoorCodeClick = () => {
+    setShowDoorCode(true);
+
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+    }
+
+    hideTimerRef.current = setTimeout(() => {
+      setShowDoorCode(false);
+    }, 5000);
+  };
 
   const formattedBalance = new Intl.NumberFormat("sr-RS").format(balance);
 
@@ -59,11 +81,16 @@ export default function Statistics() {
         label="Račun"
       />
 
-      <StatCard
-        icon={<Key className="h-5 w-5 text-yellow-600" />}
-        value={doorCode}
-        label="Šifra"
-      />
+      <div
+        onClick={handleDoorCodeClick}
+        className="cursor-pointer"
+      >
+        <StatCard
+          icon={<Key className="h-5 w-5 text-yellow-600" />}
+          value={showDoorCode && doorCode ? doorCode : "*****"}
+          label="Šifra"
+        />
+      </div>
 
       <StatCard
         icon={<Home className="h-5 w-5 text-red-600" />}
