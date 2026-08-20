@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       "http://localhost:8888";
 
     const response = await fetch(
-      `${baseUrl}/jsonapi/node/transakcija?sort=-created`,
+      `${baseUrl}/jsonapi/node/transakcija?sort=-created&page[limit]=10000`,
       {
         cache: "no-store",
       }

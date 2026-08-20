@@ -7,7 +7,7 @@ type Transakcija = {
 export async function getTransactions(): Promise<Transakcija[]> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/transakcija`,
+      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/transakcija?sort=-created&page[limit]=10000`,
       { cache: "no-store" }
     );
 
