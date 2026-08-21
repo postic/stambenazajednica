@@ -91,7 +91,7 @@ export default function KvarForm() {
         disabled={loading}
         className="bg-primary text-white px-4 py-2 rounded hover:bg-primary disabled:opacity-50"
       >
-        {loading ? "Šaljem..." : "Save"}
+        {loading ? "Šaljem..." : "Sačuvaj"}
       </button>
     </form>
   );
