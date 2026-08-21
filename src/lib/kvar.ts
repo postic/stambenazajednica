@@ -8,17 +8,20 @@ type ApiResponse = {
   data?: any;
   error?: string;
   details?: any;
+
+  total?: number;
+  page?: number;
+  totalPages?: number;
 };
 
 // ==================================================
-// Helper
+// HELPER
 // ==================================================
 
 async function parseResponse(
   response: Response
 ): Promise<ApiResponse> {
-  const text =
-    await response.text();
+  const text = await response.text();
 
   if (!text) {
     return {};
@@ -40,26 +43,27 @@ async function parseResponse(
 export async function fetchKvar(
   id: string
 ): Promise<Kvar> {
-  const res =
-    await fetch(
-      `/api/kvarovi?id=${encodeURIComponent(
-        id
-      )}`,
-      {
-        method: "GET",
-        cache: "no-store",
+  const res = await fetch(
+    `/api/kvarovi?id=${encodeURIComponent(id)}`,
+    {
+      method: "GET",
+      cache: "no-store",
 
-        headers: {
-          Accept:
-            "application/json",
-        },
-      }
-    );
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
 
   const json =
     await parseResponse(res);
 
   if (!res.ok) {
+    console.error(
+      "Greška pri učitavanju kvara:",
+      json
+    );
+
     throw new Error(
       json.error ||
         "Greška pri učitavanju kvara"
@@ -131,24 +135,27 @@ export async function fetchKvarovi(
   page: number;
   totalPages: number;
 }> {
-  const res =
-    await fetch(
-      `/api/kvarovi?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        cache: "no-store",
+  const res = await fetch(
+    `/api/kvarovi?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+      cache: "no-store",
 
-        headers: {
-          Accept:
-            "application/json",
-        },
-      }
-    );
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
 
   const json =
     await parseResponse(res);
 
   if (!res.ok) {
+    console.error(
+      "Greška pri učitavanju kvarova:",
+      json
+    );
+
     throw new Error(
       json.error ||
         "Greška pri učitavanju kvarova"
@@ -189,13 +196,12 @@ export async function getFieldOptions(
     | "field_prioritet_kvara"
 ) {
   /*
-   * Za sada ostavljeno zbog
-   * kompatibilnosti.
+   * Ova funkcija je ostavljena
+   * zbog kompatibilnosti sa
+   * postojećim kodom.
    *
-   * Ako select opcije već imaš
-   * hardkodovane u formi,
-   * ova funkcija ti trenutno
-   * nije potrebna.
+   * Trenutno forma koristi
+   * direktno definisane opcije.
    */
 
   console.warn(
@@ -218,37 +224,36 @@ export async function createKvar(
     prioritet?: string;
   }
 ): Promise<Kvar> {
-  const res =
-    await fetch(
-      "/api/kvarovi",
-      {
-        method: "POST",
+  const res = await fetch(
+    "/api/kvarovi",
+    {
+      method: "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
+      headers: {
+        "Content-Type":
+          "application/json",
 
-          Accept:
-            "application/json",
-        },
+        Accept:
+          "application/json",
+      },
 
-        body: JSON.stringify({
-          title:
-            data.title,
+      body: JSON.stringify({
+        title:
+          data.title,
 
-          description:
-            data.description,
+        description:
+          data.description,
 
-          status:
-            data.status ?? "",
+        status:
+          data.status ?? "",
 
-          prioritet:
-            data.prioritet ?? "",
-        }),
+        prioritet:
+          data.prioritet ?? "",
+      }),
 
-        cache: "no-store",
-      }
-    );
+      cache: "no-store",
+    }
+  );
 
   const json =
     await parseResponse(res);
@@ -306,4 +311,60 @@ export async function createKvar(
       item.attributes?.created ??
       "",
   };
+}
+
+// ==================================================
+// UPDATE
+// ==================================================
+
+export async function updateKvar(
+  kvar: Kvar
+): Promise<boolean> {
+  const res = await fetch(
+    `/api/kvarovi`,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        Accept:
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        id:
+          kvar.id,
+
+        title:
+          kvar.title,
+
+        description:
+          kvar.description,
+
+        status:
+          kvar.status,
+
+        prioritet:
+          kvar.prioritet,
+      }),
+
+      cache: "no-store",
+    }
+  );
+
+  const json =
+    await parseResponse(res);
+
+  if (!res.ok) {
+    console.error(
+      "Greška pri izmeni kvara:",
+      json
+    );
+
+    return false;
+  }
+
+  return true;
 }
