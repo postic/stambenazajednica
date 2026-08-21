@@ -1,163 +1,335 @@
 import type { Obavestenje } from "@/types/obavestenje";
-import { getAuthHeader } from "@/lib/auth";
 
-// ===============================
-// 🔹 DRUPAL RESPONSE
-// ===============================
-type DrupalObavestenjeResponse = {
-  data: {
-    id: string;
-    attributes: {
-      title?: string;
-      body?: {
-        value?: string;
-      };
-      created?: string;
-    };
-  };
+// ==================================================
+// API RESPONSE
+// ==================================================
+
+type ApiResponse = {
+  data?: any;
+  error?: string;
+  details?: any;
 };
 
-// ===============================
-// 🔹 FETCH SINGLE
-// ===============================
-export async function fetchObavestenje(id: string): Promise<Obavestenje> {
+// ==================================================
+// Helper
+// ==================================================
+
+async function parseResponse(
+  response: Response
+): Promise<ApiResponse> {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      error: text,
+    };
+  }
+}
+
+// ==================================================
+// FETCH SINGLE
+// ==================================================
+
+export async function fetchObavestenje(
+  id: string
+): Promise<Obavestenje> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}`,
+    `/api/obavestenja?id=${encodeURIComponent(id)}`,
     {
+      method: "GET",
       cache: "no-store",
       headers: {
-        Accept: "application/vnd.api+json",
+        Accept: "application/json",
       },
     }
   );
 
+  const json =
+    await parseResponse(res);
+
   if (!res.ok) {
-    throw new Error("Greška pri učitavanju obavestenja");
+    console.error(
+      "Greška pri učitavanju obaveštenja:",
+      json
+    );
+
+    throw new Error(
+      json.error ||
+        "Greška pri učitavanju obaveštenja"
+    );
   }
 
-  const json: DrupalObavestenjeResponse = await res.json();
   const data = json.data;
+
+  if (!data) {
+    throw new Error(
+      "Obaveštenje nije pronađeno"
+    );
+  }
 
   return {
     id: data.id,
-    title: data.attributes.title ?? "",
-    body: data.attributes.body?.value ?? "",
-    created: data.attributes.created ?? "",
+
+    title:
+      data.attributes?.title ??
+      "",
+
+    body:
+      data.attributes?.body?.value ??
+      "",
+
+    created:
+      data.attributes?.created ??
+      "",
   };
 }
 
-// 🔥 ALIAS (fix za stare import-e)
-export const getObavestenje = fetchObavestenje;
+// ==================================================
+// ALIAS
+// ==================================================
 
-// ===============================
-// 🔹 FIELD OPTIONS
-// ===============================
-export async function getFieldOptions(
-  fieldName: "field_status_kvara" | "field_prioritet_kvara"
-) {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/oavestenje`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: "application/vnd.api+json",
-        },
-      }
-    );
+export const getObavestenje =
+  fetchObavestenje;
 
-    if (!res.ok) return [];
+// ==================================================
+// FETCH ALL
+// ==================================================
 
-    const json = await res.json();
-
-    const item = json.data.find(
-      (i: any) =>
-        i.attributes?.[fieldName]?.meta?.drupal_internal__options
-    );
-
-    const opts =
-      item?.attributes?.[fieldName]?.meta?.drupal_internal__options;
-
-    if (!opts) return [];
-
-    return Object.entries(opts).map(([value, label]) => ({
-      value,
-      label: String(label),
-    }));
-  } catch (err) {
-    console.error("Error fetching field options:", err);
-    return [];
-  }
-}
-
-// ===============================
-// 🔹 UPDATE
-// ===============================
-export async function updateObavestenje(obavestenje: Obavestenje): Promise<boolean> {
+export async function fetchObavestenja(): Promise<
+  Obavestenje[]
+> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${obavestenje.id}`,
+    "/api/obavestenja",
     {
-      method: "PATCH",
+      method: "GET",
+      cache: "no-store",
       headers: {
-        "Content-Type": "application/vnd.api+json",
-        Accept: "application/vnd.api+json",
-        Authorization: getAuthHeader(),
+        Accept: "application/json",
       },
-      body: JSON.stringify({
-        data: {
-          type: "node--obavestenje",
-          id: obavestenje.id,
-          attributes: {
-            title: obavestenje.title,
-            body: {
-              value: obavestenje.body,
-              format: "plain_text",
-            },
-          },
-        },
-      }),
     }
   );
 
-  return res.ok;
-}
-
-// ===============================
-// 🔹 CREATE
-// ===============================
-export async function createObavestenje(data: {
-  title: string;
-  body: string;
-}) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/vnd.api+json",
-        Accept: "application/vnd.api+json",
-        Authorization: getAuthHeader(),
-      },
-      body: JSON.stringify({
-        data: {
-          type: "node--obavestenje",
-          attributes: {
-            title: data.title,
-            body: {
-              value: data.body,
-              format: "plain_text",
-            },
-          },
-        },
-      }),
-    }
-  );
+  const json =
+    await parseResponse(res);
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error("Drupal error:", text);
-    throw new Error("Failed to create obavestenje");
+    console.error(
+      "Greška pri učitavanju obaveštenja:",
+      json
+    );
+
+    throw new Error(
+      json.error ||
+        "Greška pri učitavanju obaveštenja"
+    );
   }
 
-  return res.json();
+  const items =
+    Array.isArray(json.data)
+      ? json.data
+      : [];
+
+  return items.map(
+    (item: any) => ({
+      id: item.id,
+
+      title:
+        item.attributes?.title ??
+        "",
+
+      body:
+        item.attributes?.body?.value ??
+        "",
+
+      created:
+        item.attributes?.created ??
+        "",
+    })
+  );
+}
+
+// ==================================================
+// ALIAS
+// ==================================================
+
+export const getObavestenja =
+  fetchObavestenja;
+
+// ==================================================
+// FIELD OPTIONS
+// ==================================================
+
+export async function getFieldOptions(
+  fieldName:
+    | "field_status_kvara"
+    | "field_prioritet_kvara"
+) {
+  /*
+   * Ova funkcija je ostavljena zbog
+   * kompatibilnosti sa postojećim kodom.
+   *
+   * Ako ti trenutno nije potrebna,
+   * možeš je kasnije ukloniti.
+   */
+
+  console.warn(
+    "getFieldOptions nije implementiran preko /api/obavestenja:",
+    fieldName
+  );
+
+  return [];
+}
+
+// ==================================================
+// CREATE
+// ==================================================
+
+export async function createObavestenje(
+  data: {
+    title: string;
+    body: string;
+  }
+): Promise<Obavestenje> {
+  const res = await fetch(
+    "/api/obavestenja",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        Accept:
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        title: data.title,
+        body: data.body,
+      }),
+
+      cache: "no-store",
+    }
+  );
+
+  const json =
+    await parseResponse(res);
+
+  if (!res.ok) {
+    console.error(
+      "Greška pri kreiranju obaveštenja:",
+      json
+    );
+
+    throw new Error(
+      json.error ||
+        "Greška pri kreiranju obaveštenja"
+    );
+  }
+
+  const item =
+    json.data;
+
+  if (!item) {
+    throw new Error(
+      "Kreirano obaveštenje nije vraćeno"
+    );
+  }
+
+  return {
+    id: item.id,
+
+    title:
+      item.attributes?.title ??
+      data.title,
+
+    body:
+      item.attributes?.body?.value ??
+      data.body,
+
+    created:
+      item.attributes?.created ??
+      "",
+  };
+}
+
+// ==================================================
+// UPDATE
+// ==================================================
+
+export async function updateObavestenje(
+  obavestenje: Obavestenje
+): Promise<Obavestenje> {
+  const res = await fetch(
+    "/api/obavestenja",
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        Accept:
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        id:
+          obavestenje.id,
+
+        title:
+          obavestenje.title,
+
+        body:
+          obavestenje.body,
+      }),
+
+      cache: "no-store",
+    }
+  );
+
+  const json =
+    await parseResponse(res);
+
+  if (!res.ok) {
+    console.error(
+      "Greška pri izmeni obaveštenja:",
+      json
+    );
+
+    throw new Error(
+      json.error ||
+        "Greška pri izmeni obaveštenja"
+    );
+  }
+
+  const item =
+    json.data;
+
+  if (!item) {
+    return obavestenje;
+  }
+
+  return {
+    id: item.id,
+
+    title:
+      item.attributes?.title ??
+      obavestenje.title,
+
+    body:
+      item.attributes?.body?.value ??
+      obavestenje.body,
+
+    created:
+      item.attributes?.created ??
+      obavestenje.created ??
+      "",
+  };
 }
