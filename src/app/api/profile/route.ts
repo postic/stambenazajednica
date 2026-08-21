@@ -1,12 +1,12 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
-// --------------------------------------------------
+// ==================================================
 // next_auth
-// --------------------------------------------------
+// ==================================================
 
 function getNextAuthUser(req: NextRequest) {
   const cookie = req.cookies.get("next_auth");
@@ -22,57 +22,186 @@ function getNextAuthUser(req: NextRequest) {
   }
 }
 
-// --------------------------------------------------
-// Drupal cookies
-// --------------------------------------------------
+// ==================================================
+// Drupal login
+// IDENTIČAN PRINCIP KAO /api/glas
+// ==================================================
 
-function getDrupalCookieHeader(req: NextRequest) {
-  const cookieHeader = req.headers.get("cookie");
-
-  if (!cookieHeader) {
-    return "";
-  }
-
-  return cookieHeader;
-}
-
-// --------------------------------------------------
-// Drupal CSRF token
-// --------------------------------------------------
-
-async function getCsrfToken(req: NextRequest) {
+async function loginToDrupal() {
   try {
-    const cookie = getDrupalCookieHeader(req);
+    // --------------------------------------------------
+    // 1. Drupal login
+    // --------------------------------------------------
 
-    const response = await fetch(
-      `${DRUPAL_BASE_URL}/session/token`,
+    const loginResponse = await fetch(
+      `${DRUPAL_BASE_URL}/user/login?_format=json`,
       {
+        method: "POST",
+
         headers: {
-          Accept: "text/plain",
-          ...(cookie
-            ? {
-                Cookie: cookie,
-              }
-            : {}),
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
+
+        body: JSON.stringify({
+          name: process.env.DRUPAL_API_USER,
+          pass: process.env.DRUPAL_API_PASSWORD,
+        }),
+
         cache: "no-store",
       }
     );
 
-    if (!response.ok) {
+    const loginData =
+      await loginResponse.json();
+
+    console.log(
+      "Drupal login status:",
+      loginResponse.status
+    );
+
+    if (!loginResponse.ok) {
       console.error(
-        "CSRF token error:",
-        response.status,
-        await response.text()
+        "Drupal login error:",
+        JSON.stringify(
+          loginData,
+          null,
+          2
+        )
       );
 
       return null;
     }
 
-    return await response.text();
+    // --------------------------------------------------
+    // 2. Drupal session cookie
+    // --------------------------------------------------
+
+    let drupalCookie = "";
+
+    /*
+     * Node podržava getSetCookie().
+     */
+
+    if (
+      typeof loginResponse.headers.getSetCookie ===
+      "function"
+    ) {
+      const cookies =
+        loginResponse.headers.getSetCookie();
+
+      console.log(
+        "Drupal Set-Cookie count:",
+        cookies.length
+      );
+
+      if (cookies.length > 0) {
+        drupalCookie =
+          cookies
+            .map(
+              (cookie) =>
+                cookie
+                  .split(";")[0]
+                  .trim()
+            )
+            .join("; ");
+      }
+    }
+
+    /*
+     * Fallback.
+     */
+
+    if (!drupalCookie) {
+      const setCookie =
+        loginResponse.headers.get(
+          "set-cookie"
+        );
+
+      if (setCookie) {
+        drupalCookie =
+          setCookie
+            .split(";")[0]
+            .trim();
+      }
+    }
+
+    if (!drupalCookie) {
+      console.error(
+        "Drupal nije vratio session cookie"
+      );
+
+      return null;
+    }
+
+    console.log(
+      "Drupal Cookie:",
+      drupalCookie
+    );
+
+    // --------------------------------------------------
+    // 3. CSRF token
+    // --------------------------------------------------
+
+    const csrfResponse =
+      await fetch(
+        `${DRUPAL_BASE_URL}/session/token`,
+        {
+          method: "GET",
+
+          headers: {
+            Cookie:
+              drupalCookie,
+
+            Accept:
+              "text/plain",
+          },
+
+          cache: "no-store",
+        }
+      );
+
+    const csrfToken =
+      await csrfResponse.text();
+
+    console.log(
+      "Drupal CSRF status:",
+      csrfResponse.status
+    );
+
+    if (!csrfResponse.ok) {
+      console.error(
+        "Drupal CSRF error:",
+        csrfToken
+      );
+
+      return null;
+    }
+
+    if (!csrfToken) {
+      console.error(
+        "Drupal CSRF token je prazan"
+      );
+
+      return null;
+    }
+
+    console.log(
+      "Drupal CSRF token:",
+      csrfToken
+    );
+
+    // --------------------------------------------------
+    // 4. Auth rezultat
+    // --------------------------------------------------
+
+    return {
+      drupalCookie,
+      csrfToken,
+    };
   } catch (error) {
     console.error(
-      "CSRF token exception:",
+      "Drupal login exception:",
       error
     );
 
@@ -84,7 +213,9 @@ async function getCsrfToken(req: NextRequest) {
 // GET
 // ==================================================
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest
+) {
   try {
     // --------------------------------------------------
     // 1. next_auth
@@ -94,9 +225,10 @@ export async function GET(req: NextRequest) {
       getNextAuthUser(req);
 
     if (!authUser?.uid) {
-      return Response.json(
+      return NextResponse.json(
         {
-          error: "Korisnik nije prijavljen",
+          error:
+            "Korisnik nije prijavljen",
         },
         {
           status: 401,
@@ -104,7 +236,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const uid = String(authUser.uid);
+    const uid =
+      String(authUser.uid);
 
     console.log(
       "Profile GET - UID:",
@@ -125,18 +258,22 @@ export async function GET(req: NextRequest) {
             Accept:
               "application/vnd.api+json",
           },
+
           cache: "no-store",
         }
       );
 
     if (!userResponse.ok) {
+      const errorText =
+        await userResponse.text();
+
       console.error(
         "Drupal user error:",
         userResponse.status,
-        await userResponse.text()
+        errorText
       );
 
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Greška pri pronalaženju korisnika",
@@ -154,7 +291,7 @@ export async function GET(req: NextRequest) {
       userJson?.data?.[0];
 
     if (!userItem) {
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Drupal korisnik nije pronađen",
@@ -169,7 +306,7 @@ export async function GET(req: NextRequest) {
       userItem.id;
 
     // --------------------------------------------------
-    // 3. Pronađi Prostor preko field_prostor_user
+    // 3. Pronađi Prostor
     // --------------------------------------------------
 
     const prostorResponse =
@@ -180,18 +317,22 @@ export async function GET(req: NextRequest) {
             Accept:
               "application/vnd.api+json",
           },
+
           cache: "no-store",
         }
       );
 
     if (!prostorResponse.ok) {
+      const errorText =
+        await prostorResponse.text();
+
       console.error(
         "Drupal prostor error:",
         prostorResponse.status,
-        await prostorResponse.text()
+        errorText
       );
 
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Greška pri pronalaženju prostora",
@@ -212,8 +353,7 @@ export async function GET(req: NextRequest) {
       prostorJson?.included || [];
 
     // --------------------------------------------------
-    // 4. Pronađi prostor koji ima
-    //    field_prostor_user = naš Drupal User
+    // 4. Pronađi prostor preko field_prostor_user
     // --------------------------------------------------
 
     const prostorItem =
@@ -227,25 +367,29 @@ export async function GET(req: NextRequest) {
           return false;
         }
 
-        // Entity reference može biti pojedinačni objekat
-        if (!Array.isArray(relationship)) {
+        if (
+          !Array.isArray(
+            relationship
+          )
+        ) {
           return (
             relationship.id ===
             userUuid
           );
         }
 
-        // Ili lista
         return relationship.some(
           (ref: any) =>
-            ref.id === userUuid
+            ref.id ===
+            userUuid
         );
       });
 
     if (!prostorItem) {
-      return Response.json({
+      return NextResponse.json({
         user: {
           uid,
+
           name:
             userItem.attributes?.name ??
             authUser.name ??
@@ -271,7 +415,8 @@ export async function GET(req: NextRequest) {
             (item: any) =>
               item.type ===
                 tipRel.type &&
-              item.id === tipRel.id
+              item.id ===
+                tipRel.id
           )
         : null;
 
@@ -290,7 +435,8 @@ export async function GET(req: NextRequest) {
             (item: any) =>
               item.type ===
                 spratRel.type &&
-              item.id === spratRel.id
+              item.id ===
+                spratRel.id
           )
         : null;
 
@@ -298,7 +444,7 @@ export async function GET(req: NextRequest) {
     // 7. Rezultat
     // --------------------------------------------------
 
-    return Response.json({
+    return NextResponse.json({
       user: {
         uid,
 
@@ -309,7 +455,8 @@ export async function GET(req: NextRequest) {
       },
 
       prostor: {
-        id: prostorItem.id,
+        id:
+          prostorItem.id,
 
         title:
           prostorItem.attributes?.title ??
@@ -370,7 +517,7 @@ export async function GET(req: NextRequest) {
       error
     );
 
-    return Response.json(
+    return NextResponse.json(
       {
         error:
           "Interna greška servera",
@@ -391,14 +538,14 @@ export async function PATCH(
 ) {
   try {
     // --------------------------------------------------
-    // 1. Provera next_auth
+    // 1. next_auth
     // --------------------------------------------------
 
     const authUser =
       getNextAuthUser(req);
 
     if (!authUser?.uid) {
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Korisnik nije prijavljen",
@@ -408,6 +555,14 @@ export async function PATCH(
         }
       );
     }
+
+    const uid =
+      String(authUser.uid);
+
+    console.log(
+      "Profile PATCH - UID:",
+      uid
+    );
 
     // --------------------------------------------------
     // 2. Body
@@ -420,15 +575,20 @@ export async function PATCH(
       body?.field;
 
     const value =
-      typeof body?.value === "string"
+      typeof body?.value ===
+      "string"
         ? body.value.trim()
         : "";
+
+    // --------------------------------------------------
+    // 3. Dozvoljeni fieldovi
+    // --------------------------------------------------
 
     if (
       field !== "mail" &&
       field !== "phone"
     ) {
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Nepoznat profil field",
@@ -440,11 +600,8 @@ export async function PATCH(
     }
 
     // --------------------------------------------------
-    // 3. Pronađi User
+    // 4. Pronađi Drupal User
     // --------------------------------------------------
-
-    const uid =
-      String(authUser.uid);
 
     const userResponse =
       await fetch(
@@ -456,18 +613,28 @@ export async function PATCH(
             Accept:
               "application/vnd.api+json",
           },
+
           cache: "no-store",
         }
       );
 
     if (!userResponse.ok) {
-      return Response.json(
+      const errorText =
+        await userResponse.text();
+
+      console.error(
+        "Drupal user error:",
+        userResponse.status,
+        errorText
+      );
+
+      return NextResponse.json(
         {
           error:
-            "Drupal korisnik nije pronađen",
+            "Greška pri pronalaženju korisnika",
         },
         {
-          status: 404,
+          status: 502,
         }
       );
     }
@@ -479,7 +646,7 @@ export async function PATCH(
       userJson?.data?.[0];
 
     if (!userItem) {
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Drupal korisnik nije pronađen",
@@ -494,7 +661,7 @@ export async function PATCH(
       userItem.id;
 
     // --------------------------------------------------
-    // 4. Pronađi Prostor
+    // 5. Pronađi Prostor
     // --------------------------------------------------
 
     const prostorResponse =
@@ -505,12 +672,22 @@ export async function PATCH(
             Accept:
               "application/vnd.api+json",
           },
+
           cache: "no-store",
         }
       );
 
     if (!prostorResponse.ok) {
-      return Response.json(
+      const errorText =
+        await prostorResponse.text();
+
+      console.error(
+        "Drupal prostor error:",
+        prostorResponse.status,
+        errorText
+      );
+
+      return NextResponse.json(
         {
           error:
             "Greška pri pronalaženju prostora",
@@ -524,8 +701,15 @@ export async function PATCH(
     const prostorJson =
       await prostorResponse.json();
 
+    const prostorData =
+      prostorJson?.data || [];
+
+    // --------------------------------------------------
+    // 6. Prostor pripada korisniku
+    // --------------------------------------------------
+
     const prostorItem =
-      (prostorJson?.data || []).find(
+      prostorData.find(
         (item: any) => {
           const relationship =
             item.relationships
@@ -549,13 +733,14 @@ export async function PATCH(
 
           return relationship.some(
             (ref: any) =>
-              ref.id === userUuid
+              ref.id ===
+              userUuid
           );
         }
       );
 
     if (!prostorItem) {
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Prostor nije pronađen",
@@ -566,8 +751,13 @@ export async function PATCH(
       );
     }
 
+    console.log(
+      "Profile PATCH - Prostor:",
+      prostorItem.id
+    );
+
     // --------------------------------------------------
-    // 5. Odredi Drupal field
+    // 7. Drupal field
     // --------------------------------------------------
 
     const drupalField =
@@ -575,34 +765,42 @@ export async function PATCH(
         ? "field_prostor_email"
         : "field_prostor_telefon";
 
+    console.log(
+      "Profile PATCH - Field:",
+      drupalField
+    );
+
     // --------------------------------------------------
-    // 6. CSRF token
+    // 8. Drupal login
     // --------------------------------------------------
 
-    const csrfToken =
-      await getCsrfToken(req);
+    const drupalAuth =
+      await loginToDrupal();
 
-    if (!csrfToken) {
-      return Response.json(
+    if (!drupalAuth) {
+      return NextResponse.json(
         {
           error:
-            "Nije moguće dobiti Drupal CSRF token",
+            "Drupal login neuspešan",
         },
         {
-          status: 403,
+          status: 401,
         }
       );
     }
 
-    // --------------------------------------------------
-    // 7. Drupal cookies
-    // --------------------------------------------------
+    const {
+      drupalCookie,
+      csrfToken,
+    } =
+      drupalAuth;
 
-    const cookie =
-      getDrupalCookieHeader(req);
+    console.log(
+      "Drupal authentication uspešna"
+    );
 
     // --------------------------------------------------
-    // 8. PATCH Prostor node
+    // 9. PATCH
     // --------------------------------------------------
 
     const patchResponse =
@@ -618,21 +816,20 @@ export async function PATCH(
             "Content-Type":
               "application/vnd.api+json",
 
+            Cookie:
+              drupalCookie,
+
             "X-CSRF-Token":
               csrfToken,
-
-            ...(cookie
-              ? {
-                  Cookie: cookie,
-                }
-              : {}),
           },
 
           body: JSON.stringify({
             data: {
-              type: "node--prostor",
+              type:
+                "node--prostor",
 
-              id: prostorItem.id,
+              id:
+                prostorItem.id,
 
               attributes: {
                 [drupalField]:
@@ -640,41 +837,76 @@ export async function PATCH(
               },
             },
           }),
+
+          cache: "no-store",
         }
       );
 
-    if (!patchResponse.ok) {
-      const errorText =
-        await patchResponse.text();
+    const patchText =
+      await patchResponse.text();
 
+    let patchData: any;
+
+    try {
+      patchData =
+        JSON.parse(
+          patchText
+        );
+    } catch {
+      patchData =
+        patchText;
+    }
+
+    // --------------------------------------------------
+    // 10. Greška
+    // --------------------------------------------------
+
+    if (!patchResponse.ok) {
       console.error(
         "Drupal PATCH error:",
         patchResponse.status,
-        errorText
+        JSON.stringify(
+          patchData,
+          null,
+          2
+        )
       );
 
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Greška pri čuvanju podataka",
-          details: errorText,
+
+          details:
+            patchData,
         },
         {
-          status: 502,
+          status:
+            patchResponse.status,
         }
       );
     }
 
-    const updated =
-      await patchResponse.json();
-
     // --------------------------------------------------
-    // 9. Vraćamo novi podatak
+    // 11. Uspešno
     // --------------------------------------------------
 
-    return Response.json({
+    console.log(
+      "Profile PATCH uspešan",
+      {
+        uid,
+        prostor:
+          prostorItem.id,
+        field,
+      }
+    );
+
+    return NextResponse.json({
+      success: true,
+
       user: {
         uid,
+
         name:
           userItem.attributes?.name ??
           authUser.name ??
@@ -682,7 +914,8 @@ export async function PATCH(
       },
 
       prostor: {
-        id: prostorItem.id,
+        id:
+          prostorItem.id,
 
         [field === "mail"
           ? "email"
@@ -696,7 +929,7 @@ export async function PATCH(
       error
     );
 
-    return Response.json(
+    return NextResponse.json(
       {
         error:
           "Interna greška servera",
