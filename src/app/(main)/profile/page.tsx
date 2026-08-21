@@ -10,6 +10,7 @@ import {
   Pencil,
   Check,
   X,
+  Loader2,
 } from "lucide-react";
 
 interface Prostor {
@@ -279,9 +280,14 @@ export default function ProfilePage() {
     !authUser
   ) {
     return (
-      <p className="p-6">
-        Loading...
-      </p>
+      <div className="w-full py-6 text-sm text-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+          <div className="text-gray-400 text-sm">
+            Podaci se učitavaju...
+          </div>
+        </div>
+      </div>
     );
   }
 
