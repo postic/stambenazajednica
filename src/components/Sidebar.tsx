@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Users,
@@ -29,10 +29,11 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-interface SidebarItem extends MenuItem {
-  icon?: any;
-}
-
+/*
+ * =========================================================
+ * IKONE
+ * =========================================================
+ */
 const iconMap: Record<string, any> = {
   Transakcije: Wallet,
   Prostori: Building,
@@ -44,8 +45,17 @@ const iconMap: Record<string, any> = {
   Stanovi: Building,
   Dokumenti: FileText,
   Ostalo: Grid,
-  Telefoni: FileText,
 };
+
+/*
+ * =========================================================
+ * SAMO OVI MENIJI IMAJU DROPDOWN
+ * =========================================================
+ */
+const dropdownMenus = [
+  "Dokumenti",
+  "Ostalo",
+];
 
 export default function Sidebar({
   mobileOpen,
@@ -53,15 +63,25 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
 
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [openMenu, setOpenMenu] =
+    useState<string | null>(null);
 
-  const [menuSections, setMenuSections] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [collapsed, setCollapsed] =
+    useState(false);
+
+  const [isMobile, setIsMobile] =
+    useState(false);
+
+  const [menuItems, setMenuItems] =
+    useState<MenuItem[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   /*
-   * Load menu from Drupal
+   * =========================================================
+   * UČITAVANJE MENIJA IZ DRUPAL-A
+   * =========================================================
    */
   useEffect(() => {
     const loadMenu = async () => {
@@ -74,14 +94,36 @@ export default function Sidebar({
         );
 
         if (!response.ok) {
-          throw new Error("Failed to load Drupal menu");
+          throw new Error(
+            "Failed to load Drupal menu"
+          );
         }
 
         const data = await response.json();
 
-        setMenuSections(data);
+        console.log(
+          "NEXT MENU:",
+          data
+        );
+
+        /*
+         * Drupal controller vraća direktno:
+         *
+         * [
+         *   {
+         *     title: "Transakcije",
+         *     href: "/transakcije",
+         *     children: []
+         *   },
+         *   ...
+         * ]
+         */
+        setMenuItems(data);
       } catch (error) {
-        console.error("Drupal menu error:", error);
+        console.error(
+          "Drupal menu error:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -91,41 +133,116 @@ export default function Sidebar({
   }, []);
 
   /*
-   * Detect mobile
+   * =========================================================
+   * MOBILE DETECTION
+   * =========================================================
    */
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
-    check();
+    checkMobile();
 
-    window.addEventListener("resize", check);
+    window.addEventListener(
+      "resize",
+      checkMobile
+    );
 
-    return () => window.removeEventListener("resize", check);
+    return () => {
+      window.removeEventListener(
+        "resize",
+        checkMobile
+      );
+    };
   }, []);
 
   /*
-   * Automatically open submenu containing current page
+   * =========================================================
+   * ACTIVE LINK
+   * =========================================================
    */
-  useEffect(() => {
-    menuSections.forEach((section) => {
-      section.children?.forEach((item) => {
-        if (
-          item.children?.some((sub) =>
-            pathname.startsWith(sub.href || "")
-          )
-        ) {
-          setOpenMenu(item.title);
-        }
+  const isActive = (href?: string) => {
+    if (!href || href === "#") {
+      return false;
+    }
 
-        if (item.href && pathname.startsWith(item.href)) {
-          setOpenMenu(item.title);
-        }
-      });
-    });
-  }, [pathname, menuSections]);
+    const normalizedHref =
+      href.replace(/\/$/, "") || "/";
+
+    const normalizedPath =
+      pathname.replace(/\/$/, "") || "/";
+
+    return (
+      normalizedPath === normalizedHref ||
+      normalizedPath.startsWith(
+        `${normalizedHref}/`
+      )
+    );
+  };
 
   /*
-   * Compact menu
+   * =========================================================
+   * ACTIVE CHILD
+   * =========================================================
+   */
+  const hasActiveChild = (
+    item: MenuItem
+  ): boolean => {
+    if (
+      !item.children ||
+      item.children.length === 0
+    ) {
+      return false;
+    }
+
+    return item.children.some(
+      (child) => {
+        if (isActive(child.href)) {
+          return true;
+        }
+
+        if (
+          child.children &&
+          child.children.length > 0
+        ) {
+          return child.children.some(
+            (sub) =>
+              isActive(sub.href)
+          );
+        }
+
+        return false;
+      }
+    );
+  };
+
+  /*
+   * =========================================================
+   * AUTOMATSKI OTVORI DROPDOWN
+   * =========================================================
+   */
+  useEffect(() => {
+    for (const item of menuItems) {
+      if (
+        dropdownMenus.includes(
+          item.title
+        ) &&
+        hasActiveChild(item)
+      ) {
+        setOpenMenu(item.title);
+        return;
+      }
+    }
+  }, [
+    pathname,
+    menuItems,
+  ]);
+
+  /*
+   * =========================================================
+   * STILOVI
+   * =========================================================
    */
   const itemBase =
     "group flex items-center w-full px-3 py-2 text-[14px] font-medium rounded-xl transition-all duration-200";
@@ -133,97 +250,37 @@ export default function Sidebar({
   const iconClass =
     "w-[18px] h-[18px] shrink-0 text-slate-400 group-hover:text-white transition";
 
-  const isActive = (href?: string) => {
-    if (!href) return false;
-
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
-
   /*
-   * Render recursive menu
+   * =========================================================
+   * NORMALAN LINK
+   * =========================================================
+   *
+   * Ovo koriste:
+   *
+   * Transakcije
+   * Prostori
+   * Ankete
+   * Kvarovi
+   * Obaveštenja
+   * Sednice
+   * Stanari
+   * Stanovi
+   *
+   * itd.
    */
-  const renderMenuItem = (
-    item: MenuItem,
-    level = 0
+  const renderNormalLink = (
+    item: MenuItem
   ) => {
-    const Icon = iconMap[item.title];
+    const Icon =
+      iconMap[item.title];
 
-    const hasChildren =
-      item.children && item.children.length > 0;
-
-    const isOpen = openMenu === item.title;
-
-    const parentActive =
-      item.children?.some((child) => {
-        if (isActive(child.href)) {
-          return true;
-        }
-
-        return child.children?.some((sub) =>
-          isActive(sub.href)
-        );
-      }) || false;
-
-    /*
-     * Item with submenu
-     */
-    if (hasChildren) {
-      return (
-        <li key={item.title}>
-          <button
-            onClick={() =>
-              setOpenMenu(isOpen ? null : item.title)
-            }
-            className={`${itemBase} ${
-              parentActive
-                ? "bg-white/10 text-white"
-                : "text-slate-300 hover:bg-white/5 hover:text-white"
-            }`}
-          >
-            {Icon && (
-              <Icon
-                className={`${iconClass} ${
-                  collapsed && !mobileOpen
-                    ? "mx-auto"
-                    : ""
-                }`}
-              />
-            )}
-
-            {(!collapsed || mobileOpen) && (
-              <>
-                <span className="ml-3 flex-1 text-left">
-                  {item.title}
-                </span>
-
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform ${
-                    isOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </>
-            )}
-          </button>
-
-          {isOpen && (!collapsed || mobileOpen) && (
-            <ul className="ml-4 mt-1 pl-3 border-l border-slate-800 space-y-0.5">
-              {item.children?.map((child) =>
-                renderMenuItem(child, level + 1)
-              )}
-            </ul>
-          )}
-        </li>
-      );
-    }
-
-    /*
-     * Normal link
-     */
     return (
       <li key={item.title}>
         <Link
           href={item.href || "#"}
-          onClick={() => setMobileOpen(false)}
+          onClick={() =>
+            setMobileOpen(false)
+          }
           className={`${itemBase} ${
             isActive(item.href)
               ? "bg-white/10 text-white"
@@ -233,14 +290,16 @@ export default function Sidebar({
           {Icon && (
             <Icon
               className={`${iconClass} ${
-                collapsed && !mobileOpen
+                collapsed &&
+                !mobileOpen
                   ? "mx-auto"
                   : ""
               }`}
             />
           )}
 
-          {(!collapsed || mobileOpen) && (
+          {(!collapsed ||
+            mobileOpen) && (
             <span className="ml-3 flex-1 text-left">
               {item.title}
             </span>
@@ -250,22 +309,216 @@ export default function Sidebar({
     );
   };
 
+  /*
+   * =========================================================
+   * DROPDOWN
+   * =========================================================
+   *
+   * Dokumenti:
+   *
+   * [ikonica] Dokumenti       [v]
+   *
+   * Klik na "Dokumenti" =
+   * normalan link
+   *
+   * Klik na strelicu =
+   * otvori/zatvori children
+   */
+  const renderDropdown = (
+    item: MenuItem
+  ) => {
+    const Icon =
+      iconMap[item.title];
+
+    const isOpen =
+      openMenu === item.title;
+
+    const parentActive =
+      isActive(item.href) ||
+      hasActiveChild(item);
+
+    return (
+      <li key={item.title}>
+        {/*
+         * =====================================================
+         * ROOT ROW
+         * =====================================================
+         */}
+        <div
+          className={`${itemBase} ${
+            parentActive
+              ? "bg-white/10 text-white"
+              : "text-slate-300 hover:bg-white/5 hover:text-white"
+          }`}
+        >
+          {/*
+           * ===================================================
+           * LINK
+           * ===================================================
+           */}
+          <Link
+            href={item.href || "#"}
+            onClick={() =>
+              setMobileOpen(false)
+            }
+            className="flex items-center flex-1 min-w-0"
+          >
+            {Icon && (
+              <Icon
+                className={`${iconClass} ${
+                  collapsed &&
+                  !mobileOpen
+                    ? "mx-auto"
+                    : ""
+                }`}
+              />
+            )}
+
+            {(!collapsed ||
+              mobileOpen) && (
+              <span className="ml-3 flex-1 text-left">
+                {item.title}
+              </span>
+            )}
+          </Link>
+
+          {/*
+           * ===================================================
+           * ARROW
+           * ===================================================
+           */}
+          {(!collapsed ||
+            mobileOpen) && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                setOpenMenu(
+                  isOpen
+                    ? null
+                    : item.title
+                );
+              }}
+              className="ml-2 p-1 rounded-md hover:bg-white/10"
+              aria-label={
+                isOpen
+                  ? `Zatvori ${item.title}`
+                  : `Otvori ${item.title}`
+              }
+            >
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${
+                  isOpen
+                    ? "rotate-180"
+                    : ""
+                }`}
+              />
+            </button>
+          )}
+        </div>
+
+        {/*
+         * =====================================================
+         * CHILDREN
+         * =====================================================
+         */}
+        {isOpen &&
+          (!collapsed ||
+            mobileOpen) &&
+          item.children &&
+          item.children.length > 0 && (
+            <ul className="ml-4 mt-1 pl-3 border-l border-slate-800 space-y-0.5">
+              {item.children.map(
+                (child) => {
+                  const ChildIcon =
+                    iconMap[
+                      child.title
+                    ];
+
+                  return (
+                    <li
+                      key={
+                        child.title
+                      }
+                    >
+                      <Link
+                        href={
+                          child.href ||
+                          "#"
+                        }
+                        onClick={() =>
+                          setMobileOpen(
+                            false
+                          )
+                        }
+                        className={`${itemBase} ${
+                          isActive(
+                            child.href
+                          )
+                            ? "bg-white/10 text-white"
+                            : "text-slate-300 hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        {ChildIcon && (
+                          <ChildIcon
+                            className={
+                              iconClass
+                            }
+                          />
+                        )}
+
+                        <span className="ml-3 flex-1 text-left">
+                          {
+                            child.title
+                          }
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                }
+              )}
+            </ul>
+          )}
+      </li>
+    );
+  };
+
+  /*
+   * =========================================================
+   * SIDEBAR
+   * =========================================================
+   */
   return (
     <>
+      {/*
+       * MOBILE OVERLAY
+       */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
-          onClick={() => setMobileOpen(false)}
+          onClick={() =>
+            setMobileOpen(false)
+          }
         />
       )}
 
       <aside
         className={`
-          fixed md:static top-0 left-0 z-50
-          h-[100dvh] bg-[#0B1120]
-          flex flex-col overflow-hidden
+          fixed md:static
+          top-0 left-0
+          z-50
+          h-[100dvh]
+          bg-[#0B1120]
+          flex flex-col
+          overflow-hidden
           transition-all duration-300
-          ${collapsed ? "w-16" : "w-64"}
+          ${
+            collapsed
+              ? "w-16"
+              : "w-64"
+          }
           ${
             mobileOpen
               ? "translate-x-0"
@@ -273,52 +526,107 @@ export default function Sidebar({
           }
         `}
       >
-
-        {/* HEADER */}
-        <div className="h-16 md:h-12 flex justify-left border-b border-slate-800 px-4 shrink-0">
+        {/*
+         * =====================================================
+         * HEADER
+         * =====================================================
+         */}
+        <div className="h-16 md:h-12 flex items-center border-b border-slate-800 px-4 shrink-0">
           <button
-            onClick={() =>
-              isMobile
-                ? setMobileOpen(!mobileOpen)
-                : setCollapsed(!collapsed)
-            }
+            type="button"
+            onClick={() => {
+              if (isMobile) {
+                setMobileOpen(
+                  !mobileOpen
+                );
+              } else {
+                setCollapsed(
+                  !collapsed
+                );
+              }
+            }}
             className="p-1 text-slate-300 hover:text-white transition"
+            aria-label="Otvori/zatvori meni"
           >
             <Menu className="w-[18px] h-[18px]" />
           </button>
         </div>
 
-        {/* NAV */}
-        <nav className="flex-1 overflow-y-auto px-2 py-1">
-
+        {/*
+         * =====================================================
+         * NAV
+         * =====================================================
+         */}
+        <nav className="flex-1 overflow-y-auto px-2 py-4">
+          {/*
+           * LOADING
+           */}
           {loading && (
             <div className="px-3 py-4 text-xs text-slate-500">
               Učitavanje menija...
             </div>
           )}
 
+          {/*
+           * MENU
+           *
+           * BITNO:
+           *
+           * menuItems su direktno root stavke.
+           *
+           * NE pravimo više:
+           *
+           * section.title
+           *
+           * jer Drupal već vraća
+           * Transakcije, Prostori...
+           * kao root menu items.
+           */}
           {!loading &&
-            menuSections.map((section) => (
-              <div
-                key={section.title}
-                className="my-4"
-              >
+            menuItems.length > 0 && (
+              <ul className="space-y-1.5">
+                {menuItems.map(
+                  (item) => {
+                    /*
+                     * SAMO Dokumenti
+                     * i Ostalo imaju
+                     * dropdown.
+                     */
+                    if (
+                      dropdownMenus.includes(
+                        item.title
+                      ) &&
+                      item.children &&
+                      item.children.length >
+                        0
+                    ) {
+                      return renderDropdown(
+                        item
+                      );
+                    }
 
-                {!collapsed && (
-                  <div className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                    {section.title}
-                  </div>
+                    /*
+                     * SVE OSTALO JE
+                     * NORMALAN LINK.
+                     */
+                    return renderNormalLink(
+                      item
+                    );
+                  }
                 )}
+              </ul>
+            )}
 
-                <ul className="space-y-1.5">
-                  {section.children?.map((item) =>
-                    renderMenuItem(item)
-                  )}
-                </ul>
-
+          {/*
+           * EMPTY STATE
+           */}
+          {!loading &&
+            menuItems.length ===
+              0 && (
+              <div className="px-3 py-4 text-xs text-slate-500">
+                Meni je prazan.
               </div>
-            ))}
-
+            )}
         </nav>
       </aside>
     </>
