@@ -34,6 +34,7 @@ interface MenuItem {
  * IKONE
  * =========================================================
  */
+
 const iconMap: Record<string, any> = {
   Transakcije: Wallet,
   Prostori: Building,
@@ -52,6 +53,7 @@ const iconMap: Record<string, any> = {
  * SAMO OVI MENIJI IMAJU DROPDOWN
  * =========================================================
  */
+
 const dropdownMenus = [
   "Dokumenti",
   "Ostalo",
@@ -83,6 +85,7 @@ export default function Sidebar({
    * UČITAVANJE MENIJA IZ DRUPAL-A
    * =========================================================
    */
+
   useEffect(() => {
     const loadMenu = async () => {
       try {
@@ -103,18 +106,6 @@ export default function Sidebar({
           data
         );
 
-        /*
-         * Drupal controller vraća direktno:
-         *
-         * [
-         *   {
-         *     title: "Transakcije",
-         *     href: "/transakcije",
-         *     children: []
-         *   },
-         *   ...
-         * ]
-         */
         setMenuItems(data);
       } catch (error) {
         console.error(
@@ -134,6 +125,7 @@ export default function Sidebar({
    * MOBILE DETECTION
    * =========================================================
    */
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -159,6 +151,7 @@ export default function Sidebar({
    * ACTIVE LINK
    * =========================================================
    */
+
   const isActive = (href?: string) => {
     if (!href || href === "#") {
       return false;
@@ -183,6 +176,7 @@ export default function Sidebar({
    * ACTIVE CHILD
    * =========================================================
    */
+
   const hasActiveChild = (
     item: MenuItem
   ): boolean => {
@@ -216,21 +210,45 @@ export default function Sidebar({
 
   /*
    * =========================================================
-   * AUTOMATSKI OTVORI DROPDOWN
+   * AUTOMATSKI OTVORI / ZATVORI DROPDOWN
    * =========================================================
+   *
+   * Ako je trenutni URL unutar dropdown-a:
+   *     → otvori taj dropdown
+   *
+   * Ako nije:
+   *     → zatvori dropdown
+   *
+   * Ovo znači da npr. klik na:
+   *
+   * Dokumenti
+   *    └── Dokument 1
+   *
+   * ostavlja Dokumente otvorene.
+   *
+   * Ali odlazak na:
+   *
+   * /transakcije
+   * /ankete
+   * /stanari
+   *
+   * zatvara dropdown.
    */
+
   useEffect(() => {
+    let activeDropdown: string | null = null;
+
     for (const item of menuItems) {
       if (
-        dropdownMenus.includes(
-          item.title
-        ) &&
+        dropdownMenus.includes(item.title) &&
         hasActiveChild(item)
       ) {
-        setOpenMenu(item.title);
-        return;
+        activeDropdown = item.title;
+        break;
       }
     }
+
+    setOpenMenu(activeDropdown);
   }, [
     pathname,
     menuItems,
@@ -241,6 +259,7 @@ export default function Sidebar({
    * STILOVI
    * =========================================================
    */
+
   const itemBase =
     "group flex items-center w-full px-3 py-2 text-[14px] font-medium rounded-xl transition-all duration-200";
 
@@ -251,20 +270,8 @@ export default function Sidebar({
    * =========================================================
    * NORMALAN LINK
    * =========================================================
-   *
-   * Ovo koriste:
-   *
-   * Transakcije
-   * Prostori
-   * Ankete
-   * Kvarovi
-   * Obaveštenja
-   * Sednice
-   * Stanari
-   * Stanovi
-   *
-   * itd.
    */
+
   const renderNormalLink = (
     item: MenuItem
   ) => {
@@ -275,9 +282,13 @@ export default function Sidebar({
       <li key={item.title}>
         <Link
           href={item.href || "#"}
-          onClick={() =>
-            setMobileOpen(false)
-          }
+          onClick={() => {
+            setMobileOpen(false);
+
+            // Ako kliknemo na običan link,
+            // zatvori svaki otvoreni dropdown.
+            setOpenMenu(null);
+          }}
           className={`${itemBase} ${
             isActive(item.href)
               ? "bg-white/10 text-white"
@@ -310,17 +321,8 @@ export default function Sidebar({
    * =========================================================
    * DROPDOWN
    * =========================================================
-   *
-   * Dokumenti:
-   *
-   * [ikonica] Dokumenti       [v]
-   *
-   * Klik na "Dokumenti" =
-   * normalan link
-   *
-   * Klik na strelicu =
-   * otvori/zatvori children
    */
+
   const renderDropdown = (
     item: MenuItem
   ) => {
@@ -336,11 +338,13 @@ export default function Sidebar({
 
     return (
       <li key={item.title}>
+
         {/*
          * =====================================================
          * ROOT ROW
          * =====================================================
          */}
+
         <div
           className={`${itemBase} ${
             parentActive
@@ -348,16 +352,27 @@ export default function Sidebar({
               : "text-slate-300 hover:bg-white/5 hover:text-white"
           }`}
         >
+
           {/*
            * ===================================================
            * LINK
            * ===================================================
            */}
+
           <Link
             href={item.href || "#"}
-            onClick={() =>
-              setMobileOpen(false)
-            }
+            onClick={() => {
+              setMobileOpen(false);
+
+              /*
+               * Ne zatvaramo dropdown ovde.
+               *
+               * pathname će se promeniti i
+               * useEffect iznad će odlučiti
+               * da li dropdown treba da ostane
+               * otvoren ili da se zatvori.
+               */
+            }}
             className="flex items-center flex-1 min-w-0"
           >
             {Icon && (
@@ -384,6 +399,7 @@ export default function Sidebar({
            * ARROW
            * ===================================================
            */}
+
           {(!collapsed ||
             mobileOpen) && (
             <button
@@ -421,6 +437,7 @@ export default function Sidebar({
          * CHILDREN
          * =====================================================
          */}
+
         {isOpen &&
           (!collapsed ||
             mobileOpen) &&
@@ -487,11 +504,15 @@ export default function Sidebar({
    * SIDEBAR
    * =========================================================
    */
+
   return (
     <>
       {/*
+       * =====================================================
        * MOBILE OVERLAY
+       * =====================================================
        */}
+
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
@@ -511,11 +532,13 @@ export default function Sidebar({
           flex flex-col
           overflow-hidden
           transition-all duration-300
+
           ${
             collapsed
               ? "w-16"
               : "w-64"
           }
+
           ${
             mobileOpen
               ? "translate-x-0"
@@ -523,11 +546,13 @@ export default function Sidebar({
           }
         `}
       >
+
         {/*
          * =====================================================
          * HEADER
          * =====================================================
          */}
+
         <div className="h-16 md:h-12 flex items-center border-b border-slate-800 px-4 shrink-0">
           <button
             type="button"
@@ -554,10 +579,13 @@ export default function Sidebar({
          * NAV
          * =====================================================
          */}
+
         <nav className="flex-1 overflow-y-auto px-2 py-4">
+
           {/*
            * LOADING
            */}
+
           {loading && (
             <div className="px-3 py-4 text-xs text-slate-500">
               Učitavanje menija...
@@ -566,29 +594,20 @@ export default function Sidebar({
 
           {/*
            * MENU
-           *
-           * BITNO:
-           *
-           * menuItems su direktno root stavke.
-           *
-           * NE pravimo više:
-           *
-           * section.title
-           *
-           * jer Drupal već vraća
-           * Transakcije, Prostori...
-           * kao root menu items.
            */}
+
           {!loading &&
             menuItems.length > 0 && (
               <ul className="space-y-1.5">
                 {menuItems.map(
                   (item) => {
+
                     /*
                      * SAMO Dokumenti
                      * i Ostalo imaju
                      * dropdown.
                      */
+
                     if (
                       dropdownMenus.includes(
                         item.title
@@ -606,6 +625,7 @@ export default function Sidebar({
                      * SVE OSTALO JE
                      * NORMALAN LINK.
                      */
+
                     return renderNormalLink(
                       item
                     );
@@ -617,6 +637,7 @@ export default function Sidebar({
           {/*
            * EMPTY STATE
            */}
+
           {!loading &&
             menuItems.length ===
               0 && (
