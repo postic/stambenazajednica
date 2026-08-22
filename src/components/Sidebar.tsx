@@ -86,12 +86,9 @@ export default function Sidebar({
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_DRUPAL_BASE_URL}/api/next-menu`,
-          {
-            cache: "no-store",
-          }
-        );
+        const response = await fetch("/api/next-menu", {
+          cache: "no-store",
+        });
 
         if (!response.ok) {
           throw new Error(
