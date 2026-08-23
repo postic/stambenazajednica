@@ -89,9 +89,12 @@ export default function Sidebar({
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        const response = await fetch("/api/next-menu", {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          "/api/next-menu",
+          {
+            cache: "no-store",
+          }
+        );
 
         if (!response.ok) {
           throw new Error(
@@ -128,7 +131,9 @@ export default function Sidebar({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(
+        window.innerWidth < 768
+      );
     };
 
     checkMobile();
@@ -152,7 +157,9 @@ export default function Sidebar({
    * =========================================================
    */
 
-  const isActive = (href?: string) => {
+  const isActive = (
+    href?: string
+  ) => {
     if (!href || href === "#") {
       return false;
     }
@@ -212,43 +219,29 @@ export default function Sidebar({
    * =========================================================
    * AUTOMATSKI OTVORI / ZATVORI DROPDOWN
    * =========================================================
-   *
-   * Ako je trenutni URL unutar dropdown-a:
-   *     → otvori taj dropdown
-   *
-   * Ako nije:
-   *     → zatvori dropdown
-   *
-   * Ovo znači da npr. klik na:
-   *
-   * Dokumenti
-   *    └── Dokument 1
-   *
-   * ostavlja Dokumente otvorene.
-   *
-   * Ali odlazak na:
-   *
-   * /transakcije
-   * /ankete
-   * /stanari
-   *
-   * zatvara dropdown.
    */
 
   useEffect(() => {
-    let activeDropdown: string | null = null;
+    let activeDropdown:
+      | string
+      | null = null;
 
     for (const item of menuItems) {
       if (
-        dropdownMenus.includes(item.title) &&
+        dropdownMenus.includes(
+          item.title
+        ) &&
         hasActiveChild(item)
       ) {
-        activeDropdown = item.title;
+        activeDropdown =
+          item.title;
         break;
       }
     }
 
-    setOpenMenu(activeDropdown);
+    setOpenMenu(
+      activeDropdown
+    );
   }, [
     pathname,
     menuItems,
@@ -258,10 +251,16 @@ export default function Sidebar({
    * =========================================================
    * STILOVI
    * =========================================================
+   *
+   * Povećano:
+   *
+   * font: 14px → 15px
+   * padding: py-2 → py-2.5
+   *
    */
 
   const itemBase =
-    "group flex items-center w-full px-3 py-2 text-[14px] font-medium rounded-xl transition-all duration-200";
+    "group flex items-center w-full px-3 py-2.5 text-[16px] font-medium rounded-xl transition-all duration-200";
 
   const iconClass =
     "w-[18px] h-[18px] shrink-0 text-slate-400 group-hover:text-white transition";
@@ -281,12 +280,16 @@ export default function Sidebar({
     return (
       <li key={item.title}>
         <Link
-          href={item.href || "#"}
+          href={
+            item.href || "#"
+          }
           onClick={() => {
             setMobileOpen(false);
 
-            // Ako kliknemo na običan link,
-            // zatvori svaki otvoreni dropdown.
+            /*
+             * Ako kliknemo na običan link,
+             * zatvori svaki otvoreni dropdown.
+             */
             setOpenMenu(null);
           }}
           className={`${itemBase} ${
@@ -360,7 +363,9 @@ export default function Sidebar({
            */}
 
           <Link
-            href={item.href || "#"}
+            href={
+              item.href || "#"
+            }
             onClick={() => {
               setMobileOpen(false);
 
@@ -368,7 +373,7 @@ export default function Sidebar({
                * Ne zatvaramo dropdown ovde.
                *
                * pathname će se promeniti i
-               * useEffect iznad će odlučiti
+               * useEffect će odlučiti
                * da li dropdown treba da ostane
                * otvoren ili da se zatvori.
                */
@@ -414,7 +419,7 @@ export default function Sidebar({
                     : item.title
                 );
               }}
-              className="ml-2 p-1 rounded-md hover:bg-white/10"
+              className="ml-2 p-1.5 rounded-md hover:bg-white/10"
               aria-label={
                 isOpen
                   ? `Zatvori ${item.title}`
@@ -443,7 +448,8 @@ export default function Sidebar({
             mobileOpen) &&
           item.children &&
           item.children.length > 0 && (
-            <ul className="ml-4 mt-1 pl-3 border-l border-slate-800 space-y-0.5">
+            <ul className="ml-4 mt-2 pl-3 border-l border-slate-800 space-y-1">
+
               {item.children.map(
                 (child) => {
                   const ChildIcon =
@@ -493,6 +499,7 @@ export default function Sidebar({
                   );
                 }
               )}
+
             </ul>
           )}
       </li>
@@ -598,7 +605,8 @@ export default function Sidebar({
 
           {!loading &&
             menuItems.length > 0 && (
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
+
                 {menuItems.map(
                   (item) => {
 
@@ -631,6 +639,7 @@ export default function Sidebar({
                     );
                   }
                 )}
+
               </ul>
             )}
 
@@ -645,6 +654,7 @@ export default function Sidebar({
                 Meni je prazan.
               </div>
             )}
+
         </nav>
       </aside>
     </>
