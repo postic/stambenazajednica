@@ -1,33 +1,24 @@
 import { NextResponse } from "next/server";
 
 const DRUPAL_BASE_URL =
-  process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
-
-// ==================================================
-// TYPES
-// ==================================================
-
-interface Kategorija {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-interface Dokument {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  status: string;
-  category: Kategorija | null;
-}
+  process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
+  "http://localhost:8888";
 
 // ==================================================
 // GET
 // ==================================================
 
-export async function GET() {
+export async function GET(
+  req: Request,
+  context: {
+    params: Promise<{
+      slug: string;
+    }>;
+  }
+) {
   try {
+    const { slug } = await context.params;
+
     const url =
       `${DRUPAL_BASE_URL}/jsonapi/node/dokument` +
       `?include=field_tip_dokumenta` +
@@ -63,30 +54,27 @@ export async function GET() {
     const data = await response.json();
 
     // ==================================================
-    // INCLUDED - TAXONOMY TERMS
+    // INCLUDED
     // ==================================================
 
     const included = data.included || [];
 
-    const kategorijeMap = new Map<string, Kategorija>();
+    const kategorijeMap = new Map();
 
     included
       .filter(
         (item: any) =>
-          item.type === "taxonomy_term--tip_dokumenta"
+          item.type ===
+          "taxonomy_term--tip_dokumenta"
       )
       .forEach((item: any) => {
-        const name = item.attributes?.name || "";
+        const name =
+          item.attributes?.name || "";
 
         const alias =
           item.attributes?.path?.alias || "";
 
-        const slug =
-          alias
-            .replace(/^\/+/, "")
-            .split("/")
-            .filter(Boolean)
-            .pop() ||
+        const generatedSlug =
           name
             .toLowerCase()
             .normalize("NFD")
@@ -95,10 +83,18 @@ export async function GET() {
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "");
 
+        const termSlug =
+          alias
+            .replace(/^\/+/, "")
+            .split("/")
+            .filter(Boolean)
+            .pop() ||
+          generatedSlug;
+
         kategorijeMap.set(item.id, {
           id: item.id,
           name,
-          slug,
+          slug: termSlug,
         });
       });
 
@@ -106,17 +102,17 @@ export async function GET() {
     // DOKUMENTI
     // ==================================================
 
-    const dokumenti: Dokument[] = (data.data || []).map(
-      (item: any) => {
-        const relationship =
-          item.relationships?.field_tip_dokumenta;
-
+    const dokumenti = (data.data || [])
+      .map((item: any) => {
         const categoryId =
-          relationship?.data?.id || null;
+          item.relationships
+            ?.field_tip_dokumenta
+            ?.data?.id || null;
 
         const category =
           categoryId
-            ? kategorijeMap.get(categoryId) || null
+            ? kategorijeMap.get(categoryId) ||
+              null
             : null;
 
         return {
@@ -134,52 +130,44 @@ export async function GET() {
             item.attributes?.created || "",
 
           status:
-            item.attributes?.field_status_dokumenta ||
+            item.attributes
+              ?.field_status_dokumenta ||
             "",
 
           category,
         };
-      }
-    );
+      })
+      .filter(
+        (dok: any) =>
+          dok.category?.slug === slug
+      );
 
     // ==================================================
-    // KATEGORIJE
+    // KATEGORIJA
     // ==================================================
 
-    const kategorije = Array.from(
-      new Map(
-        dokumenti
-          .filter((dok) => dok.category)
-          .map((dok) => [
-            dok.category!.id,
-            {
-              ...dok.category!,
-              dokumenti: [],
-            },
-          ])
-      ).values()
-    );
+    const category =
+      dokumenti.length > 0
+        ? dokumenti[0].category
+        : null;
 
-    // ==================================================
-    // GRUPISANJE
-    // ==================================================
-
-    const kategorijeSaDokumentima =
-      kategorije.map((kategorija) => ({
-        ...kategorija,
-
-        dokumenti: dokumenti.filter(
-          (dok) =>
-            dok.category?.id === kategorija.id
-        ),
-      }));
+    if (!category) {
+      return NextResponse.json(
+        {
+          error:
+            "Kategorija nije pronađena",
+        },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
-      data: kategorijeSaDokumentima,
+      category,
+      data: dokumenti,
     });
   } catch (error) {
     console.error(
-      "Server error fetching dokumenti:",
+      "Server error fetching kategoriju:",
       error
     );
 

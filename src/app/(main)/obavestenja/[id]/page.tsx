@@ -123,16 +123,6 @@ export default async function ObavestenjePage({
         </h1>
 
         <p className="text-sm text-slate-400 mt-1">
-
-          {/* AUTOR */}
-          {obavestenje.author && (
-            <>
-              {obavestenje.author}
-              <span className="mr-1">,</span>
-            </>
-          )}
-
-          {/* DATUM */}
           {new Date(
             obavestenje.created
           ).toLocaleDateString(
@@ -144,7 +134,13 @@ export default async function ObavestenjePage({
             }
           )}
 
+          {obavestenje.author && (
+            <>
+              <span className="ml-2">Objavio: {obavestenje.author}</span>
+            </>
+          )}
         </p>
+
       </div>
 
       {/* DESCRIPTION */}
