@@ -14,6 +14,7 @@ interface Obavestenje {
   body: string;
   created: string;
   image?: string | null;
+  author?: string | null;
 }
 
 // ==================================================
@@ -141,11 +142,6 @@ async function loginToDrupal() {
       return null;
     }
 
-    console.log(
-      "Drupal Cookie:",
-      drupalCookie
-    );
-
     // --------------------------------------------------
     // 3. CSRF token
     // --------------------------------------------------
@@ -229,6 +225,88 @@ async function parseDrupalResponse(
 }
 
 // ==================================================
+// Drupal USER UUID
+//
+// authUser.uid = Drupal numeric UID
+// JSON:API uid relationship = Drupal UUID
+// ==================================================
+
+async function getDrupalUserUuid(
+  uid: string | number,
+  drupalCookie: string
+) {
+  try {
+    const response =
+      await fetch(
+        `${DRUPAL_BASE_URL}/jsonapi/user/user?filter[uid]=${encodeURIComponent(
+          uid.toString()
+        )}`,
+        {
+          method: "GET",
+
+          headers: {
+            Accept:
+              "application/vnd.api+json",
+
+            Cookie:
+              drupalCookie,
+          },
+
+          cache: "no-store",
+        }
+      );
+
+    const data =
+      await parseDrupalResponse(
+        response
+      );
+
+    if (!response.ok) {
+      console.error(
+        "Drupal user lookup error:",
+        response.status,
+        data
+      );
+
+      return null;
+    }
+
+    const user =
+      Array.isArray(data?.data)
+        ? data.data[0]
+        : null;
+
+    if (!user?.id) {
+      console.error(
+        "Drupal korisnik nije pronađen:",
+        uid
+      );
+
+      return null;
+    }
+
+    console.log(
+      "Drupal user pronađen:",
+      {
+        uid,
+        uuid: user.id,
+        name:
+          user.attributes?.name,
+      }
+    );
+
+    return user.id;
+  } catch (error) {
+    console.error(
+      "getDrupalUserUuid error:",
+      error
+    );
+
+    return null;
+  }
+}
+
+// ==================================================
 // GET
 //
 // /api/obavestenja
@@ -294,7 +372,7 @@ export async function GET(
         await fetch(
           `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${encodeURIComponent(
             id
-          )}`,
+          )}?include=uid`,
           {
             headers: {
               Accept:
@@ -343,7 +421,7 @@ export async function GET(
 
     const response =
       await fetch(
-        `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje?sort=-created&include=field_image`,
+        `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje?sort=-created&include=field_image,uid`,
         {
           headers: {
             Accept:
@@ -420,6 +498,10 @@ export async function GET(
       Obavestenje[] =
       currentPageData.map(
         (item: any) => {
+          // --------------------------------------------
+          // IMAGE
+          // --------------------------------------------
+
           let imageUrl:
             | string
             | null = null;
@@ -458,6 +540,64 @@ export async function GET(
             }
           }
 
+          // --------------------------------------------
+          // AUTHOR
+          // --------------------------------------------
+
+          const authorRel =
+            item.relationships
+              ?.uid
+              ?.data;
+
+          let authorName:
+            | string
+            | null = null;
+
+          if (
+            authorRel &&
+            included.length > 0
+          ) {
+            const authorObj =
+              included.find(
+                (i: any) =>
+                  i.type ===
+                    "user--user" &&
+                  i.id ===
+                    authorRel.id
+              );
+
+            if (
+              authorObj?.attributes?.name
+            ) {
+              authorName =
+                authorObj.attributes.name;
+            }
+          }
+
+          // --------------------------------------------
+          // DEBUG
+          // --------------------------------------------
+
+          console.log(
+            "OBAVESTENJE AUTHOR:",
+            {
+              title:
+                item.attributes
+                  ?.title,
+
+              relationship:
+                item.relationships
+                  ?.uid,
+
+              author:
+                authorName,
+            }
+          );
+
+          // --------------------------------------------
+          // RETURN
+          // --------------------------------------------
+
           return {
             id:
               item.id,
@@ -476,6 +616,9 @@ export async function GET(
               item.attributes
                 ?.created ??
               "",
+
+            author:
+              authorName,
 
             image:
               imageUrl,
@@ -519,6 +662,7 @@ export async function GET(
 // POST
 //
 // Kreiranje obaveštenja
+// Autor = trenutno ulogovani korisnik
 // ==================================================
 
 export async function POST(
@@ -545,8 +689,14 @@ export async function POST(
     }
 
     console.log(
-      "Obavestenje POST - UID:",
-      authUser.uid
+      "NEXT_AUTH USER:",
+      {
+        uid:
+          authUser.uid,
+
+        name:
+          authUser.name,
+      }
     );
 
     // --------------------------------------------------
@@ -622,7 +772,29 @@ export async function POST(
       drupalAuth;
 
     // --------------------------------------------------
-    // 5. Drupal POST
+    // 5. UUID trenutno ulogovanog korisnika
+    // --------------------------------------------------
+
+    const authorUuid =
+      await getDrupalUserUuid(
+        authUser.uid,
+        drupalCookie
+      );
+
+    if (!authorUuid) {
+      return NextResponse.json(
+        {
+          error:
+            "Nije moguće pronaći trenutno ulogovanog korisnika u Drupalu",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // --------------------------------------------------
+    // 6. Drupal POST
     // --------------------------------------------------
 
     const response =
@@ -661,6 +833,22 @@ export async function POST(
                     "plain_text",
                 },
               },
+
+              // ------------------------------------------
+              // DEFAULT DRUPAL AUTHOR
+              // ------------------------------------------
+
+              relationships: {
+                uid: {
+                  data: {
+                    type:
+                      "user--user",
+
+                    id:
+                      authorUuid,
+                  },
+                },
+              },
             },
           }),
 
@@ -674,7 +862,7 @@ export async function POST(
       );
 
     // --------------------------------------------------
-    // 6. Greška
+    // 7. Greška
     // --------------------------------------------------
 
     if (!response.ok) {
@@ -700,7 +888,7 @@ export async function POST(
     }
 
     // --------------------------------------------------
-    // 7. Uspeh
+    // 8. Uspeh
     // --------------------------------------------------
 
     console.log(

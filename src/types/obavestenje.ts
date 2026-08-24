@@ -4,4 +4,6 @@ export interface Obavestenje {
   body: string;
   created: string;
   images?: string[] | null;
+  author?: string | null;
+  prostor?: string | null;
 }
