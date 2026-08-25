@@ -1,227 +1,122 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+import { DataTable } from "@/components/table/DataTable";
+
 import {
-  ArrowLeft,
-  FileText,
-  Loader2,
-} from "lucide-react";
-import { useParams } from "next/navigation";
+  dokumentiColumns,
+} from "@/features/dokumenti/DokumentiColumns";
 
-interface Kategorija {
-  id: string;
-  name: string;
-  slug: string;
+import type {
+  Dokument,
+  KategorijaDokumenta,
+} from "@/types/dokument";
+
+interface PageProps {
+  params: Promise<{
+    slug: string;
+  }>;
 }
 
-interface Dokument {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  status: string;
-  category: Kategorija;
-}
+export default function DokumentiKategorijaPage({
+  params,
+}: PageProps) {
+  const [slug, setSlug] =
+    useState<string>("");
 
-export default function DokumentiKategorijaPage() {
-  const params = useParams();
-
-  const slug = params.slug as string;
+  const [loading, setLoading] =
+    useState(true);
 
   const [dokumenti, setDokumenti] =
     useState<Dokument[]>([]);
 
   const [category, setCategory] =
-    useState<Kategorija | null>(null);
+    useState<KategorijaDokumenta | null>(
+      null
+    );
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  useEffect(() => {
+    params.then(({ slug }) => {
+      setSlug(slug);
+    });
+  }, [params]);
 
   useEffect(() => {
     if (!slug) return;
 
-    async function loadDokumenti() {
-      try {
-        setLoading(true);
+    let ignore = false;
 
-        const response = await fetch(
-          `/api/dokumenti/${slug}`
-        );
+    setLoading(true);
 
-        if (!response.ok) {
+    fetch(`/api/dokumenti/${slug}`)
+      .then((res) => {
+        if (!res.ok) {
           throw new Error(
             "Kategorija nije pronađena"
           );
         }
 
-        const result =
-          await response.json();
-
-        setCategory(
-          result.category || null
-        );
+        return res.json();
+      })
+      .then((data) => {
+        if (ignore) return;
 
         setDokumenti(
-          result.data || []
+          data.data ?? []
         );
-      } catch (error) {
-        console.error(error);
 
-        setError(
-          "Greška pri učitavanju dokumenata."
+        setCategory(
+          data.category ?? null
         );
-      } finally {
-        setLoading(false);
-      }
-    }
+      })
+      .catch((err) => {
+        if (ignore) return;
 
-    loadDokumenti();
+        console.error(
+          "Greška pri učitavanju dokumenata:",
+          err
+        );
+
+        setDokumenti([]);
+      })
+      .finally(() => {
+        if (!ignore) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [slug]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2
-          className="animate-spin text-slate-400"
-          size={24}
-        />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-4">
-
-        <Link
-          href="/dokumenti"
-          className="inline-flex items-center gap-2 text-sm text-slate-500"
-        >
-          <ArrowLeft size={16} />
-          Svi dokumenti
-        </Link>
-
-        <div className="text-sm text-red-500">
-          {error}
-        </div>
-
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl">
 
-      {/* NASLOV */}
+      {/* HEADER */}
 
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          {category?.name}
+      <div className="mb-6">
+
+        <h1 className="text-xl font-semibold">
+          {category?.name || "Dokumenti"}
         </h1>
 
         <p className="mt-1 text-sm text-slate-500">
-          {dokumenti.length}{" "}
-          {dokumenti.length === 1
-            ? "dokument"
-            : "dokumenata"}
+          Dokumenti iz kategorije
         </p>
+
       </div>
 
-      {/* DOKUMENTI */}
+      {/* TABLE */}
 
-      {dokumenti.length === 0 ? (
-        <div
-          className="
-            rounded-xl
-            border
-            border-slate-200
-            bg-white
-            px-5
-            py-10
-            text-center
-            text-sm
-            text-slate-400
-          "
-        >
-          Nema dokumenata u ovoj kategoriji.
-        </div>
-      ) : (
-        <div className="space-y-2">
-
-          {dokumenti.map((dokument) => (
-
-            <div
-              key={dokument.id}
-              className="
-                flex
-                items-center
-                justify-between
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                px-5
-                py-4
-              "
-            >
-
-              <div className="flex items-center gap-4">
-
-                <div
-                  className="
-                    flex
-                    h-10
-                    w-10
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-lg
-                    bg-slate-100
-                  "
-                >
-                  <FileText
-                    size={20}
-                    className="text-slate-500"
-                  />
-                </div>
-
-                <div>
-
-                  <div className="font-medium text-slate-900">
-                    {dokument.title}
-                  </div>
-
-                  <div className="mt-1 text-sm text-slate-400">
-
-                    {new Date(
-                      dokument.created
-                    ).toLocaleDateString(
-                      "sr-Latn-RS",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* OVDE ĆEMO KASNIJE DODATI LINK KA FAJLU */}
-
-            </div>
-
-          ))}
-
-        </div>
-      )}
+      <DataTable<Dokument>
+        data={dokumenti}
+        columns={dokumentiColumns}
+        loading={loading}
+      />
 
     </div>
   );
