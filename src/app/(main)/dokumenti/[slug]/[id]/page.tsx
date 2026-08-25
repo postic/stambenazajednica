@@ -11,6 +11,10 @@ import {
   Download,
 } from "lucide-react";
 
+// =========================================================
+// TYPES
+// =========================================================
+
 interface PageProps {
   params: Promise<{
     slug: string;
@@ -42,6 +46,10 @@ type Dokument = {
   files: FileItem[];
 };
 
+// =========================================================
+// GET DOKUMENT
+// =========================================================
+
 async function getDokument(
   slug: string,
   id: string
@@ -51,20 +59,47 @@ async function getDokument(
       process.env.NEXT_PUBLIC_SITE_URL ||
       "http://localhost:3000";
 
-    const response =
-      await fetch(
-        `${baseUrl}/api/dokumenti/${slug}/${id}`,
-        {
-          cache: "no-store",
-        }
-      );
+    const url =
+      `${baseUrl}/api/dokumenti/` +
+      `${encodeURIComponent(slug)}/` +
+      `${encodeURIComponent(id)}`;
+
+    console.log(
+      "GET DOKUMENT:",
+      url
+    );
+
+    const response = await fetch(url, {
+      cache: "no-store",
+    });
+
+    console.log(
+      "DOKUMENT STATUS:",
+      response.status
+    );
 
     if (!response.ok) {
+      const text = await response.text();
+
+      console.error(
+        "DOKUMENT API ERROR:",
+        response.status,
+        text
+      );
+
       return null;
     }
 
-    return await response.json();
-  } catch {
+    const data =
+      await response.json();
+
+    return data;
+  } catch (error) {
+    console.error(
+      "GET DOKUMENT ERROR:",
+      error
+    );
+
     return null;
   }
 }
@@ -103,9 +138,9 @@ function getIcon(mime: string) {
 // FILE SIZE
 // =========================================================
 
-const formatFileSize = (
+function formatFileSize(
   bytes?: number
-) => {
+) {
   if (!bytes) {
     return "";
   }
@@ -119,13 +154,15 @@ const formatFileSize = (
   const mb = kb / 1024;
 
   return `${mb.toFixed(1)} MB`;
-};
+}
 
 // =========================================================
 // FILE TYPE
 // =========================================================
 
-function getFileType(mime: string) {
+function getFileType(
+  mime: string
+) {
   if (mime.includes("pdf")) {
     return "PDF";
   }
@@ -158,12 +195,22 @@ function getFileType(mime: string) {
 export default async function DokumentPage({
   params,
 }: PageProps) {
-  const { slug, id } =
-    await params;
+  const {
+    slug,
+    id,
+  } = await params;
+
+  // =======================================================
+  // PARAMS
+  // =======================================================
 
   if (!slug || !id) {
     notFound();
   }
+
+  // =======================================================
+  // DOKUMENT
+  // =======================================================
 
   const dokument =
     await getDokument(
@@ -175,16 +222,22 @@ export default async function DokumentPage({
     notFound();
   }
 
+  // =======================================================
+  // PAGE
+  // =======================================================
+
   return (
     <div className="max-w-4xl">
 
-      {/* =====================================================
+      {/* ===================================================
           HEADER
-      ===================================================== */}
+      =================================================== */}
 
       <div className="mb-6">
 
         <div className="flex items-start justify-between gap-4">
+
+          {/* TITLE */}
 
           <div data-field>
 
@@ -192,40 +245,46 @@ export default async function DokumentPage({
               {dokument.title}
             </h1>
 
-            <p className="text-sm text-slate-400 mt-1">
-              {new Date(
-                dokument.created
-              ).toLocaleDateString(
-                "sr-Latn-RS",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }
-              )}
-            </p>
+            {/* DATE */}
+
+            {dokument.created && (
+              <p className="text-sm text-slate-400 mt-1">
+                {new Date(
+                  dokument.created
+                ).toLocaleDateString(
+                  "sr-Latn-RS",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
+              </p>
+            )}
 
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* STATUS */}
 
-            {dokument.status && (
+          {dokument.status && (
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+
               <StatusBadge
                 status={
                   dokument.status
                 }
               />
-            )}
 
-          </div>
+            </div>
+          )}
 
         </div>
 
       </div>
 
-      {/* =====================================================
+      {/* ===================================================
           BODY
-      ===================================================== */}
+      =================================================== */}
 
       {!isEmptyHtml(
         dokument.body
@@ -243,120 +302,131 @@ export default async function DokumentPage({
         </div>
       )}
 
-      {/* =====================================================
+      {/* ===================================================
           FILES
-      ===================================================== */}
+      =================================================== */}
 
-      {dokument.files.length > 0 && (
-        <div className="border border-gray-300 bg-white">
+      {dokument.files &&
+        dokument.files.length > 0 && (
+          <div className="border border-gray-300 bg-white">
 
-          <div className="px-4 py-2 border-b border-gray-300 bg-slate-50 text-sm font-medium">
-            Dokumenti
-          </div>
+            {/* HEADER */}
 
-          <div className="divide-y divide-gray-200">
+            <div className="px-4 py-2 border-b border-gray-300 bg-slate-50 text-sm font-medium">
+              Dokumenti
+            </div>
 
-            {dokument.files.map(
-              (file, i) => {
+            {/* FILE LIST */}
 
-                const mime =
-                  file.mime || "";
+            <div className="divide-y divide-gray-200">
 
-                const Icon =
-                  getIcon(mime);
+              {dokument.files.map(
+                (file, index) => {
 
-                const size =
-                  formatFileSize(
-                    file.size
-                  );
+                  const mime =
+                    file.mime || "";
 
-                const type =
-                  getFileType(mime);
+                  const Icon =
+                    getIcon(mime);
 
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between px-4 py-3"
-                  >
+                  const size =
+                    formatFileSize(
+                      file.size
+                    );
 
-                    {/* =================================================
-                        FILE NAME
-                    ================================================= */}
+                  const type =
+                    getFileType(
+                      mime
+                    );
 
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 min-w-0 text-slate-700"
+                  return (
+                    <div
+                      key={`${file.url}-${index}`}
+                      className="flex items-center justify-between px-4 py-3"
                     >
 
-                      <Icon
-                        size={16}
-                        className="text-slate-400 shrink-0"
-                      />
-
-                      <span className="truncate text-sm">
-                        {file.description ||
-                          file.filename ||
-                          "Fajl"}
-                      </span>
-
-                    </a>
-
-                    {/* =================================================
-                        TYPE / SIZE / DOWNLOAD
-                    ================================================= */}
-
-                    <div className="flex items-center gap-3 shrink-0 ml-3">
-
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
-
-                        <span>
-                          {type}
-                        </span>
-
-                        {size && (
-                          <>
-                            <span>
-                              •
-                            </span>
-
-                            <span>
-                              {size}
-                            </span>
-                          </>
-                        )}
-
-                      </div>
-
-                      {/* DOWNLOAD */}
+                      {/* ===================================
+                          FILE NAME
+                      =================================== */}
 
                       <a
                         href={file.url}
-                        download={
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 min-w-0 text-slate-700"
+                        title={
                           file.filename ||
-                          undefined
+                          "Otvori fajl"
                         }
-                        className="inline-flex items-center justify-center text-gray-400 hover:text-slate-700"
-                        title="Preuzmi fajl"
-                        aria-label="Preuzmi fajl"
                       >
-                        <Download
+
+                        <Icon
                           size={16}
+                          className="text-slate-400 shrink-0"
                         />
+
+                        <span className="truncate text-sm">
+                          {file.description ||
+                            file.filename ||
+                            "Fajl"}
+                        </span>
+
                       </a>
 
-                    </div>
+                      {/* ===================================
+                          TYPE / SIZE / DOWNLOAD
+                      =================================== */}
 
-                  </div>
-                );
-              }
-            )}
+                      <div className="flex items-center gap-3 shrink-0 ml-3">
+
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+
+                          <span>
+                            {type}
+                          </span>
+
+                          {size && (
+                            <>
+                              <span>
+                                •
+                              </span>
+
+                              <span>
+                                {size}
+                              </span>
+                            </>
+                          )}
+
+                        </div>
+
+                        {/* DOWNLOAD */}
+
+                        <a
+                          href={file.url}
+                          download={
+                            file.filename ||
+                            undefined
+                          }
+                          className="inline-flex items-center justify-center text-gray-400 hover:text-slate-700"
+                          title="Preuzmi fajl"
+                          aria-label="Preuzmi fajl"
+                        >
+                          <Download
+                            size={16}
+                          />
+                        </a>
+
+                      </div>
+
+                    </div>
+                  );
+                }
+              )}
+
+            </div>
 
           </div>
-
-        </div>
-      )}
+        )}
 
     </div>
   );
