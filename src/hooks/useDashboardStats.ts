@@ -11,6 +11,7 @@ type Stats = {
   stanovi: number;
   telefoni: number;
   transakcije: number;
+  dokumenti: number;
 };
 
 export function useDashboardStats() {
