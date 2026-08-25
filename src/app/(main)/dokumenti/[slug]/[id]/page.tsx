@@ -227,7 +227,136 @@ export default async function DokumentPage({
           BODY
       ===================================================== */}
 
+      {!isEmptyHtml(
+        dokument.body
+      ) && (
+        <div className="border border-gray-300 bg-slate-50 p-4 mb-6">
 
+          <div
+            className="text-sm text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html:
+                dokument.body,
+            }}
+          />
+
+        </div>
+      )}
+
+      {/* =====================================================
+          FILES
+      ===================================================== */}
+
+      {dokument.files.length > 0 && (
+        <div className="border border-gray-300 bg-white">
+
+          <div className="px-4 py-2 border-b border-gray-300 bg-slate-50 text-sm font-medium">
+            Dokumenti
+          </div>
+
+          <div className="divide-y divide-gray-200">
+
+            {dokument.files.map(
+              (file, i) => {
+
+                const mime =
+                  file.mime || "";
+
+                const Icon =
+                  getIcon(mime);
+
+                const size =
+                  formatFileSize(
+                    file.size
+                  );
+
+                const type =
+                  getFileType(mime);
+
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between px-4 py-3"
+                  >
+
+                    {/* =================================================
+                        FILE NAME
+                    ================================================= */}
+
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 min-w-0 text-slate-700"
+                    >
+
+                      <Icon
+                        size={16}
+                        className="text-slate-400 shrink-0"
+                      />
+
+                      <span className="truncate text-sm">
+                        {file.description ||
+                          file.filename ||
+                          "Fajl"}
+                      </span>
+
+                    </a>
+
+                    {/* =================================================
+                        TYPE / SIZE / DOWNLOAD
+                    ================================================= */}
+
+                    <div className="flex items-center gap-3 shrink-0 ml-3">
+
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+
+                        <span>
+                          {type}
+                        </span>
+
+                        {size && (
+                          <>
+                            <span>
+                              •
+                            </span>
+
+                            <span>
+                              {size}
+                            </span>
+                          </>
+                        )}
+
+                      </div>
+
+                      {/* DOWNLOAD */}
+
+                      <a
+                        href={file.url}
+                        download={
+                          file.filename ||
+                          undefined
+                        }
+                        className="inline-flex items-center justify-center text-gray-400 hover:text-slate-700"
+                        title="Preuzmi fajl"
+                        aria-label="Preuzmi fajl"
+                      >
+                        <Download
+                          size={16}
+                        />
+                      </a>
+
+                    </div>
+
+                  </div>
+                );
+              }
+            )}
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

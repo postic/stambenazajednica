@@ -4,6 +4,10 @@ const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
+// =========================================================
+// SLUG
+// =========================================================
+
 function createSlug(value: string): string {
   return value
     .toLowerCase()
@@ -14,8 +18,38 @@ function createSlug(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// =========================================================
+// TYPES
+// =========================================================
+
+type FileItem = {
+  url: string;
+  filename?: string;
+  mime?: string;
+  description?: string;
+  size?: number;
+};
+
+type DokumentResponse = {
+  id: string;
+  title: string;
+  body: string;
+  created: string;
+  status: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  files: FileItem[];
+};
+
+// =========================================================
+// GET
+// =========================================================
+
 export async function GET(
-  req: Request,
+  _req: Request,
   context: {
     params: Promise<{
       slug: string;
@@ -24,26 +58,63 @@ export async function GET(
   }
 ) {
   try {
-    const { slug, id } =
-      await context.params;
+    const { slug, id } = await context.params;
+
+    console.log("=================================");
+    console.log("DOKUMENT DETAIL");
+    console.log("slug:", slug);
+    console.log("id:", id);
+
+    // =====================================================
+    // PROVERA PARAMETARA
+    // =====================================================
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Nedostaje ID dokumenta",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // =====================================================
+    // DRUPAL URL
+    // =====================================================
 
     const url =
-      `${DRUPAL_BASE_URL}/jsonapi/node/dokument/${id}` +
+      `${DRUPAL_BASE_URL}/jsonapi/node/dokument/${encodeURIComponent(id)}` +
       `?include=field_tip_dokumenta,field_dokument_file`;
+
+    console.log("Drupal URL:", url);
+
+    // =====================================================
+    // FETCH DRUPAL
+    // =====================================================
 
     const response = await fetch(url, {
       headers: {
-        Accept:
-          "application/vnd.api+json",
+        Accept: "application/vnd.api+json",
       },
       cache: "no-store",
     });
 
+    console.log("Drupal status:", response.status);
+
     if (!response.ok) {
+      const text = await response.text();
+
+      console.error(
+        "Drupal dokument error:",
+        response.status,
+        text
+      );
+
       return NextResponse.json(
         {
-          error:
-            "Dokument nije pronađen",
+          error: "Dokument nije pronađen",
         },
         {
           status: 404,
@@ -55,11 +126,14 @@ export async function GET(
 
     const item = json.data;
 
+    // =====================================================
+    // PROVERA DOKUMENTA
+    // =====================================================
+
     if (!item) {
       return NextResponse.json(
         {
-          error:
-            "Dokument nije pronađen",
+          error: "Dokument nije pronađen",
         },
         {
           status: 404,
@@ -67,8 +141,7 @@ export async function GET(
       );
     }
 
-    const included =
-      json.included || [];
+    const included = json.included || [];
 
     // =====================================================
     // KATEGORIJA
@@ -79,21 +152,20 @@ export async function GET(
         ?.field_tip_dokumenta
         ?.data?.id || null;
 
-    let category = null;
+    let category:
+      DokumentResponse["category"] = null;
 
     if (categoryId) {
-      const categoryItem =
-        included.find(
-          (i: any) =>
-            i.type ===
-              "taxonomy_term--tip_dokumenta" &&
-            i.id === categoryId
-        );
+      const categoryItem = included.find(
+        (includedItem: any) =>
+          includedItem.type ===
+            "taxonomy_term--tip_dokumenta" &&
+          includedItem.id === categoryId
+      );
 
       if (categoryItem) {
         const name =
-          categoryItem.attributes?.name ||
-          "";
+          categoryItem.attributes?.name || "";
 
         category = {
           id: categoryItem.id,
@@ -104,35 +176,38 @@ export async function GET(
     }
 
     // =====================================================
-    // PROVERA KATEGORIJE
+    // SLUG PROVERA
     // =====================================================
+
+    /*
+     * Slug ne određuje da li dokument postoji.
+     * Dokument se pronalazi preko ID-a.
+     *
+     * Ako je kategorija pronađena, samo proveravamo
+     * da li slug odgovara kategoriji.
+     *
+     * Ne vraćamo 404 zbog razlike u velikim/malim slovima.
+     */
 
     if (
       category &&
-      category.slug !== slug
+      slug &&
+      category.slug !== createSlug(slug)
     ) {
-      return NextResponse.json(
+      console.warn(
+        "Slug kategorije se razlikuje:",
         {
-          error:
-            "Dokument ne pripada ovoj kategoriji",
-        },
-        {
-          status: 404,
+          urlSlug: slug,
+          expectedSlug: category.slug,
         }
       );
     }
 
     // =====================================================
-    // FILE
+    // FILES
     // =====================================================
 
-    const files: {
-      url: string;
-      filename?: string;
-      mime?: string;
-      description?: string;
-      size?: number;
-    }[] = [];
+    const files: FileItem[] = [];
 
     const fileRelation =
       item.relationships
@@ -140,23 +215,42 @@ export async function GET(
         ?.data || [];
 
     /*
-     * field_dokument_file može biti
-     * single ili multiple.
+     * field_dokument_file može biti:
+     *
+     * - jedan fajl
+     * - više fajlova
+     * - null
      */
-    const fileReferences =
-      Array.isArray(fileRelation)
-        ? fileRelation
-        : fileRelation
-          ? [fileRelation]
-          : [];
+
+    const fileReferences = Array.isArray(
+      fileRelation
+    )
+      ? fileRelation
+      : fileRelation
+        ? [fileRelation]
+        : [];
+
+    // =====================================================
+    // FILE LOOP
+    // =====================================================
 
     for (const fileReference of fileReferences) {
+      if (!fileReference?.id) {
+        continue;
+      }
+
       const file = included.find(
-        (i: any) =>
-          i.id === fileReference.id
+        (includedItem: any) =>
+          includedItem.type === "file--file" &&
+          includedItem.id === fileReference.id
       );
 
       if (!file) {
+        console.warn(
+          "Fajl nije pronađen u included:",
+          fileReference.id
+        );
+
         continue;
       }
 
@@ -167,23 +261,30 @@ export async function GET(
         continue;
       }
 
-      const url =
+      const absoluteUrl =
         fileUrl.startsWith("http")
           ? fileUrl
           : `${DRUPAL_BASE_URL}${fileUrl}`;
 
       files.push({
-        url,
+        url: absoluteUrl,
+
         filename:
-          file.attributes?.filename,
+          file.attributes?.filename ||
+          undefined,
+
         mime:
-          file.attributes?.filemime,
+          file.attributes?.filemime ||
+          undefined,
+
         size:
           file.attributes?.filesize ?? 0,
+
         description:
           fileReference.meta
             ?.description ||
-          file.attributes?.filename,
+          file.attributes?.filename ||
+          undefined,
       });
     }
 
@@ -191,30 +292,36 @@ export async function GET(
     // RESPONSE
     // =====================================================
 
-    return NextResponse.json({
+    const dokument: DokumentResponse = {
       id: item.id,
 
       title:
-        item.attributes?.title ||
-        "",
+        item.attributes?.title || "",
 
       body:
-        item.attributes?.body?.value ||
-        "",
+        item.attributes?.body?.value || "",
 
       created:
-        item.attributes?.created ||
-        "",
+        item.attributes?.created || "",
 
       status:
         item.attributes
-          ?.field_status_dokumenta ||
-        "",
+          ?.field_status_dokumenta || "",
 
       category,
 
       files,
-    });
+    };
+
+    console.log(
+      "Dokument uspešno pronađen:",
+      dokument.id,
+      dokument.title
+    );
+
+    console.log("=================================");
+
+    return NextResponse.json(dokument);
   } catch (error) {
     console.error(
       "Server error fetching dokument:",
@@ -223,8 +330,7 @@ export async function GET(
 
     return NextResponse.json(
       {
-        error:
-          "Interna greška servera",
+        error: "Interna greška servera",
       },
       {
         status: 500,
