@@ -13,6 +13,7 @@ export async function GET() {
       stanovi,
       transakcije,
       telefoni,
+      dokumenti,
     ] = await Promise.all([
       fetch(`${base}/jsonapi/node/kvar`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/obavestenje`).then((r) => r.json()),
@@ -22,6 +23,7 @@ export async function GET() {
       fetch(`${base}/jsonapi/node/stan`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/transakcija`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/telefon`).then((r) => r.json()),
+      fetch(`${base}/jsonapi/node/dokument`).then((r) => r.json()),
     ]);
 
     return NextResponse.json({
@@ -33,6 +35,7 @@ export async function GET() {
       stanovi: stanovi?.data?.length ?? 0,
       transakcije: transakcije?.data?.length ?? 0,
       telefoni: telefoni?.data?.length ?? 0,
+      dokumenti: dokumenti?.data?.length ?? 0,
     });
   } catch (error) {
     return NextResponse.json(

@@ -23,6 +23,7 @@ export function useDashboardStats() {
     stanovi: 0,
     telefoni: 0,
     transakcije: 0,
+    dokumenti: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -49,6 +50,7 @@ export function useDashboardStats() {
           stanovi: data.stanovi ?? 0,
           telefoni: data.telefoni ?? 0,
           transakcije: data.transakcije ?? 0,
+          dokumenti: data.dokumenti ?? 0,
         });
       } catch (e) {
         console.error("Dashboard stats error:", e);

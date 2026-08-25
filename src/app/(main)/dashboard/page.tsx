@@ -64,6 +64,20 @@ export default function DashboardPage() {
       iconColor: "text-green-600",
       href: "/sednice",
     },
+    {
+      title: "Dokumenti",
+      value: stats.dokumenti,
+      icon: FileText,
+      iconColor: "text-blue-600",
+      href: "/dokumenti",
+    },
+    {
+      title: "Telefoni",
+      value: stats.telefoni,
+      icon: FileText,
+      iconColor: "text-green-600",
+      href: "/telefoni",
+    },
   ];
 
   return (
