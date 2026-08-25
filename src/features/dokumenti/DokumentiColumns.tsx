@@ -12,7 +12,7 @@ export const dokumentiColumns = [
       <Link
         href={`/dokumenti/${row.categorySlug}/${row.id}`}
         className="hover:underline"
-        title={row.name}
+        title={row.title}
       >
         {row.title}
       </Link>
@@ -23,19 +23,23 @@ export const dokumentiColumns = [
     key: "created",
     header: "Datum",
     render: (row: Dokument) =>
-      new Date(row.created).toLocaleDateString(
-        "sr-Latn-RS",
-        {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }
-      ),
+      row.created
+        ? new Date(row.created).toLocaleDateString(
+            "sr-Latn-RS",
+            {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }
+          )
+        : "—",
   },
 
   {
-  key: "status",
-  header: "Tip",
-  render: (row: Dokument) => <StatusBadge status={row.status} />,
-},
+    key: "status",
+    header: "Tip",
+    render: (row: Dokument) => (
+      <StatusBadge status={row.status ?? undefined} />
+    ),
+  },
 ];

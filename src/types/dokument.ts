@@ -8,10 +8,17 @@ export interface KategorijaDokumenta {
 export interface Dokument {
   id: string;
   title: string;
-  body: string;
-  created: string;
-  status: string;
+  tip: string;
+  created?: string | null;
   categoryId: string | null;
   categoryName: string | null;
   categorySlug: string | null;
+  date?: string | null; // 👈 DODAJ OVO
+  status?: string | null; // 👈 DODAJ OVO
+  files: {
+    id: string;
+    url: string;
+    mimeType: string;
+  }[];
 }
+

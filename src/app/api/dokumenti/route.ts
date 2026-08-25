@@ -4,6 +4,21 @@ const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
+// ==================================================
+// TYPES
+// ==================================================
+
+interface KategorijaDokumenta {
+  id: string;
+  name: string;
+  slug: string;
+  brojDokumenata: number;
+}
+
+// ==================================================
+// SLUG
+// ==================================================
+
 function createSlug(value: string): string {
   return value
     .toLowerCase()
@@ -13,6 +28,10 @@ function createSlug(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+// ==================================================
+// GET
+// ==================================================
 
 export async function GET() {
   try {
@@ -69,8 +88,7 @@ export async function GET() {
         const name =
           item.attributes?.name || "";
 
-        const slug =
-          createSlug(name);
+        const slug = createSlug(name);
 
         kategorije.set(item.id, {
           id: item.id,
@@ -102,6 +120,10 @@ export async function GET() {
         }
       }
     );
+
+    // ==================================================
+    // RESPONSE
+    // ==================================================
 
     return NextResponse.json({
       data: Array.from(
