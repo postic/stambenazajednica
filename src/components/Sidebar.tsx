@@ -25,7 +25,7 @@ interface SidebarProps {
 
 interface MenuItem {
   title: string;
-  href?: string;
+  href?: string | null;
   children?: MenuItem[];
 }
 
@@ -50,7 +50,7 @@ const iconMap: Record<string, any> = {
 
 /*
  * =========================================================
- * SAMO OVI MENIJI IMAJU DROPDOWN
+ * MENIJI KOJI IMAJU DROPDOWN
  * =========================================================
  */
 
@@ -109,12 +109,18 @@ export default function Sidebar({
           data
         );
 
-        setMenuItems(data);
+        setMenuItems(
+          Array.isArray(data)
+            ? data
+            : []
+        );
       } catch (error) {
         console.error(
           "Drupal menu error:",
           error
         );
+
+        setMenuItems([]);
       } finally {
         setLoading(false);
       }
@@ -158,9 +164,12 @@ export default function Sidebar({
    */
 
   const isActive = (
-    href?: string
+    href?: string | null
   ) => {
-    if (!href || href === "#") {
+    if (
+      !href ||
+      href === "#"
+    ) {
       return false;
     }
 
@@ -171,7 +180,8 @@ export default function Sidebar({
       pathname.replace(/\/$/, "") || "/";
 
     return (
-      normalizedPath === normalizedHref ||
+      normalizedPath ===
+        normalizedHref ||
       normalizedPath.startsWith(
         `${normalizedHref}/`
       )
@@ -196,28 +206,22 @@ export default function Sidebar({
 
     return item.children.some(
       (child) => {
-        if (isActive(child.href)) {
+        if (
+          isActive(child.href)
+        ) {
           return true;
         }
 
-        if (
-          child.children &&
-          child.children.length > 0
-        ) {
-          return child.children.some(
-            (sub) =>
-              isActive(sub.href)
-          );
-        }
-
-        return false;
+        return hasActiveChild(
+          child
+        );
       }
     );
   };
 
   /*
    * =========================================================
-   * AUTOMATSKI OTVORI / ZATVORI DROPDOWN
+   * AUTOMATSKI OTVORI DROPDOWN
    * =========================================================
    */
 
@@ -235,6 +239,7 @@ export default function Sidebar({
       ) {
         activeDropdown =
           item.title;
+
         break;
       }
     }
@@ -251,12 +256,6 @@ export default function Sidebar({
    * =========================================================
    * STILOVI
    * =========================================================
-   *
-   * Povećano:
-   *
-   * font: 14px → 15px
-   * padding: py-2 → py-2.5
-   *
    */
 
   const itemBase =
@@ -285,11 +284,6 @@ export default function Sidebar({
           }
           onClick={() => {
             setMobileOpen(false);
-
-            /*
-             * Ako kliknemo na običan link,
-             * zatvori svaki otvoreni dropdown.
-             */
             setOpenMenu(null);
           }}
           className={`${itemBase} ${
@@ -339,6 +333,10 @@ export default function Sidebar({
       isActive(item.href) ||
       hasActiveChild(item);
 
+    const hasChildren =
+      !!item.children &&
+      item.children.length > 0;
+
     return (
       <li key={item.title}>
 
@@ -358,82 +356,100 @@ export default function Sidebar({
 
           {/*
            * ===================================================
-           * LINK
+           * ICON
            * ===================================================
            */}
 
-          <Link
-            href={
-              item.href || "#"
-            }
-            onClick={() => {
-              setMobileOpen(false);
-
-              /*
-               * Ne zatvaramo dropdown ovde.
-               *
-               * pathname će se promeniti i
-               * useEffect će odlučiti
-               * da li dropdown treba da ostane
-               * otvoren ili da se zatvori.
-               */
-            }}
-            className="flex items-center flex-1 min-w-0"
-          >
-            {Icon && (
-              <Icon
-                className={`${iconClass} ${
-                  collapsed &&
-                  !mobileOpen
-                    ? "mx-auto"
-                    : ""
-                }`}
-              />
-            )}
-
-            {(!collapsed ||
-              mobileOpen) && (
-              <span className="ml-3 flex-1 text-left">
-                {item.title}
-              </span>
-            )}
-          </Link>
+          {Icon && (
+            <Icon
+              className={`${iconClass} ${
+                collapsed &&
+                !mobileOpen
+                  ? "mx-auto"
+                  : ""
+              }`}
+            />
+          )}
 
           {/*
            * ===================================================
-           * ARROW
+           * TITLE
            * ===================================================
            */}
 
           {(!collapsed ||
             mobileOpen) && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
+            <>
+              {/*
+               * Ako parent ima pravi href,
+               * naslov je link.
+               *
+               * Ako nema href,
+               * naslov samo otvara dropdown.
+               */}
 
-                setOpenMenu(
-                  isOpen
-                    ? null
-                    : item.title
-                );
-              }}
-              className="ml-2 p-1.5 rounded-md hover:bg-white/10"
-              aria-label={
-                isOpen
-                  ? `Zatvori ${item.title}`
-                  : `Otvori ${item.title}`
-              }
-            >
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform ${
-                  isOpen
-                    ? "rotate-180"
-                    : ""
-                }`}
-              />
-            </button>
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  onClick={() => {
+                    setMobileOpen(false);
+                  }}
+                  className="ml-3 flex-1 min-w-0 text-left"
+                >
+                  {item.title}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenMenu(
+                      isOpen
+                        ? null
+                        : item.title
+                    );
+                  }}
+                  className="ml-3 flex-1 min-w-0 text-left"
+                >
+                  {item.title}
+                </button>
+              )}
+
+              {/*
+               * =================================================
+               * ARROW
+               * =================================================
+               */}
+
+              {hasChildren && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    setOpenMenu(
+                      isOpen
+                        ? null
+                        : item.title
+                    );
+                  }}
+                  className="ml-2 p-1.5 rounded-md hover:bg-white/10"
+                  aria-label={
+                    isOpen
+                      ? `Zatvori ${item.title}`
+                      : `Otvori ${item.title}`
+                  }
+                >
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform ${
+                      isOpen
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -446,11 +462,10 @@ export default function Sidebar({
         {isOpen &&
           (!collapsed ||
             mobileOpen) &&
-          item.children &&
-          item.children.length > 0 && (
+          hasChildren && (
             <ul className="ml-4 mt-2 pl-3 border-l border-slate-800 space-y-1">
 
-              {item.children.map(
+              {item.children!.map(
                 (child) => {
                   const ChildIcon =
                     iconMap[
@@ -468,11 +483,11 @@ export default function Sidebar({
                           child.href ||
                           "#"
                         }
-                        onClick={() =>
+                        onClick={() => {
                           setMobileOpen(
                             false
-                          )
-                        }
+                          );
+                        }}
                         className={`${itemBase} ${
                           isActive(
                             child.href
@@ -611,28 +626,27 @@ export default function Sidebar({
                   (item) => {
 
                     /*
-                     * SAMO Dokumenti
-                     * i Ostalo imaju
-                     * dropdown.
+                     * Dokumenti i Ostalo
+                     * su dropdown stavke.
+                     *
+                     * VAŽNO:
+                     * Ne proveravamo ovde
+                     * da li children postoje.
+                     *
+                     * Tako se "Ostalo" prikazuje
+                     * kao parent čak i kada je
+                     * href null.
                      */
 
                     if (
                       dropdownMenus.includes(
                         item.title
-                      ) &&
-                      item.children &&
-                      item.children.length >
-                        0
+                      )
                     ) {
                       return renderDropdown(
                         item
                       );
                     }
-
-                    /*
-                     * SVE OSTALO JE
-                     * NORMALAN LINK.
-                     */
 
                     return renderNormalLink(
                       item

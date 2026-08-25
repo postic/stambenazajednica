@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import type { Dokument } from "@/types/dokument";
+import StatusBadge from "@/components/StatusBadge";
 
 export const dokumentiColumns = [
   {
     key: "title",
-    label: "Dokument",
-
+    header: "Dokument",
     render: (row: Dokument) => (
       <Link
         href={`/dokumenti/${row.categorySlug}/${row.id}`}
-        className="font-medium text-slate-900"
+        className="hover:underline"
+        title={row.name}
       >
         {row.title}
       </Link>
@@ -20,8 +21,7 @@ export const dokumentiColumns = [
 
   {
     key: "created",
-    label: "Datum",
-
+    header: "Datum",
     render: (row: Dokument) =>
       new Date(row.created).toLocaleDateString(
         "sr-Latn-RS",
@@ -34,10 +34,8 @@ export const dokumentiColumns = [
   },
 
   {
-    key: "status",
-    label: "Status",
-
-    render: (row: Dokument) =>
-      row.status,
-  },
+  key: "status",
+  header: "Tip",
+  render: (row: Dokument) => <StatusBadge status={row.status} />,
+},
 ];
