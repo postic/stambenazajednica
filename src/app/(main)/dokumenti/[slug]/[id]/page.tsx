@@ -56,7 +56,7 @@ async function getDokument(
 ): Promise<Dokument | null> {
   try {
     const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
       "http://localhost:3000";
 
     const url =
