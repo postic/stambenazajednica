@@ -61,19 +61,23 @@ async function loginToDrupal() {
         loginText;
     }
 
+    console.log(
+      "Drupal login status:",
+      loginResponse.status
+    );
+
     if (!loginResponse.ok) {
       console.error(
         "Drupal login error:",
-        loginResponse.status,
         loginData
       );
 
       return null;
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Session cookie
-    // --------------------------------------------------
+    // ==================================================
 
     let drupalCookie = "";
 
@@ -98,9 +102,7 @@ async function loginToDrupal() {
       }
     }
 
-    // --------------------------------------------------
     // Fallback
-    // --------------------------------------------------
 
     if (!drupalCookie) {
       const setCookie =
@@ -124,9 +126,9 @@ async function loginToDrupal() {
       return null;
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // CSRF
-    // --------------------------------------------------
+    // ==================================================
 
     const csrfResponse =
       await fetch(
@@ -204,9 +206,6 @@ async function parseDrupalResponse(
 
 // ==================================================
 // Drupal USER UUID
-//
-// next_auth uid = Drupal numeric UID
-// JSON:API uid relationship = Drupal UUID
 // ==================================================
 
 async function getDrupalUserUuid(
@@ -263,6 +262,17 @@ async function getDrupalUserUuid(
       return null;
     }
 
+    console.log(
+      "Drupal korisnik:",
+      {
+        uid,
+        uuid:
+          user.id,
+        name:
+          user.attributes?.name,
+      }
+    );
+
     return user.id;
   } catch (error) {
     console.error(
@@ -285,9 +295,9 @@ export async function GET(
   req: NextRequest
 ) {
   try {
-    // --------------------------------------------------
+    // ==================================================
     // 1. Trenutni korisnik
-    // --------------------------------------------------
+    // ==================================================
 
     const authUser =
       getNextAuthUser(req);
@@ -304,9 +314,22 @@ export async function GET(
       );
     }
 
-    // --------------------------------------------------
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "MOJI KVAROVI"
+    );
+
+    console.log(
+      "NEXT AUTH USER:",
+      authUser
+    );
+
+    // ==================================================
     // 2. Query
-    // --------------------------------------------------
+    // ==================================================
 
     const { searchParams } =
       new URL(req.url);
@@ -327,12 +350,9 @@ export async function GET(
       1
     );
 
-    const offset =
-      (page - 1) * limit;
-
-    // --------------------------------------------------
+    // ==================================================
     // 3. Drupal login
-    // --------------------------------------------------
+    // ==================================================
 
     const drupalAuth =
       await loginToDrupal();
@@ -353,17 +373,17 @@ export async function GET(
       drupalCookie,
     } = drupalAuth;
 
-    // --------------------------------------------------
+    // ==================================================
     // 4. UUID trenutnog korisnika
-    // --------------------------------------------------
+    // ==================================================
 
-    const userUuid =
+    const currentUserUuid =
       await getDrupalUserUuid(
         authUser.uid,
         drupalCookie
       );
 
-    if (!userUuid) {
+    if (!currentUserUuid) {
       return NextResponse.json(
         {
           error:
@@ -376,35 +396,52 @@ export async function GET(
     }
 
     console.log(
-      "Moji kvarovi - korisnik:",
-      {
-        uid:
-          authUser.uid,
-
-        uuid:
-          userUuid,
-      }
+      "CURRENT USER UUID:",
+      currentUserUuid
     );
 
-    // --------------------------------------------------
-    // 5. Drupal GET
+    // ==================================================
+    // 5. DIREKTAN DRUPAL FILTER
     //
-    // Filter:
+    // Samo kvarovi gde je:
+    //
     // uid.id = UUID trenutnog korisnika
-    // --------------------------------------------------
+    // ==================================================
 
-    const drupalUrl =
-      `${DRUPAL_BASE_URL}/jsonapi/node/kvar` +
-      `?sort=-created` +
-      `&include=field_image,uid` +
-      `&filter[uid.id]=${encodeURIComponent(
-        userUuid
-      )}`;
+    const params =
+      new URLSearchParams();
+
+    params.set(
+      "sort",
+      "-created"
+    );
+
+    params.set(
+      "include",
+      "field_image,uid"
+    );
+
+    params.set(
+      "filter[uid.id]",
+      currentUserUuid
+    );
 
     console.log(
-      "Moji kvarovi Drupal URL:",
+      "DRUPAL FILTER UUID:",
+      currentUserUuid
+    );
+
+    const drupalUrl =
+      `${DRUPAL_BASE_URL}/jsonapi/node/kvar?${params.toString()}`;
+
+    console.log(
+      "DRUPAL URL:",
       drupalUrl
     );
+
+    // ==================================================
+    // 6. Drupal GET
+    // ==================================================
 
     const response =
       await fetch(
@@ -429,19 +466,11 @@ export async function GET(
         response
       );
 
-    // --------------------------------------------------
-    // 6. Drupal error
-    // --------------------------------------------------
-
     if (!response.ok) {
       console.error(
         "Drupal GET moji kvarovi error:",
         response.status,
-        JSON.stringify(
-          data,
-          null,
-          2
-        )
+        data
       );
 
       return NextResponse.json(
@@ -458,9 +487,9 @@ export async function GET(
       );
     }
 
-    // --------------------------------------------------
-    // 7. Data
-    // --------------------------------------------------
+    // ==================================================
+    // 7. Drupal data
+    // ==================================================
 
     const allItems =
       Array.isArray(data?.data)
@@ -472,17 +501,28 @@ export async function GET(
         ? data.included
         : [];
 
-    // --------------------------------------------------
+    console.log(
+      "BROJ MOJIH KVAROVA IZ DRUPALA:",
+      allItems.length
+    );
+
+    // ==================================================
     // 8. Pagination
-    // --------------------------------------------------
+    // ==================================================
 
     const total =
       allItems.length;
 
     const totalPages =
-      Math.ceil(
-        total / limit
+      Math.max(
+        Math.ceil(
+          total / limit
+        ),
+        1
       );
+
+    const offset =
+      (page - 1) * limit;
 
     const currentPageData =
       allItems.slice(
@@ -490,17 +530,17 @@ export async function GET(
         offset + limit
       );
 
-    // --------------------------------------------------
+    // ==================================================
     // 9. Map
-    // --------------------------------------------------
+    // ==================================================
 
     const kvarovi: Kvar[] =
       currentPageData.map(
         (item: any) => {
 
-          // --------------------------------------------
+          // ==================================================
           // IMAGE
-          // --------------------------------------------
+          // ==================================================
 
           let imageUrl:
             | string
@@ -542,9 +582,45 @@ export async function GET(
             }
           }
 
-          // --------------------------------------------
+          // ==================================================
+          // AUTHOR
+          // ==================================================
+
+          const authorRel =
+            item.relationships
+              ?.uid
+              ?.data;
+
+          let authorName:
+            | string
+            | null = null;
+
+          if (
+            authorRel &&
+            included.length > 0
+          ) {
+            const authorObj =
+              included.find(
+                (i: any) =>
+                  i.type ===
+                    "user--user" &&
+                  i.id ===
+                    authorRel.id
+              );
+
+            if (
+              authorObj
+                ?.attributes
+                ?.name
+            ) {
+              authorName =
+                authorObj.attributes.name;
+            }
+          }
+
+          // ==================================================
           // RETURN
-          // --------------------------------------------
+          // ==================================================
 
           return {
             id:
@@ -575,15 +651,18 @@ export async function GET(
                 ?.field_prioritet_kvara ??
               "",
 
+            author:
+              authorName,
+
             image:
               imageUrl,
           };
         }
       );
 
-    // --------------------------------------------------
+    // ==================================================
     // 10. Response
-    // --------------------------------------------------
+    // ==================================================
 
     return NextResponse.json({
       data:

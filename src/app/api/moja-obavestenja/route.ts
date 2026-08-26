@@ -1,21 +1,9 @@
+import type { Obavestenje } from "@/types/obavestenje";
 import { NextRequest, NextResponse } from "next/server";
 
 const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
-
-// ==================================================
-// TYPES
-// ==================================================
-
-interface Obavestenje {
-  id: string;
-  title: string;
-  body: string;
-  created: string;
-  image?: string | null;
-  author?: string | null;
-}
 
 // ==================================================
 // next_auth
@@ -41,10 +29,6 @@ function getNextAuthUser(req: NextRequest) {
 
 async function loginToDrupal() {
   try {
-    // --------------------------------------------------
-    // 1. Login
-    // --------------------------------------------------
-
     const loginResponse = await fetch(
       `${DRUPAL_BASE_URL}/user/login?_format=json`,
       {
@@ -91,9 +75,9 @@ async function loginToDrupal() {
       return null;
     }
 
-    // --------------------------------------------------
-    // 2. Session cookie
-    // --------------------------------------------------
+    // ==================================================
+    // Session cookie
+    // ==================================================
 
     let drupalCookie = "";
 
@@ -119,6 +103,7 @@ async function loginToDrupal() {
     }
 
     // Fallback
+
     if (!drupalCookie) {
       const setCookie =
         loginResponse.headers.get(
@@ -141,9 +126,9 @@ async function loginToDrupal() {
       return null;
     }
 
-    // --------------------------------------------------
-    // 3. CSRF token
-    // --------------------------------------------------
+    // ==================================================
+    // CSRF token
+    // ==================================================
 
     const csrfResponse =
       await fetch(
@@ -166,14 +151,10 @@ async function loginToDrupal() {
     const csrfToken =
       await csrfResponse.text();
 
-    console.log(
-      "Drupal CSRF status:",
-      csrfResponse.status
-    );
-
     if (!csrfResponse.ok) {
       console.error(
         "Drupal CSRF error:",
+        csrfResponse.status,
         csrfToken
       );
 
@@ -225,9 +206,6 @@ async function parseDrupalResponse(
 
 // ==================================================
 // Drupal USER UUID
-//
-// authUser.uid = Drupal numeric UID
-// JSON:API uid relationship = Drupal UUID
 // ==================================================
 
 async function getDrupalUserUuid(
@@ -288,7 +266,8 @@ async function getDrupalUserUuid(
       "Drupal user pronađen:",
       {
         uid,
-        uuid: user.id,
+        uuid:
+          user.id,
         name:
           user.attributes?.name,
       }
@@ -308,20 +287,17 @@ async function getDrupalUserUuid(
 // ==================================================
 // GET
 //
-// /api/obavestenja
-// /api/obavestenja?page=1&limit=5
-// /api/obavestenja?id=UUID
-// /api/obavestenja?mine=1
-// /api/obavestenja?mine=1&page=1&limit=10
+// /api/moja-obavestenja
+// /api/moja-obavestenja?page=1&limit=10
 // ==================================================
 
 export async function GET(
   req: NextRequest
 ) {
   try {
-    // --------------------------------------------------
-    // 1. Provera korisnika
-    // --------------------------------------------------
+    // ==================================================
+    // 1. Trenutni korisnik
+    // ==================================================
 
     const authUser =
       getNextAuthUser(req);
@@ -338,18 +314,25 @@ export async function GET(
       );
     }
 
-    // --------------------------------------------------
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "MOJA OBAVEŠTENJA"
+    );
+
+    console.log(
+      "NEXT AUTH USER:",
+      authUser
+    );
+
+    // ==================================================
     // 2. Query
-    // --------------------------------------------------
+    // ==================================================
 
     const { searchParams } =
       new URL(req.url);
-
-    const id =
-      searchParams.get("id");
-
-    const mine =
-      searchParams.get("mine") === "1";
 
     const page = Math.max(
       parseInt(
@@ -362,155 +345,87 @@ export async function GET(
     const limit = Math.max(
       parseInt(
         searchParams.get("limit") ||
-          "5"
+          "10"
       ),
       1
     );
 
-    // --------------------------------------------------
-    // 3. Single
-    // --------------------------------------------------
+    // ==================================================
+    // 3. Drupal login
+    // ==================================================
 
-    if (id) {
-      const response =
-        await fetch(
-          `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${encodeURIComponent(
-            id
-          )}?include=uid`,
-          {
-            headers: {
-              Accept:
-                "application/vnd.api+json",
-            },
+    const drupalAuth =
+      await loginToDrupal();
 
-            cache: "no-store",
-          }
-        );
-
-      const data =
-        await parseDrupalResponse(
-          response
-        );
-
-      if (!response.ok) {
-        console.error(
-          "Drupal GET obavestenje error:",
-          response.status,
-          data
-        );
-
-        return NextResponse.json(
-          {
-            error:
-              "Greška pri učitavanju obaveštenja",
-
-            details:
-              data,
-          },
-          {
-            status:
-              response.status,
-          }
-        );
-      }
-
+    if (!drupalAuth) {
       return NextResponse.json(
-        data
+        {
+          error:
+            "Drupal login neuspešan",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
-    // --------------------------------------------------
-    // 4. Ako tražimo samo moja obaveštenja
-    // --------------------------------------------------
+    const {
+      drupalCookie,
+    } = drupalAuth;
 
-    let drupalUserUuid:
-      string | null = null;
+    // ==================================================
+    // 4. Pronađi Drupal UUID korisnika
+    // ==================================================
 
-    let drupalCookie:
-      string | null = null;
+    const currentUserUuid =
+      await getDrupalUserUuid(
+        authUser.uid,
+        drupalCookie
+      );
 
-    if (mine) {
-      const drupalAuth =
-        await loginToDrupal();
-
-      if (!drupalAuth) {
-        return NextResponse.json(
-          {
-            error:
-              "Drupal login neuspešan",
-          },
-          {
-            status: 401,
-          }
-        );
-      }
-
-      drupalCookie =
-        drupalAuth.drupalCookie;
-
-      drupalUserUuid =
-        await getDrupalUserUuid(
-          authUser.uid,
-          drupalCookie
-        );
-
-      if (!drupalUserUuid) {
-        return NextResponse.json(
-          {
-            error:
-              "Nije moguće pronaći trenutnog korisnika u Drupalu",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-    }
-
-    // --------------------------------------------------
-    // 5. Drupal URL
-    // --------------------------------------------------
-
-    let drupalUrl =
-      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje?sort=-created&include=field_image,uid`;
-
-    // --------------------------------------------------
-    // FILTER PO TRENUTNOM KORISNIKU
-    // --------------------------------------------------
-
-    if (
-      mine &&
-      drupalUserUuid
-    ) {
-      drupalUrl +=
-        `&filter[uid.id]=${encodeURIComponent(
-          drupalUserUuid
-        )}`;
+    if (!currentUserUuid) {
+      return NextResponse.json(
+        {
+          error:
+            "Nije moguće pronaći trenutnog korisnika u Drupalu",
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
     console.log(
-      "Drupal obavestenja URL:",
-      drupalUrl
+      "CURRENT USER UUID:",
+      currentUserUuid
     );
 
-    // --------------------------------------------------
-    // 6. Lista
-    // --------------------------------------------------
+    // ==================================================
+    // 5. Dohvati obaveštenja sa uid relationship
+    // ==================================================
+
+    const drupalUrl =
+      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje` +
+      `?sort=-created` +
+      `&include=field_image,uid`;
+
+    console.log(
+      "DRUPAL URL:",
+      drupalUrl
+    );
 
     const response =
       await fetch(
         drupalUrl,
         {
+          method: "GET",
+
           headers: {
             Accept:
               "application/vnd.api+json",
 
-            ...(drupalCookie
-              ? {
-                  Cookie:
-                    drupalCookie,
-                }
-              : {}),
+            Cookie:
+              drupalCookie,
           },
 
           cache: "no-store",
@@ -532,19 +447,22 @@ export async function GET(
       return NextResponse.json(
         {
           error:
-            "Greška pri učitavanju obaveštenja",
+            "Greška pri dohvaćanju obaveštenja",
 
           details:
             data,
         },
         {
-          status:
-            response.status,
+          status: 502,
         }
       );
     }
 
-    const allData =
+    // ==================================================
+    // 6. Data
+    // ==================================================
+
+    const allItems =
       Array.isArray(data?.data)
         ? data.data
         : [];
@@ -554,30 +472,114 @@ export async function GET(
         ? data.included
         : [];
 
-    // --------------------------------------------------
-    // 7. Pagination
-    // --------------------------------------------------
+    // ==================================================
+    // 7. DEBUG - prikaži autore
+    // ==================================================
+
+    console.log(
+      "OBAVEŠTENJA I AUTORI:"
+    );
+
+    allItems.forEach(
+      (item: any) => {
+        console.log({
+          id:
+            item.id,
+
+          title:
+            item.attributes
+              ?.title,
+
+          uidRelationship:
+            item.relationships
+              ?.uid,
+
+          authorUuid:
+            item.relationships
+              ?.uid
+              ?.data
+              ?.id,
+        });
+      }
+    );
+
+    // ==================================================
+    // 8. FILTER - SAMO TRENUTNI KORISNIK
+    // ==================================================
+
+    const myItems =
+      allItems.filter(
+        (item: any) => {
+          const authorUuid =
+            item.relationships
+              ?.uid
+              ?.data
+              ?.id;
+
+          const isMine =
+            Boolean(
+              authorUuid &&
+              currentUserUuid &&
+              authorUuid ===
+                currentUserUuid
+            );
+
+          console.log(
+            "FILTER:",
+            {
+              title:
+                item.attributes
+                  ?.title,
+
+              authorUuid,
+
+              currentUserUuid,
+
+              isMine,
+            }
+          );
+
+          return isMine;
+        }
+      );
+
+    console.log(
+      "UKUPNO OBAVEŠTENJA:",
+      allItems.length
+    );
+
+    console.log(
+      "MOJA OBAVEŠTENJA:",
+      myItems.length
+    );
+
+    // ==================================================
+    // 9. Pagination
+    // ==================================================
 
     const total =
-      allData.length;
+      myItems.length;
 
     const totalPages =
-      Math.ceil(
-        total / limit
+      Math.max(
+        Math.ceil(
+          total / limit
+        ),
+        1
       );
 
     const offset =
       (page - 1) * limit;
 
     const currentPageData =
-      allData.slice(
+      myItems.slice(
         offset,
         offset + limit
       );
 
-    // --------------------------------------------------
-    // 8. Map
-    // --------------------------------------------------
+    // ==================================================
+    // 10. Map
+    // ==================================================
 
     const obavestenja:
       Obavestenje[] =
@@ -611,8 +613,10 @@ export async function GET(
               );
 
             const fileUriValue =
-              fileObj?.attributes
-                ?.uri?.value;
+              fileObj
+                ?.attributes
+                ?.uri
+                ?.value;
 
             if (fileUriValue) {
               const filePath =
@@ -653,32 +657,14 @@ export async function GET(
               );
 
             if (
-              authorObj?.attributes?.name
+              authorObj
+                ?.attributes
+                ?.name
             ) {
               authorName =
                 authorObj.attributes.name;
             }
           }
-
-          // --------------------------------------------
-          // DEBUG
-          // --------------------------------------------
-
-          console.log(
-            "OBAVESTENJE AUTHOR:",
-            {
-              title:
-                item.attributes
-                  ?.title,
-
-              relationship:
-                item.relationships
-                  ?.uid,
-
-              author:
-                authorName,
-            }
-          );
 
           // --------------------------------------------
           // RETURN
@@ -712,9 +698,9 @@ export async function GET(
         }
       );
 
-    // --------------------------------------------------
-    // 9. Response
-    // --------------------------------------------------
+    // ==================================================
+    // 11. Response
+    // ==================================================
 
     return NextResponse.json({
       data:
@@ -728,505 +714,7 @@ export async function GET(
     });
   } catch (error) {
     console.error(
-      "Obavestenja GET error:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        error:
-          "Interna greška servera",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
-}
-
-// ==================================================
-// POST
-//
-// Kreiranje obaveštenja
-// Autor = trenutno ulogovani korisnik
-// ==================================================
-
-export async function POST(
-  req: NextRequest
-) {
-  try {
-    // --------------------------------------------------
-    // 1. Provera korisnika
-    // --------------------------------------------------
-
-    const authUser =
-      getNextAuthUser(req);
-
-    if (!authUser?.uid) {
-      return NextResponse.json(
-        {
-          error:
-            "Korisnik nije prijavljen",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
-
-    console.log(
-      "NEXT_AUTH USER:",
-      {
-        uid:
-          authUser.uid,
-
-        name:
-          authUser.name,
-      }
-    );
-
-    // --------------------------------------------------
-    // 2. Body
-    // --------------------------------------------------
-
-    const body =
-      await req.json();
-
-    const title =
-      typeof body?.title ===
-      "string"
-        ? body.title.trim()
-        : "";
-
-    const content =
-      typeof body?.body ===
-      "string"
-        ? body.body.trim()
-        : "";
-
-    // --------------------------------------------------
-    // 3. Validacija
-    // --------------------------------------------------
-
-    if (!title) {
-      return NextResponse.json(
-        {
-          error:
-            "Naslov obaveštenja je obavezan",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (!content) {
-      return NextResponse.json(
-        {
-          error:
-            "Tekst obaveštenja je obavezan",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // --------------------------------------------------
-    // 4. Drupal login
-    // --------------------------------------------------
-
-    const drupalAuth =
-      await loginToDrupal();
-
-    if (!drupalAuth) {
-      return NextResponse.json(
-        {
-          error:
-            "Drupal login neuspešan",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
-
-    const {
-      drupalCookie,
-      csrfToken,
-    } =
-      drupalAuth;
-
-    // --------------------------------------------------
-    // 5. UUID trenutno ulogovanog korisnika
-    // --------------------------------------------------
-
-    const authorUuid =
-      await getDrupalUserUuid(
-        authUser.uid,
-        drupalCookie
-      );
-
-    if (!authorUuid) {
-      return NextResponse.json(
-        {
-          error:
-            "Nije moguće pronaći trenutno ulogovanog korisnika u Drupalu",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // --------------------------------------------------
-    // 6. Drupal POST
-    // --------------------------------------------------
-
-    const response =
-      await fetch(
-        `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje`,
-        {
-          method: "POST",
-
-          headers: {
-            Accept:
-              "application/vnd.api+json",
-
-            "Content-Type":
-              "application/vnd.api+json",
-
-            Cookie:
-              drupalCookie,
-
-            "X-CSRF-Token":
-              csrfToken,
-          },
-
-          body: JSON.stringify({
-            data: {
-              type:
-                "node--obavestenje",
-
-              attributes: {
-                title,
-
-                body: {
-                  value:
-                    content,
-
-                  format:
-                    "plain_text",
-                },
-              },
-
-              // ------------------------------------------
-              // DEFAULT DRUPAL AUTHOR
-              // ------------------------------------------
-
-              relationships: {
-                uid: {
-                  data: {
-                    type:
-                      "user--user",
-
-                    id:
-                      authorUuid,
-                  },
-                },
-              },
-            },
-          }),
-
-          cache: "no-store",
-        }
-      );
-
-    const data =
-      await parseDrupalResponse(
-        response
-      );
-
-    // --------------------------------------------------
-    // 7. Greška
-    // --------------------------------------------------
-
-    if (!response.ok) {
-      console.error(
-        "Drupal CREATE obavestenje error:",
-        response.status,
-        data
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Greška pri kreiranju obaveštenja",
-
-          details:
-            data,
-        },
-        {
-          status:
-            response.status,
-        }
-      );
-    }
-
-    // --------------------------------------------------
-    // 8. Uspeh
-    // --------------------------------------------------
-
-    console.log(
-      "Obavestenje uspešno kreirano:",
-      data?.data?.id
-    );
-
-    return NextResponse.json(
-      data,
-      {
-        status: 201,
-      }
-    );
-  } catch (error) {
-    console.error(
-      "Obavestenja POST error:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        error:
-          "Interna greška servera",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
-}
-
-// ==================================================
-// PATCH
-//
-// Izmena obaveštenja
-// ==================================================
-
-export async function PATCH(
-  req: NextRequest
-) {
-  try {
-    // --------------------------------------------------
-    // 1. Provera korisnika
-    // --------------------------------------------------
-
-    const authUser =
-      getNextAuthUser(req);
-
-    if (!authUser?.uid) {
-      return NextResponse.json(
-        {
-          error:
-            "Korisnik nije prijavljen",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
-
-    console.log(
-      "Obavestenje PATCH - UID:",
-      authUser.uid
-    );
-
-    // --------------------------------------------------
-    // 2. Body
-    // --------------------------------------------------
-
-    const body =
-      await req.json();
-
-    const id =
-      typeof body?.id ===
-      "string"
-        ? body.id.trim()
-        : "";
-
-    const title =
-      typeof body?.title ===
-      "string"
-        ? body.title.trim()
-        : "";
-
-    const content =
-      typeof body?.body ===
-      "string"
-        ? body.body.trim()
-        : "";
-
-    // --------------------------------------------------
-    // 3. Validacija
-    // --------------------------------------------------
-
-    if (!id) {
-      return NextResponse.json(
-        {
-          error:
-            "ID obaveštenja je obavezan",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (!title) {
-      return NextResponse.json(
-        {
-          error:
-            "Naslov obaveštenja je obavezan",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (!content) {
-      return NextResponse.json(
-        {
-          error:
-            "Tekst obaveštenja je obavezan",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // --------------------------------------------------
-    // 4. Drupal login
-    // --------------------------------------------------
-
-    const drupalAuth =
-      await loginToDrupal();
-
-    if (!drupalAuth) {
-      return NextResponse.json(
-        {
-          error:
-            "Drupal login neuspešan",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
-
-    const {
-      drupalCookie,
-      csrfToken,
-    } =
-      drupalAuth;
-
-    // --------------------------------------------------
-    // 5. PATCH Drupal
-    // --------------------------------------------------
-
-    const response =
-      await fetch(
-        `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${encodeURIComponent(
-          id
-        )}`,
-        {
-          method: "PATCH",
-
-          headers: {
-            Accept:
-              "application/vnd.api+json",
-
-            "Content-Type":
-              "application/vnd.api+json",
-
-            Cookie:
-              drupalCookie,
-
-            "X-CSRF-Token":
-              csrfToken,
-          },
-
-          body: JSON.stringify({
-            data: {
-              type:
-                "node--obavestenje",
-
-              id,
-
-              attributes: {
-                title,
-
-                body: {
-                  value:
-                    content,
-
-                  format:
-                    "plain_text",
-                },
-              },
-            },
-          }),
-
-          cache: "no-store",
-        }
-      );
-
-    const data =
-      await parseDrupalResponse(
-        response
-      );
-
-    // --------------------------------------------------
-    // 6. Greška
-    // --------------------------------------------------
-
-    if (!response.ok) {
-      console.error(
-        "Drupal PATCH obavestenje error:",
-        response.status,
-        data
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Greška pri izmeni obaveštenja",
-
-          details:
-            data,
-        },
-        {
-          status:
-            response.status,
-        }
-      );
-    }
-
-    // --------------------------------------------------
-    // 7. Uspeh
-    // --------------------------------------------------
-
-    console.log(
-      "Obavestenje uspešno izmenjeno:",
-      id
-    );
-
-    return NextResponse.json(
-      data
-    );
-  } catch (error) {
-    console.error(
-      "Obavestenja PATCH error:",
+      "Moja obavestenja GET error:",
       error
     );
 

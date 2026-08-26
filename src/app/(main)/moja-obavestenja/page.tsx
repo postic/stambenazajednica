@@ -6,10 +6,17 @@ import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
 import type { Obavestenje } from "@/types/obavestenje";
 
 export default function MojaObavestenjaPage() {
-  const [loading, setLoading] = useState(true);
-  const [obavestenja, setObavestenja] = useState<Obavestenje[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [obavestenja, setObavestenja] =
+    useState<Obavestenje[]>([]);
+
+  const [page, setPage] =
+    useState(1);
+
+  const [totalPages, setTotalPages] =
+    useState(1);
 
   useEffect(() => {
     let ignore = false;
@@ -17,22 +24,39 @@ export default function MojaObavestenjaPage() {
     setLoading(true);
 
     fetch(
-      `/api/obavestenja?mine=1&page=${page}&limit=10`
+      `/api/moja-obavestenja?page=${page}&limit=10`,
+      {
+        cache: "no-store",
+      }
     )
-      .then((res) => {
+      .then(async (res) => {
+        const data =
+          await res.json();
+
+        console.log(
+          "MOJA OBAVEŠTENJA API:",
+          data
+        );
+
         if (!res.ok) {
           throw new Error(
-            `Greška ${res.status} pri učitavanju obaveštenja`
+            data?.error ||
+              "Greška pri učitavanju mojih obaveštenja"
           );
         }
 
-        return res.json();
+        return data;
       })
       .then((data) => {
         if (ignore) return;
 
-        setObavestenja(data.data ?? []);
-        setTotalPages(data.totalPages ?? 1);
+        setObavestenja(
+          data.data ?? []
+        );
+
+        setTotalPages(
+          data.totalPages ?? 1
+        );
       })
       .catch((err) => {
         if (ignore) return;
@@ -43,6 +67,7 @@ export default function MojaObavestenjaPage() {
         );
 
         setObavestenja([]);
+
         setTotalPages(1);
       })
       .finally(() => {
@@ -56,9 +81,14 @@ export default function MojaObavestenjaPage() {
     };
   }, [page]);
 
-  // Numerička paginacija
+  // ==================================================
+  // Pagination
+  // ==================================================
+
   const pages = Array.from(
-    { length: totalPages },
+    {
+      length: totalPages,
+    },
     (_, i) => i + 1
   );
 
@@ -79,7 +109,9 @@ export default function MojaObavestenjaPage() {
       {/* TABLE */}
       <DataTable<Obavestenje>
         data={obavestenja}
-        columns={obavestenjaColumns}
+        columns={
+          obavestenjaColumns
+        }
         loading={loading}
       />
 
@@ -89,12 +121,32 @@ export default function MojaObavestenjaPage() {
           {pages.map((p) => (
             <button
               key={p}
-              onClick={() => setPage(p)}
-              className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
-                page === p
-                  ? "bg-primary text-white border-primary"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-              }`}
+              onClick={() =>
+                !loading &&
+                setPage(p)
+              }
+              disabled={loading}
+              className={`
+                px-3
+                py-2
+                rounded-md
+                border
+                text-sm
+                font-medium
+                transition
+
+                ${
+                  page === p
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                }
+
+                ${
+                  loading
+                    ? "opacity-50 pointer-events-none"
+                    : ""
+                }
+              `}
             >
               {p}
             </button>

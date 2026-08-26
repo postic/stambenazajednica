@@ -6,10 +6,17 @@ import { kvaroviColumns } from "@/features/kvarovi/KvaroviColumns";
 import type { Kvar } from "@/types/kvar";
 
 export default function MojiKvaroviPage() {
-  const [loading, setLoading] = useState(true);
-  const [kvarovi, setKvarovi] = useState<Kvar[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [kvarovi, setKvarovi] =
+    useState<Kvar[]>([]);
+
+  const [page, setPage] =
+    useState(1);
+
+  const [totalPages, setTotalPages] =
+    useState(1);
 
   useEffect(() => {
     let ignore = false;
@@ -17,22 +24,39 @@ export default function MojiKvaroviPage() {
     setLoading(true);
 
     fetch(
-      `/api/kvarovi?mine=1&page=${page}&limit=10`
+      `/api/moji-kvarovi?page=${page}&limit=10`,
+      {
+        cache: "no-store",
+      }
     )
-      .then((res) => {
+      .then(async (res) => {
+        const data =
+          await res.json();
+
+        console.log(
+          "MOJI KVAROVI API:",
+          data
+        );
+
         if (!res.ok) {
           throw new Error(
-            `Greška ${res.status} pri učitavanju mojih kvarova`
+            data?.error ||
+              "Greška pri učitavanju mojih kvarova"
           );
         }
 
-        return res.json();
+        return data;
       })
       .then((data) => {
         if (ignore) return;
 
-        setKvarovi(data.data ?? []);
-        setTotalPages(data.totalPages ?? 1);
+        setKvarovi(
+          data.data ?? []
+        );
+
+        setTotalPages(
+          data.totalPages ?? 1
+        );
       })
       .catch((err) => {
         if (ignore) return;
@@ -57,7 +81,9 @@ export default function MojiKvaroviPage() {
   }, [page]);
 
   const pages = Array.from(
-    { length: totalPages },
+    {
+      length: totalPages,
+    },
     (_, i) => i + 1
   );
 
@@ -66,7 +92,6 @@ export default function MojiKvaroviPage() {
 
       {/* HEADER */}
       <div className="mb-6">
-
         <h1 className="text-xl font-semibold">
           Moji kvarovi
         </h1>
@@ -74,7 +99,6 @@ export default function MojiKvaroviPage() {
         <p className="mt-1 text-sm text-slate-500">
           Kvarovi koje ste prijavili
         </p>
-
       </div>
 
       {/* TABLE */}
@@ -87,20 +111,29 @@ export default function MojiKvaroviPage() {
       {/* PAGINATION */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-8 gap-2 flex-wrap">
-
           {pages.map((p) => (
             <button
               key={p}
               onClick={() =>
-                !loading && setPage(p)
+                !loading &&
+                setPage(p)
               }
               disabled={loading}
-              className={`px-3 py-2 rounded-md border text-sm font-medium transition
+              className={`
+                px-3
+                py-2
+                rounded-md
+                border
+                text-sm
+                font-medium
+                transition
+
                 ${
                   page === p
                     ? "bg-primary text-white border-primary"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                 }
+
                 ${
                   loading
                     ? "opacity-50 pointer-events-none"
@@ -111,10 +144,8 @@ export default function MojiKvaroviPage() {
               {p}
             </button>
           ))}
-
         </div>
       )}
-
     </div>
   );
 }
