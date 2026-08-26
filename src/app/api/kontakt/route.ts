@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-export async function POST(
-  request: Request
-) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
 
@@ -18,20 +16,13 @@ export async function POST(
     // VALIDACIJA
     // =========================================================
 
-    if (
-      !ime ||
-      !email ||
-      !predmet ||
-      !poruka
-    ) {
+    if (!ime || !email || !predmet || !poruka) {
       return NextResponse.json(
         {
-          error:
-            "Sva polja su obavezna.",
+          success: false,
+          error: "Sva polja su obavezna.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
@@ -39,23 +30,21 @@ export async function POST(
     // ENV PROVERA
     // =========================================================
 
-    if (
-      !process.env.GMAIL_USER ||
-      !process.env.GMAIL_APP_PASSWORD ||
-      !process.env.UPRAVNIK_EMAIL
-    ) {
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+    const upravnikEmail = process.env.UPRAVNIK_EMAIL;
+
+    if (!gmailUser || !gmailAppPassword || !upravnikEmail) {
       console.error(
-        "Kontakt API: nedostaju Gmail SMTP podešavanja."
+        "Nedostaju GMAIL_USER, GMAIL_APP_PASSWORD ili UPRAVNIK_EMAIL."
       );
 
       return NextResponse.json(
         {
-          error:
-            "Slanje poruka trenutno nije podešeno.",
+          success: false,
+          error: "Email servis nije pravilno konfigurisan.",
         },
-        {
-          status: 500,
-        }
+        { status: 500 }
       );
     }
 
@@ -63,46 +52,45 @@ export async function POST(
     // GMAIL SMTP
     // =========================================================
 
-    const transporter =
-      nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_APP_PASSWORD,
-        },
-      });
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: gmailUser,
+        pass: gmailAppPassword,
+      },
+    });
 
     // =========================================================
-    // EMAIL
+    // SLANJE EMAILA
     // =========================================================
 
     await transporter.sendMail({
-      from: `"Kontakt forma" <${process.env.GMAIL_USER}>`,
-      to: process.env.UPRAVNIK_EMAIL,
-      from: email,
+      from: `"Kontakt forma" <${gmailUser}>`,
+      to: upravnikEmail,
+
+      // Kada upravnik klikne Reply,
+      // odgovor ide korisniku koji je popunio formu.
+      replyTo: email,
+
       subject: `Kontakt forma: ${predmet}`,
+
       text: `
 Nova poruka sa kontakt forme.
 
-Ime i prezime:
-${ime}
-
-Email:
-${email}
-
-Predmet:
-${predmet}
+Ime: ${ime}
+Email: ${email}
+Predmet: ${predmet}
 
 Poruka:
 ${poruka}
       `.trim(),
 
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b;">
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
           <h2>Nova poruka sa kontakt forme</h2>
 
           <p>
-            <strong>Ime i prezime:</strong><br>
+            <strong>Ime:</strong><br>
             ${ime}
           </p>
 
@@ -130,23 +118,17 @@ ${poruka}
 
     return NextResponse.json({
       success: true,
-      message:
-        "Poruka je uspešno poslata.",
+      message: "Poruka je uspešno poslata.",
     });
   } catch (error) {
-    console.error(
-      "Kontakt API error:",
-      error
-    );
+    console.error("KONTAKT EMAIL ERROR:", error);
 
     return NextResponse.json(
       {
-        error:
-          "Došlo je do greške pri slanju poruke.",
+        success: false,
+        error: "Došlo je do greške prilikom slanja poruke.",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
