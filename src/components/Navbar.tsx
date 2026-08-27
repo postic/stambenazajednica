@@ -200,13 +200,13 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
                 <span>Moji kvarovi</span>
               </DropdownMenuItem>
 
-              {/* Podesavanje */}
+              {/* Podesavanja */}
               <DropdownMenuItem
-                onClick={() => router.push("/podesavanje")}
+                onClick={() => router.push("/podesavanja")}
                 className="cursor-pointer"
               >
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Podešavanje</span>
+                <span>Podešavanja</span>
               </DropdownMenuItem>
 
               {/* Separator */}

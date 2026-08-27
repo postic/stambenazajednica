@@ -2,9 +2,24 @@
 
 import { useState } from "react";
 
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat(
+    (4 - (base64String.length % 4)) % 4
+  );
+
+  const base64 = (base64String + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+
+  return Uint8Array.from(
+    [...rawData].map((char) => char.charCodeAt(0))
+  );
+}
+
 export default function AllowNotifications() {
   const [loading, setLoading] = useState(false);
-  const [testing, setTesting] = useState(false);
   const [message, setMessage] = useState("");
 
   async function enableNotifications() {
@@ -12,191 +27,133 @@ export default function AllowNotifications() {
       setLoading(true);
       setMessage("");
 
+      // Provera podrške
       if (!("Notification" in window)) {
-        setMessage("Ovaj browser ne podržava obaveštenja.");
-        return;
+        throw new Error(
+          "Ovaj browser ne podržava notifikacije."
+        );
       }
 
       if (!("serviceWorker" in navigator)) {
-        setMessage("Service Worker nije podržan.");
-        return;
+        throw new Error(
+          "Service Worker nije podržan."
+        );
       }
 
       if (!("PushManager" in window)) {
-        setMessage("Web Push nije podržan.");
-        return;
+        throw new Error(
+          "Web Push nije podržan u ovom browseru."
+        );
       }
 
+      // Dozvola za notifikacije
       let permission = Notification.permission;
 
-      if (permission === "default") {
+      if (permission !== "granted") {
         permission =
           await Notification.requestPermission();
       }
 
       if (permission !== "granted") {
-        setMessage("Obaveštenja nisu dozvoljena.");
-        return;
-      }
-
-      const registration =
-        await navigator.serviceWorker.ready;
-
-      const vapidPublicKey =
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-
-      if (!vapidPublicKey) {
         throw new Error(
-          "NEXT_PUBLIC_VAPID_PUBLIC_KEY nije podešen."
+          "Dozvola za notifikacije nije odobrena."
         );
       }
 
+      // Service Worker
+      const registration =
+        await navigator.serviceWorker.register(
+          "/sw.js"
+        );
+
+      await navigator.serviceWorker.ready;
+
+      // VAPID public key
+      const vapidResponse = await fetch(
+        "/api/push/vapid-public-key",
+        {
+          cache: "no-store",
+        }
+      );
+
+      if (!vapidResponse.ok) {
+        throw new Error(
+          "Nije moguće dobiti VAPID public key."
+        );
+      }
+
+      const { publicKey } =
+        await vapidResponse.json();
+
+      if (!publicKey) {
+        throw new Error(
+          "VAPID public key nije pronađen."
+        );
+      }
+
+      // Postojeća subscription
       let subscription =
         await registration.pushManager.getSubscription();
 
+      // Nova subscription
       if (!subscription) {
         subscription =
           await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey:
-              urlBase64ToUint8Array(
-                vapidPublicKey
-              ),
+              urlBase64ToUint8Array(publicKey),
           });
       }
 
-      const response = await fetch(
+      // Čuvanje subscription-a na serveru
+      const saveResponse = await fetch(
         "/api/push/subscribe",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(
-            subscription.toJSON()
-          ),
+          body: JSON.stringify(subscription),
         }
       );
 
-      const data = await response.json();
+      const saveData =
+        await saveResponse.json();
 
-      if (!response.ok) {
+      if (!saveResponse.ok) {
         throw new Error(
-          data.error ||
-            "Greška prilikom čuvanja subscription-a."
+          saveData?.error ||
+            "Subscription nije sačuvan."
         );
       }
 
       setMessage(
-        "Obaveštenja su uspešno uključena."
+        "Notifikacije su uspešno uključene."
       );
     } catch (error) {
-      console.error(
-        "Web Push error:",
-        error
-      );
+      console.error("Web Push error:", error);
 
       setMessage(
         error instanceof Error
           ? error.message
-          : "Greška prilikom uključivanja obaveštenja."
+          : "Greška prilikom uključivanja notifikacija."
       );
     } finally {
       setLoading(false);
     }
   }
 
-  async function sendTestNotification() {
-    try {
-      setTesting(true);
-      setMessage("");
-
-      const registration =
-        await navigator.serviceWorker.ready;
-
-      const subscription =
-        await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        setMessage(
-          "Prvo uključi obaveštenja."
-        );
-        return;
-      }
-
-      const response = await fetch(
-        "/api/push/send",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            subscription:
-              subscription.toJSON(),
-
-            title: "Test obaveštenje",
-
-            body:
-              "Web Push radi uspešno! 🎉",
-
-            url: "/moja-obavestenja",
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "Slanje test obaveštenja nije uspelo."
-        );
-      }
-
-      setMessage(
-        "Test obaveštenje je poslato."
-      );
-    } catch (error) {
-      console.error(
-        "Push test error:",
-        error
-      );
-
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Greška prilikom slanja testa."
-      );
-    } finally {
-      setTesting(false);
-    }
-  }
-
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <button
         type="button"
         onClick={enableNotifications}
         disabled={loading}
-        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="w-fit rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading
           ? "Uključivanje..."
-          : "Dozvoli obaveštenja"}
-      </button>
-
-      <button
-        type="button"
-        onClick={sendTestNotification}
-        disabled={testing}
-        className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
-      >
-        {testing
-          ? "Slanje..."
-          : "Pošalji test obaveštenje"}
+          : "Dozvoli notifikacije"}
       </button>
 
       {message && (
@@ -205,28 +162,5 @@ export default function AllowNotifications() {
         </p>
       )}
     </div>
-  );
-}
-
-function urlBase64ToUint8Array(
-  base64String: string
-): Uint8Array {
-  const padding =
-    "=".repeat(
-      (4 - (base64String.length % 4)) % 4
-    );
-
-  const base64 =
-    (base64String + padding)
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
-
-  const rawData =
-    window.atob(base64);
-
-  return Uint8Array.from(
-    [...rawData].map((char) =>
-      char.charCodeAt(0)
-    )
   );
 }
