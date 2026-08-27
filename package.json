@@ -16,8 +16,6 @@
     "@tailwindcss/postcss": "^4.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "firebase": "^12.12.1",
-    "firebase-admin": "^13.8.0",
     "framer-motion": "^12.38.0",
     "jsonwebtoken": "^9.0.3",
     "jwt-decode": "^4.0.0",
@@ -37,6 +35,7 @@
     "swiper": "^12.1.2",
     "swr": "^2.4.1",
     "tailwind-merge": "^3.4.1",
+    "web-push": "^3.6.7",
     "yet-another-react-lightbox": "^3.29.1"
   },
   "devDependencies": {
@@ -46,6 +45,7 @@
     "@types/nprogress": "^0.2.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.24",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",

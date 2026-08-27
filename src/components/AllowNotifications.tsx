@@ -1,164 +1,232 @@
 "use client";
 
 import { useState } from "react";
-import { getToken } from "firebase/messaging";
-import { messaging } from "@/lib/firebase";
 
 export default function AllowNotifications() {
-  const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const requestPermission = async () => {
-    if (typeof window === "undefined") return;
-    if (!("Notification" in window)) return;
-
-    setLoading(true);
-
+  async function enableNotifications() {
     try {
-      // 1. Permission
-      const permission = await Notification.requestPermission();
+      setLoading(true);
+      setMessage("");
+
+      if (!("Notification" in window)) {
+        setMessage("Ovaj browser ne podržava obaveštenja.");
+        return;
+      }
+
+      if (!("serviceWorker" in navigator)) {
+        setMessage("Service Worker nije podržan.");
+        return;
+      }
+
+      if (!("PushManager" in window)) {
+        setMessage("Web Push nije podržan.");
+        return;
+      }
+
+      let permission = Notification.permission;
+
+      if (permission === "default") {
+        permission =
+          await Notification.requestPermission();
+      }
 
       if (permission !== "granted") {
-        setOpen(false);
+        setMessage("Obaveštenja nisu dozvoljena.");
         return;
       }
 
-      // 2. Service Worker (obavezno za FCM)
-      if ("serviceWorker" in navigator) {
-        await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      const registration =
+        await navigator.serviceWorker.ready;
+
+      const vapidPublicKey =
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+      if (!vapidPublicKey) {
+        throw new Error(
+          "NEXT_PUBLIC_VAPID_PUBLIC_KEY nije podešen."
+        );
       }
 
-      // mali delay (IndexedDB fix)
-      await new Promise((r) => setTimeout(r, 300));
+      let subscription =
+        await registration.pushManager.getSubscription();
 
-      // 3. Guard za messaging
-      if (!messaging) {
-        console.log("Messaging nije dostupan (SSR ili unsupported browser)");
-        setOpen(false);
-        return;
+      if (!subscription) {
+        subscription =
+          await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey:
+              urlBase64ToUint8Array(
+                vapidPublicKey
+              ),
+          });
       }
 
-      // 4. Get FCM token
-      const fcmToken = await getToken(messaging, {
-        vapidKey:
-          "BCeaqu0ItePlxM18_gYo-fdAxc2OtF2nFI3qr0-F64SiUqhMlXRTeib8fDETjH_M4FEJYVif5--bKG81-jknyqU",
-      });
+      const response = await fetch(
+        "/api/push/subscribe",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(
+            subscription.toJSON()
+          ),
+        }
+      );
 
-      console.log("FCM TOKEN:", fcmToken);
+      const data = await response.json();
 
-      if (!fcmToken) {
-        setOpen(false);
-        return;
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Greška prilikom čuvanja subscription-a."
+        );
       }
 
-      setToken(fcmToken);
+      setMessage(
+        "Obaveštenja su uspešno uključena."
+      );
+    } catch (error) {
+      console.error(
+        "Web Push error:",
+        error
+      );
 
-      // 5. Snimanje u backend (Drupal)
-      await fetch("/api/fcm/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token: fcmToken }),
-      });
-
-      setOpen(false);
-    } catch (e) {
-      console.error("FCM error:", e);
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Greška prilikom uključivanja obaveštenja."
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  if (!open) return null;
+  async function sendTestNotification() {
+    try {
+      setTesting(true);
+      setMessage("");
+
+      const registration =
+        await navigator.serviceWorker.ready;
+
+      const subscription =
+        await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        setMessage(
+          "Prvo uključi obaveštenja."
+        );
+        return;
+      }
+
+      const response = await fetch(
+        "/api/push/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            subscription:
+              subscription.toJSON(),
+
+            title: "Test obaveštenje",
+
+            body:
+              "Web Push radi uspešno! 🎉",
+
+            url: "/moja-obavestenja",
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Slanje test obaveštenja nije uspelo."
+        );
+      }
+
+      setMessage(
+        "Test obaveštenje je poslato."
+      );
+    } catch (error) {
+      console.error(
+        "Push test error:",
+        error
+      );
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Greška prilikom slanja testa."
+      );
+    } finally {
+      setTesting(false);
+    }
+  }
 
   return (
-    <div
-      onClick={() => !loading && setOpen(false)}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.35)",
-        backdropFilter: "blur(6px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "min(420px, 92vw)",
-          background: "#ffffff",
-          color: "#111827",
-          borderRadius: 16,
-          padding: 22,
-          boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
-        }}
+    <div className="space-y-3">
+      <button
+        type="button"
+        onClick={enableNotifications}
+        disabled={loading}
+        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
-        <h3 style={{ margin: 0, fontSize: 18 }}>
-          Dozvoli notifikacije
-        </h3>
+        {loading
+          ? "Uključivanje..."
+          : "Dozvoli obaveštenja"}
+      </button>
 
-        <p style={{ fontSize: 14, opacity: 0.75, marginTop: 10 }}>
-          Uključi notifikacije da dobijaš važne poruke u realnom vremenu.
+      <button
+        type="button"
+        onClick={sendTestNotification}
+        disabled={testing}
+        className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
+      >
+        {testing
+          ? "Slanje..."
+          : "Pošalji test obaveštenje"}
+      </button>
+
+      {message && (
+        <p className="text-sm text-slate-600">
+          {message}
         </p>
-
-        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-          <button
-            onClick={() => setOpen(false)}
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: "12px",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              background: "#f3f4f6",
-              cursor: "pointer",
-            }}
-          >
-            Kasnije
-          </button>
-
-          <button
-            onClick={requestPermission}
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: "12px",
-              borderRadius: 12,
-              border: "none",
-              background: "#111827",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? "Čuvam..." : "Dozvoli"}
-          </button>
-        </div>
-
-        {/* DEBUG TOKEN */}
-        {token && (
-          <div
-            style={{
-              marginTop: 15,
-              padding: 10,
-              fontSize: 12,
-              background: "#f9fafb",
-              borderRadius: 10,
-              wordBreak: "break-all",
-              border: "1px solid #e5e7eb",
-            }}
-          >
-            <strong>FCM Token:</strong>
-            <div>{token}</div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
+  );
+}
+
+function urlBase64ToUint8Array(
+  base64String: string
+): Uint8Array {
+  const padding =
+    "=".repeat(
+      (4 - (base64String.length % 4)) % 4
+    );
+
+  const base64 =
+    (base64String + padding)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const rawData =
+    window.atob(base64);
+
+  return Uint8Array.from(
+    [...rawData].map((char) =>
+      char.charCodeAt(0)
+    )
   );
 }

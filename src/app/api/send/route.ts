@@ -1,23 +1,48 @@
-import getAdmin from "@/lib/fcmAdmin";
+import webpush from "@/lib/webPush";
+import { NextResponse } from "next/server";
 
-let tokens: string[] = [];
+let subscription: PushSubscription | null = null;
 
 export async function POST() {
-  const admin = getAdmin();
-
-  if (!tokens.length) {
-    return Response.json({ error: "No tokens" }, { status: 400 });
+  if (!subscription) {
+    return NextResponse.json(
+      {
+        error:
+          "Nema registrovanog push subscription-a.",
+      },
+      { status: 400 }
+    );
   }
 
-  const message = {
-    notification: {
+  try {
+    const payload = JSON.stringify({
       title: "Nova poruka",
-      body: "Test push notifikacija",
-    },
-    tokens,
-  };
+      body: "Test Web Push notifikacija",
+      url: "/moja-obavestenja",
+    });
 
-  const response = await admin.messaging().sendEachForMulticast(message);
+    const response =
+      await webpush.sendNotification(
+        subscription as any,
+        payload
+      );
 
-  return Response.json(response);
+    return NextResponse.json({
+      success: true,
+      statusCode: response.statusCode,
+    });
+  } catch (error) {
+    console.error(
+      "Web Push send error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Slanje Web Push notifikacije nije uspelo.",
+      },
+      { status: 500 }
+    );
+  }
 }
