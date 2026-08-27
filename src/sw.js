@@ -1,29 +1,105 @@
+importScripts(
+  "https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js"
+);
+
+// =========================================================
+// WORKBOX
+// =========================================================
+
+if (typeof workbox !== "undefined") {
+  console.log(
+    "[Service Worker] Workbox učitan."
+  );
+
+  workbox.precaching.precacheAndRoute(
+    self.__WB_MANIFEST || []
+  );
+
+  workbox.routing.registerRoute(
+    ({ request }) =>
+      request.destination === "document",
+    new workbox.strategies.NetworkFirst({
+      cacheName: "pages",
+    })
+  );
+
+  workbox.routing.registerRoute(
+    ({ request }) =>
+      request.destination === "style" ||
+      request.destination === "script",
+      new workbox.strategies.StaleWhileRevalidate({
+        cacheName: "assets",
+      })
+  );
+}
+
+// =========================================================
+// INSTALL / ACTIVATE
+// =========================================================
+
+self.addEventListener(
+  "install",
+  () => {
+    self.skipWaiting();
+  }
+);
+
+self.addEventListener(
+  "activate",
+  (event) => {
+    event.waitUntil(
+      self.clients.claim()
+    );
+  }
+);
+
 // =========================================================
 // WEB PUSH
 // =========================================================
 
-self.addEventListener("push", (event) => {
-  if (!event.data) {
-    return;
-  }
+self.addEventListener(
+  "push",
+  (event) => {
+    let data = {
+      title: "Komšija",
+      body: "Imate novu notifikaciju.",
+      url: "/",
+    };
 
-  try {
-    const data = event.data.json();
+    if (event.data) {
+      try {
+        data = {
+          ...data,
+          ...event.data.json(),
+        };
+      } catch {
+        data.body = event.data.text();
+      }
+    }
 
     const title =
-      data.title || "Obaveštenje";
+      data.title || "Komšija";
 
     const options = {
-      body: data.body || "",
-      icon: data.icon || "/icons/icon-192x192.png",
-      badge: data.badge || "/icons/icon-192x192.png",
+      body:
+        data.body ||
+        "Imate novu notifikaciju.",
+
+      icon:
+        data.icon ||
+        "/icons/icon-192.png",
+
+      badge:
+        data.badge ||
+        "/icons/icon-192.png",
 
       data: {
-        url: data.url || "/",
+        url:
+          data.url || "/",
       },
 
-      tag: data.tag || "webpush",
-      renotify: true,
+      requireInteraction:
+        false,
     };
 
     event.waitUntil(
@@ -32,16 +108,11 @@ self.addEventListener("push", (event) => {
         options
       )
     );
-  } catch (error) {
-    console.error(
-      "Push event error:",
-      error
-    );
   }
-});
+);
 
 // =========================================================
-// KLIK NA NOTIFIKACIJU
+// NOTIFICATION CLICK
 // =========================================================
 
 self.addEventListener(
@@ -50,24 +121,36 @@ self.addEventListener(
     event.notification.close();
 
     const url =
-      event.notification?.data?.url || "/";
+      event.notification.data?.url ||
+      "/";
 
     event.waitUntil(
-      clients.matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      }).then((clientList) => {
-        for (const client of clientList) {
-          if ("focus" in client) {
-            client.navigate(url);
-            return client.focus();
-          }
-        }
+      self.clients
+        .matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        })
+        .then((clientList) => {
+          for (const client of clientList) {
+            if (
+              "focus" in client
+            ) {
+              client.navigate(url);
 
-        if (clients.openWindow) {
-          return clients.openWindow(url);
-        }
-      })
+              return client.focus();
+            }
+          }
+
+          if (
+            self.clients.openWindow
+          ) {
+            return self.clients.openWindow(
+              url
+            );
+          }
+
+          return undefined;
+        })
     );
   }
 );

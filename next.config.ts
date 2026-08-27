@@ -1,29 +1,15 @@
-const runtimeCaching = [
-  {
-    urlPattern: /^https?.*/,
-    handler: "NetworkFirst",
-    options: {
-      cacheName: "api-cache",
-      expiration: {
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60,
-      },
-    },
-  },
-];
-
 const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-
-  // Custom service worker source
+  disable:
+    process.env.NODE_ENV === "development",
   swSrc: "src/sw.js",
-
-  runtimeCaching,
 });
 
-module.exports = withPWA({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
-});
+};
+
+module.exports = withPWA(nextConfig);
