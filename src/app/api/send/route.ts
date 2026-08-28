@@ -1,4 +1,3 @@
-```ts
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 
@@ -530,4 +529,3 @@ export async function POST(
     );
   }
 }
-```
