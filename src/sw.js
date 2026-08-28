@@ -11,42 +11,67 @@ if (typeof workbox !== "undefined") {
     "[Service Worker] Workbox učitan."
   );
 
+  // IMPORTANT:
+  // next-pwa / InjectManifest ubacuje manifest
+  // upravo na ovu liniju.
   workbox.precaching.precacheAndRoute(
-    self.__WB_MANIFEST || []
+    self.__WB_MANIFEST
   );
+
+  // =======================================================
+  // DOCUMENTS
+  // =======================================================
 
   workbox.routing.registerRoute(
     ({ request }) =>
       request.destination === "document",
+
     new workbox.strategies.NetworkFirst({
       cacheName: "pages",
     })
   );
 
+  // =======================================================
+  // CSS / JS
+  // =======================================================
+
   workbox.routing.registerRoute(
     ({ request }) =>
       request.destination === "style" ||
       request.destination === "script",
-      new workbox.strategies.StaleWhileRevalidate({
-        cacheName: "assets",
-      })
+
+    new workbox.strategies.StaleWhileRevalidate({
+      cacheName: "assets",
+    })
   );
 }
 
 // =========================================================
-// INSTALL / ACTIVATE
+// INSTALL
 // =========================================================
 
 self.addEventListener(
   "install",
-  () => {
+  (event) => {
+    console.log(
+      "[Service Worker] Install."
+    );
+
     self.skipWaiting();
   }
 );
 
+// =========================================================
+// ACTIVATE
+// =========================================================
+
 self.addEventListener(
   "activate",
   (event) => {
+    console.log(
+      "[Service Worker] Activate."
+    );
+
     event.waitUntil(
       self.clients.claim()
     );
@@ -60,25 +85,51 @@ self.addEventListener(
 self.addEventListener(
   "push",
   (event) => {
+    console.log(
+      "[Service Worker] PUSH event."
+    );
+
     let data = {
       title: "Komšija",
-      body: "Imate novu notifikaciju.",
+      body:
+        "Imate novu notifikaciju.",
       url: "/",
+      icon:
+        "/icons/icon-192.png",
+      badge:
+        "/icons/icon-192.png",
     };
+
+    // =======================================================
+    // READ PUSH DATA
+    // =======================================================
 
     if (event.data) {
       try {
+        const json =
+          event.data.json();
+
         data = {
           ...data,
-          ...event.data.json(),
+          ...json,
         };
       } catch {
-        data.body = event.data.text();
+        try {
+          data.body =
+            event.data.text();
+        } catch {
+          // Ignore invalid payload.
+        }
       }
     }
 
+    // =======================================================
+    // NOTIFICATION OPTIONS
+    // =======================================================
+
     const title =
-      data.title || "Komšija";
+      data.title ||
+      "Komšija";
 
     const options = {
       body:
@@ -102,6 +153,10 @@ self.addEventListener(
         false,
     };
 
+    // =======================================================
+    // SHOW NOTIFICATION
+    // =======================================================
+
     event.waitUntil(
       self.registration.showNotification(
         title,
@@ -118,6 +173,10 @@ self.addEventListener(
 self.addEventListener(
   "notificationclick",
   (event) => {
+    console.log(
+      "[Service Worker] Notification click."
+    );
+
     event.notification.close();
 
     const url =
@@ -130,27 +189,41 @@ self.addEventListener(
           type: "window",
           includeUncontrolled: true,
         })
-        .then((clientList) => {
-          for (const client of clientList) {
-            if (
-              "focus" in client
+        .then(
+          (clientList) => {
+            // =================================================
+            // EXISTING WINDOW
+            // =================================================
+
+            for (
+              const client of clientList
             ) {
-              client.navigate(url);
+              if (
+                "navigate" in client
+              ) {
+                client.navigate(
+                  url
+                );
 
-              return client.focus();
+                return client.focus();
+              }
             }
-          }
 
-          if (
-            self.clients.openWindow
-          ) {
-            return self.clients.openWindow(
-              url
-            );
-          }
+            // =================================================
+            // NEW WINDOW
+            // =================================================
 
-          return undefined;
-        })
+            if (
+              self.clients.openWindow
+            ) {
+              return self.clients.openWindow(
+                url
+              );
+            }
+
+            return undefined;
+          }
+        )
     );
   }
 );
