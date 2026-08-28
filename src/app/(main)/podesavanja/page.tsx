@@ -64,56 +64,6 @@ export default function PodesavanjePage() {
         </div>
       </section>
 
-      {/* ==========================================
-          EMAIL OBAVEŠTENJA
-          ========================================== */}
-
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <div className="mb-5">
-          <h2 className="text-base font-semibold text-slate-900">
-            Email obaveštenja
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Izaberi koje informacije želiš da primaš
-            putem emaila.
-          </p>
-        </div>
-
-        <div className="border-t border-slate-100 pt-5">
-          <button
-            type="button"
-            className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900"
-          >
-            Podesi email obaveštenja
-          </button>
-        </div>
-      </section>
-
-      {/* ==========================================
-          NALOG
-          ========================================== */}
-
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <div className="mb-5">
-          <h2 className="text-base font-semibold text-slate-900">
-            Nalog
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Upravljaj osnovnim podešavanjima svog naloga.
-          </p>
-        </div>
-
-        <div className="border-t border-slate-100 pt-5">
-          <button
-            type="button"
-            className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900"
-          >
-            Podešavanje naloga
-          </button>
-        </div>
-      </section>
     </div>
   );
 }
