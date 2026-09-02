@@ -2,25 +2,21 @@ importScripts(
   "https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js"
 );
 
-// =========================================================
+// ============================================================
 // WORKBOX
-// =========================================================
+// ============================================================
 
 if (typeof workbox !== "undefined") {
-  console.log(
-    "[Service Worker] Workbox učitan."
-  );
+  console.log("[Service Worker] Workbox učitan.");
 
-  // IMPORTANT:
-  // next-pwa / InjectManifest ubacuje manifest
-  // upravo na ovu liniju.
+  // next-pwa / InjectManifest ovde automatski ubacuje manifest.
   workbox.precaching.precacheAndRoute(
     self.__WB_MANIFEST
   );
 
-  // =======================================================
+  // ==========================================================
   // DOCUMENTS
-  // =======================================================
+  // ==========================================================
 
   workbox.routing.registerRoute(
     ({ request }) =>
@@ -31,9 +27,9 @@ if (typeof workbox !== "undefined") {
     })
   );
 
-  // =======================================================
+  // ==========================================================
   // CSS / JS
-  // =======================================================
+  // ==========================================================
 
   workbox.routing.registerRoute(
     ({ request }) =>
@@ -46,129 +42,114 @@ if (typeof workbox !== "undefined") {
   );
 }
 
-// =========================================================
+// ============================================================
 // INSTALL
-// =========================================================
+// ============================================================
 
-self.addEventListener(
-  "install",
-  (event) => {
-    console.log(
-      "[Service Worker] Install."
-    );
+self.addEventListener("install", () => {
+  console.log("[Service Worker] Install.");
 
-    self.skipWaiting();
-  }
-);
+  self.skipWaiting();
+});
 
-// =========================================================
+// ============================================================
 // ACTIVATE
-// =========================================================
+// ============================================================
 
-self.addEventListener(
-  "activate",
-  (event) => {
-    console.log(
-      "[Service Worker] Activate."
-    );
+self.addEventListener("activate", (event) => {
+  console.log("[Service Worker] Activate.");
 
-    event.waitUntil(
-      self.clients.claim()
-    );
-  }
-);
+  event.waitUntil(
+    self.clients.claim()
+  );
+});
 
-// =========================================================
+// ============================================================
 // WEB PUSH
-// =========================================================
+// ============================================================
 
-self.addEventListener(
-  "push",
-  (event) => {
-    console.log(
-      "[Service Worker] PUSH event."
-    );
+self.addEventListener("push", (event) => {
+  console.log("[Service Worker] PUSH event.");
 
-    let data = {
-      title: "Komšija",
-      body:
-        "Imate novu notifikaciju.",
-      url: "/",
-      icon:
-        "/icons/icon-192.png",
-      badge:
-        "/icons/icon-192.png",
-    };
+  let data = {
+    title: "Komšija",
+    body: "Imate novu notifikaciju.",
+    url: "/",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+  };
 
-    // =======================================================
-    // READ PUSH DATA
-    // =======================================================
+  // ==========================================================
+  // READ PUSH DATA
+  // ==========================================================
 
-    if (event.data) {
+  if (event.data) {
+    try {
+      const json = event.data.json();
+
+      data = {
+        ...data,
+        ...json,
+      };
+    } catch (error) {
+      console.log(
+        "[Service Worker] Push nije JSON, koristim tekst."
+      );
+
       try {
-        const json =
-          event.data.json();
-
-        data = {
-          ...data,
-          ...json,
-        };
-      } catch {
-        try {
-          data.body =
-            event.data.text();
-        } catch {
-          // Ignore invalid payload.
-        }
+        data.body = event.data.text();
+      } catch (textError) {
+        console.error(
+          "[Service Worker] Ne mogu da pročitam push podatke:",
+          textError
+        );
       }
     }
-
-    // =======================================================
-    // NOTIFICATION OPTIONS
-    // =======================================================
-
-    const title =
-      data.title ||
-      "Komšija";
-
-    const options = {
-      body:
-        data.body ||
-        "Imate novu notifikaciju.",
-
-      icon:
-        data.icon ||
-        "/icons/icon-192.png",
-
-      badge:
-        data.badge ||
-        "/icons/icon-192.png",
-
-      data: {
-        url:
-          data.url || "/",
-      },
-
-      requireInteraction:
-        false,
-    };
-
-    // =======================================================
-    // SHOW NOTIFICATION
-    // =======================================================
-
-    event.waitUntil(
-      self.registration.showNotification(
-        title,
-        options
-      )
-    );
   }
-);
 
-// =========================================================
+  // ==========================================================
+  // NOTIFICATION OPTIONS
+  // ==========================================================
+
+  const title =
+    data.title || "Komšija";
+
+  const options = {
+    body:
+      data.body ||
+      "Imate novu notifikaciju.",
+
+    icon:
+      data.icon ||
+      "/icons/icon-192.png",
+
+    badge:
+      data.badge ||
+      "/icons/icon-192.png",
+
+    data: {
+      url:
+        data.url || "/",
+    },
+
+    requireInteraction: false,
+  };
+
+  // ==========================================================
+  // SHOW NOTIFICATION
+  // ==========================================================
+
+  event.waitUntil(
+    self.registration.showNotification(
+      title,
+      options
+    )
+  );
+});
+
+// ============================================================
 // NOTIFICATION CLICK
-// =========================================================
+// ============================================================
 
 self.addEventListener(
   "notificationclick",
@@ -189,41 +170,29 @@ self.addEventListener(
           type: "window",
           includeUncontrolled: true,
         })
-        .then(
-          (clientList) => {
-            // =================================================
-            // EXISTING WINDOW
-            // =================================================
+        .then((clients) => {
+          // ==================================================
+          // AKO JE APLIKACIJA VEĆ OTVORENA
+          // ==================================================
 
-            for (
-              const client of clientList
-            ) {
-              if (
-                "navigate" in client
-              ) {
-                client.navigate(
-                  url
-                );
-
-                return client.focus();
-              }
+          for (const client of clients) {
+            if ("navigate" in client) {
+              return client
+                .navigate(url)
+                .then(() => client.focus());
             }
-
-            // =================================================
-            // NEW WINDOW
-            // =================================================
-
-            if (
-              self.clients.openWindow
-            ) {
-              return self.clients.openWindow(
-                url
-              );
-            }
-
-            return undefined;
           }
-        )
+
+          // ==================================================
+          // AKO NIJE OTVORENA
+          // ==================================================
+
+          if (self.clients.openWindow) {
+            return self.clients.openWindow(url);
+          }
+
+          return undefined;
+        })
     );
   }
 );

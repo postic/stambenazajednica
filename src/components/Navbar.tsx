@@ -173,6 +173,15 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
               className="w-56"
             >
 
+              {/* Moj prostor */}
+              <DropdownMenuItem
+                onClick={() => router.push("/profile")}
+                className="cursor-pointer"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                <span>Moj prostor</span>
+              </DropdownMenuItem>
+
               {/* Moja obaveštenja */}
               <DropdownMenuItem
                 onClick={() => router.push("/moja-obavestenja")}

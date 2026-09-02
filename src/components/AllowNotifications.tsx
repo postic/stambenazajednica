@@ -17,13 +17,24 @@ function urlBase64ToArrayBuffer(
     .replace(/-/g, "+")
     .replace(/_/g, "/");
 
-  const rawData = window.atob(base64);
+  const rawData =
+    window.atob(base64);
 
-  const buffer = new ArrayBuffer(rawData.length);
-  const bytes = new Uint8Array(buffer);
+  const buffer =
+    new ArrayBuffer(
+      rawData.length
+    );
 
-  for (let i = 0; i < rawData.length; i++) {
-    bytes[i] = rawData.charCodeAt(i);
+  const bytes =
+    new Uint8Array(buffer);
+
+  for (
+    let i = 0;
+    i < rawData.length;
+    i++
+  ) {
+    bytes[i] =
+      rawData.charCodeAt(i);
   }
 
   return buffer;
@@ -39,15 +50,113 @@ interface SaveResponse {
   message?: string;
 }
 
-interface PushKeys {
-  p256dh: string;
-  auth: string;
+interface PushStatusResponse {
+  success?: boolean;
+  subscribed?: boolean;
+  uid?: number;
+  subscription_id?: number | null;
+  endpoint?: string | null;
+  error?: string;
 }
 
-interface PushSubscriptionData {
-  endpoint: string;
-  expirationTime?: number | null;
-  keys: PushKeys;
+// =========================================================
+// WAIT FOR SERVICE WORKER
+// =========================================================
+
+async function waitForServiceWorker(
+  registration: ServiceWorkerRegistration
+): Promise<ServiceWorkerRegistration> {
+  // Već je aktivan.
+  if (registration.active) {
+    console.log(
+      "✅ Service Worker je već active."
+    );
+
+    return registration;
+  }
+
+  console.log(
+    "⏳ Čekam Service Worker activation..."
+  );
+
+  return new Promise(
+    (resolve, reject) => {
+      const worker =
+        registration.installing ||
+        registration.waiting;
+
+      if (!worker) {
+        reject(
+          new Error(
+            "Service Worker nema installing, waiting ni active stanje."
+          )
+        );
+
+        return;
+      }
+
+      const timeout =
+        window.setTimeout(
+          () => {
+            reject(
+              new Error(
+                "Service Worker nije postao active."
+              )
+            );
+          },
+          10000
+        );
+
+      worker.addEventListener(
+        "statechange",
+        () => {
+          console.log(
+            "🔄 Service Worker state:",
+            worker.state
+          );
+
+          if (
+            worker.state ===
+            "activated"
+          ) {
+            window.clearTimeout(
+              timeout
+            );
+
+            resolve(
+              registration
+            );
+          }
+
+          if (
+            worker.state ===
+            "redundant"
+          ) {
+            window.clearTimeout(
+              timeout
+            );
+
+            reject(
+              new Error(
+                "Service Worker je postao redundant."
+              )
+            );
+          }
+        }
+      );
+
+      // Dodatna provera.
+      if (registration.active) {
+        window.clearTimeout(
+          timeout
+        );
+
+        resolve(
+          registration
+        );
+      }
+    }
+  );
 }
 
 // =========================================================
@@ -55,13 +164,23 @@ interface PushSubscriptionData {
 // =========================================================
 
 export default function AllowNotifications() {
-  const [loading, setLoading] = useState(true);
-  const [enabled, setEnabled] = useState(false);
-  const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
+
+  const [enabled, setEnabled] =
+    useState(false);
+
+  const [message, setMessage] =
+    useState("");
+
+  const [success, setSuccess] =
+    useState(false);
+
+  const [checking, setChecking] =
+    useState(true);
 
   // =======================================================
-  // CHECK EXISTING SUBSCRIPTION
+  // CHECK SUBSCRIPTION
   // =======================================================
 
   useEffect(() => {
@@ -70,49 +189,256 @@ export default function AllowNotifications() {
 
   async function checkSubscription() {
     try {
-      if (typeof window === "undefined") {
-        return;
-      }
+      setChecking(true);
 
-      if (!("serviceWorker" in navigator)) {
+      console.log(
+        "🔍 PROVERA PUSH STATUSA"
+      );
+
+      // ---------------------------------------------------
+      // 1. BROWSER SUPPORT
+      // ---------------------------------------------------
+
+      if (
+        !("serviceWorker" in navigator)
+      ) {
         console.log(
-          "❌ Service Worker nije podržan"
+          "❌ Service Worker nije podržan."
         );
 
+        setEnabled(false);
+
         return;
       }
 
-      if (!("PushManager" in window)) {
+      if (
+        !("PushManager" in window)
+      ) {
         console.log(
-          "❌ PushManager nije podržan"
+          "❌ PushManager nije podržan."
         );
 
+        setEnabled(false);
+
         return;
       }
+
+      // ---------------------------------------------------
+      // 2. SERVICE WORKER
+      // ---------------------------------------------------
 
       const registration =
-        await navigator.serviceWorker.register(
-          "/sw.js"
+        await navigator.serviceWorker
+          .getRegistration();
+
+      if (!registration) {
+        console.log(
+          "ℹ️ Nema registrovanog Service Workera."
         );
 
-      await navigator.serviceWorker.ready;
+        setEnabled(false);
 
-      const subscription =
-        await registration.pushManager.getSubscription();
+        return;
+      }
 
-      setEnabled(Boolean(subscription));
+      console.log(
+        "✅ Service Worker pronađen:",
+        registration
+      );
+
+      console.log(
+        "📄 ACTIVE:",
+        registration.active
+      );
+
+      console.log(
+        "⏳ WAITING:",
+        registration.waiting
+      );
+
+      console.log(
+        "🔄 INSTALLING:",
+        registration.installing
+      );
+
+      if (!registration.active) {
+        console.log(
+          "ℹ️ Service Worker još nije active."
+        );
+
+        setEnabled(false);
+
+        return;
+      }
+
+      // ---------------------------------------------------
+      // 3. BROWSER PUSH SUBSCRIPTION
+      // ---------------------------------------------------
+
+      const browserSubscription =
+        await registration
+          .pushManager
+          .getSubscription();
+
+      console.log(
+        "📦 Browser subscription:",
+        browserSubscription
+      );
+
+      const browserSubscribed =
+        Boolean(
+          browserSubscription
+        );
+
+      console.log(
+        "🌐 Browser subscribed:",
+        browserSubscribed
+      );
+
+      // ---------------------------------------------------
+      // 4. DRUPAL DATABASE STATUS
+      // ---------------------------------------------------
+
+      console.log(
+        "🗄️ Proveravam Drupal bazu..."
+      );
+
+      const response =
+        await fetch(
+          "/api/push/status",
+          {
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+            },
+
+            cache: "no-store",
+          }
+        );
+
+      const responseText =
+        await response.text();
+
+      console.log(
+        "📥 Push status odgovor:",
+        responseText
+      );
+
+      let data:
+        | PushStatusResponse
+        | null = null;
+
+      try {
+        data =
+          responseText
+            ? JSON.parse(
+                responseText
+              )
+            : null;
+      } catch {
+        data = {
+          success: false,
+          subscribed: false,
+          error:
+            responseText,
+        };
+      }
+
+      // ---------------------------------------------------
+      // 5. DRUPAL ERROR
+      // ---------------------------------------------------
+
+      if (!response.ok) {
+        console.error(
+          "❌ Drupal status error:",
+          data
+        );
+
+        setEnabled(false);
+
+        return;
+      }
+
+      const databaseSubscribed =
+        Boolean(
+          data?.subscribed
+        );
+
+      console.log(
+        "🗄️ Drupal DB subscribed:",
+        databaseSubscribed
+      );
+
+      // ---------------------------------------------------
+      // 6. FINAL STATUS
+      // ---------------------------------------------------
+
+      const isEnabled =
+        browserSubscribed &&
+        databaseSubscribed;
+
+      console.log(
+        "================================"
+      );
+
+      console.log(
+        "🌐 Browser:",
+        browserSubscribed
+      );
+
+      console.log(
+        "🗄️ Drupal DB:",
+        databaseSubscribed
+      );
+
+      console.log(
+        "🔔 FINAL SWITCH:",
+        isEnabled
+      );
+
+      console.log(
+        "================================"
+      );
+
+      setEnabled(
+        isEnabled
+      );
+
+      // ---------------------------------------------------
+      // 7. IMPORTANT: DB POSTOJI,
+      //    ALI BROWSER NEMA SUBSCRIPTION
+      // ---------------------------------------------------
+
+      if (
+        databaseSubscribed &&
+        !browserSubscribed
+      ) {
+        console.warn(
+          "⚠️ Drupal ima subscription, ali browser nema subscription."
+        );
+      }
+
     } catch (error) {
       console.error(
-        "❌ Greška pri proveri subscription:",
+        "❌ Greška prilikom provere:",
         error
       );
+
+      setEnabled(false);
+
     } finally {
-      setLoading(false);
+      setChecking(false);
+
+      console.log(
+        "✅ Provera završena."
+      );
     }
   }
 
   // =======================================================
-  // ENABLE NOTIFICATIONS
+  // ENABLE
   // =======================================================
 
   async function enableNotifications() {
@@ -121,66 +447,146 @@ export default function AllowNotifications() {
       setMessage("");
       setSuccess(false);
 
-      // ===================================================
-      // 1. PROVERA PODRŠKE
-      // ===================================================
+      console.log(
+        "🟢 UKLJUČIVANJE NOTIFIKACIJA"
+      );
 
-      if (typeof window === "undefined") {
+      // ---------------------------------------------------
+      // CHECK SUPPORT
+      // ---------------------------------------------------
+
+      if (
+        !("Notification" in window)
+      ) {
         throw new Error(
-          "Browser okruženje nije dostupno."
+          "Browser ne podržava notifikacije."
         );
       }
 
-      if (!("Notification" in window)) {
+      if (
+        !("serviceWorker" in navigator)
+      ) {
         throw new Error(
-          "Ovaj browser ne podržava notifikacije."
+          "Service Worker nije podržan."
         );
       }
 
-      if (!("serviceWorker" in navigator)) {
+      if (
+        !("PushManager" in window)
+      ) {
         throw new Error(
-          "Service Worker nije podržan u ovom browseru."
+          "Push notifikacije nisu podržane."
         );
       }
 
-      if (!("PushManager" in window)) {
+      // ---------------------------------------------------
+      // REGISTER SERVICE WORKER
+      // ---------------------------------------------------
+
+      console.log(
+        "🔧 Registrujem Service Worker..."
+      );
+
+      const registration =
+        await navigator.serviceWorker
+          .register(
+            "/sw.js",
+            {
+              scope: "/",
+            }
+          );
+
+      console.log(
+        "✅ Service Worker registrovan:",
+        registration
+      );
+
+      console.log(
+        "📄 ACTIVE:",
+        registration.active
+      );
+
+      console.log(
+        "⏳ WAITING:",
+        registration.waiting
+      );
+
+      console.log(
+        "🔄 INSTALLING:",
+        registration.installing
+      );
+
+      // ---------------------------------------------------
+      // WAIT FOR ACTIVATION
+      // ---------------------------------------------------
+
+      const readyRegistration =
+        await waitForServiceWorker(
+          registration
+        );
+
+      if (
+        !readyRegistration.active
+      ) {
         throw new Error(
-          "Web Push nije podržan u ovom browseru."
+          "Service Worker nije postao active."
         );
       }
 
-      // ===================================================
-      // 2. DOZVOLA
-      // ===================================================
+      console.log(
+        "✅ Service Worker ACTIVE:",
+        readyRegistration.active
+      );
+
+      console.log(
+        "📄 ACTIVE SCRIPT:",
+        readyRegistration
+          .active
+          .scriptURL
+      );
+
+      // ---------------------------------------------------
+      // NOTIFICATION PERMISSION
+      // ---------------------------------------------------
 
       let permission =
         Notification.permission;
 
-      if (permission !== "granted") {
+      console.log(
+        "🔔 Trenutna dozvola:",
+        permission
+      );
+
+      if (
+        permission !==
+        "granted"
+      ) {
         permission =
-          await Notification.requestPermission();
+          await Notification
+            .requestPermission();
       }
 
-      if (permission !== "granted") {
+      console.log(
+        "🔔 Nova dozvola:",
+        permission
+      );
+
+      if (
+        permission !==
+        "granted"
+      ) {
         throw new Error(
           "Dozvola za notifikacije nije odobrena."
         );
       }
 
-      // ===================================================
-      // 3. SERVICE WORKER
-      // ===================================================
+      // ---------------------------------------------------
+      // GET VAPID KEY
+      // ---------------------------------------------------
 
-      const registration =
-        await navigator.serviceWorker.register(
-          "/sw.js"
-        );
-
-      await navigator.serviceWorker.ready;
-
-      // ===================================================
-      // 4. VAPID PUBLIC KEY
-      // ===================================================
+      console.log(
+        "🔑 Učitavam VAPID public key..."
+      );
 
       const vapidResponse =
         await fetch(
@@ -191,7 +597,9 @@ export default function AllowNotifications() {
           }
         );
 
-      if (!vapidResponse.ok) {
+      if (
+        !vapidResponse.ok
+      ) {
         throw new Error(
           "Nije moguće dobiti VAPID public key."
         );
@@ -209,44 +617,66 @@ export default function AllowNotifications() {
         );
       }
 
-      // ===================================================
-      // 5. POSTOJEĆI SUBSCRIPTION
-      // ===================================================
+      console.log(
+        "✅ VAPID public key pronađen."
+      );
+
+      // ---------------------------------------------------
+      // CHECK EXISTING BROWSER SUBSCRIPTION
+      // ---------------------------------------------------
 
       let subscription =
-        await registration.pushManager.getSubscription();
+        await readyRegistration
+          .pushManager
+          .getSubscription();
 
-      // ===================================================
-      // 6. NOVA SUBSCRIPTION
-      // ===================================================
+      console.log(
+        "📦 Postojeći subscription:",
+        subscription
+      );
+
+      // ---------------------------------------------------
+      // CREATE SUBSCRIPTION
+      // ---------------------------------------------------
 
       if (!subscription) {
+        console.log(
+          "➕ Kreiram novi Push subscription..."
+        );
+
         subscription =
-          await registration.pushManager.subscribe({
-            userVisibleOnly: true,
+          await readyRegistration
+            .pushManager
+            .subscribe({
+              userVisibleOnly: true,
 
-            applicationServerKey:
-              urlBase64ToArrayBuffer(
-                publicKey
-              ),
-          });
-      }
+              applicationServerKey:
+                urlBase64ToArrayBuffer(
+                  publicKey
+                ),
+            });
 
-      // ===================================================
-      // 7. PROVERA
-      // ===================================================
-
-      if (!subscription) {
-        throw new Error(
-          "Web Push subscription nije kreiran."
+        console.log(
+          "✅ Subscription kreiran:",
+          subscription
         );
       }
 
-      // ===================================================
-      // 8. SLANJE NEXT.JS API-JU
-      // ===================================================
+      if (!subscription) {
+        throw new Error(
+          "Subscription nije kreiran."
+        );
+      }
 
-      const saveResponse =
+      // ---------------------------------------------------
+      // SAVE SUBSCRIPTION
+      // ---------------------------------------------------
+
+      console.log(
+        "📤 Šaljem subscription serveru..."
+      );
+
+      const response =
         await fetch(
           "/api/push/subscribe",
           {
@@ -268,44 +698,112 @@ export default function AllowNotifications() {
         );
 
       const responseText =
-        await saveResponse.text();
+        await response.text();
 
-      let saveData:
+      console.log(
+        "📥 Server odgovor:",
+        responseText
+      );
+
+      let data:
         | SaveResponse
         | null = null;
 
       try {
-        saveData =
+        data =
           responseText
-            ? JSON.parse(responseText)
+            ? JSON.parse(
+                responseText
+              )
             : null;
       } catch {
-        saveData = {
-          error: responseText,
+        data = {
+          error:
+            responseText,
         };
       }
 
-      if (!saveResponse.ok) {
+      if (!response.ok) {
         throw new Error(
-          saveData?.error ||
+          data?.error ||
             "Subscription nije sačuvan."
         );
       }
 
-      // ===================================================
-      // 9. SUCCESS
-      // ===================================================
+      // ---------------------------------------------------
+      //  VERIFY DATABASE
+      // ---------------------------------------------------
+
+      console.log(
+        "🔍 Proveravam da li je subscription zaista u Drupal bazi..."
+      );
+
+      const statusResponse =
+        await fetch(
+          "/api/push/status",
+          {
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+            },
+
+            cache: "no-store",
+          }
+        );
+
+      const statusText =
+        await statusResponse.text();
+
+      console.log(
+        "📥 Status nakon subscribe:",
+        statusText
+      );
+
+      let statusData:
+        | PushStatusResponse
+        | null = null;
+
+      try {
+        statusData =
+          statusText
+            ? JSON.parse(
+                statusText
+              )
+            : null;
+      } catch {
+        statusData = null;
+      }
+
+      if (
+        !statusResponse.ok ||
+        !statusData?.subscribed
+      ) {
+        throw new Error(
+          "Subscription je sačuvan, ali Drupal baza nije potvrdila aktivnu pretplatu."
+        );
+      }
+
+      // ---------------------------------------------------
+      // SUCCESS
+      // ---------------------------------------------------
 
       setEnabled(true);
       setSuccess(true);
 
       setMessage(
-        saveData?.message ||
+        data?.message ||
           "Notifikacije su uspešno uključene."
       );
+
+      console.log(
+        "🟢 NOTIFIKACIJE UKLJUČENE"
+      );
+
     } catch (error) {
       console.error(
-        "❌ Web Push error:",
+        "❌ Enable error:",
         error
       );
 
@@ -317,13 +815,14 @@ export default function AllowNotifications() {
           ? error.message
           : "Greška prilikom uključivanja notifikacija."
       );
+
     } finally {
       setLoading(false);
     }
   }
 
   // =======================================================
-  // DISABLE NOTIFICATIONS
+  // DISABLE
   // =======================================================
 
   async function disableNotifications() {
@@ -332,25 +831,61 @@ export default function AllowNotifications() {
       setMessage("");
       setSuccess(false);
 
-      // ===================================================
-      // 1. SERVICE WORKER
-      // ===================================================
+      console.log(
+        "🔴 ISKLJUČIVANJE NOTIFIKACIJA"
+      );
 
-      if (!("serviceWorker" in navigator)) {
+      if (
+        !("serviceWorker" in navigator)
+      ) {
         throw new Error(
           "Service Worker nije podržan."
         );
       }
 
-      const registration =
-        await navigator.serviceWorker.ready;
+      // ---------------------------------------------------
+      // GET SERVICE WORKER
+      // ---------------------------------------------------
 
-      // ===================================================
-      // 2. POSTOJEĆI SUBSCRIPTION
-      // ===================================================
+      const registration =
+        await navigator.serviceWorker
+          .getRegistration();
+
+      if (!registration) {
+        setEnabled(false);
+        setSuccess(true);
+
+        setMessage(
+          "Notifikacije su već isključene."
+        );
+
+        return;
+      }
+
+      if (!registration.active) {
+        setEnabled(false);
+        setSuccess(true);
+
+        setMessage(
+          "Notifikacije su već isključene."
+        );
+
+        return;
+      }
+
+      // ---------------------------------------------------
+      // GET SUBSCRIPTION
+      // ---------------------------------------------------
 
       const subscription =
-        await registration.pushManager.getSubscription();
+        await registration
+          .pushManager
+          .getSubscription();
+
+      console.log(
+        "📦 Subscription:",
+        subscription
+      );
 
       if (!subscription) {
         setEnabled(false);
@@ -363,9 +898,13 @@ export default function AllowNotifications() {
         return;
       }
 
-      // ===================================================
-      // 3. BRISANJE SA NEXT.JS / DRUPAL
-      // ===================================================
+      // ---------------------------------------------------
+      // REMOVE FROM SERVER
+      // ---------------------------------------------------
+
+      console.log(
+        "📤 Brišem subscription sa servera..."
+      );
 
       const response =
         await fetch(
@@ -391,6 +930,11 @@ export default function AllowNotifications() {
       const responseText =
         await response.text();
 
+      console.log(
+        "📥 Server odgovor:",
+        responseText
+      );
+
       let data:
         | SaveResponse
         | null = null;
@@ -398,11 +942,14 @@ export default function AllowNotifications() {
       try {
         data =
           responseText
-            ? JSON.parse(responseText)
+            ? JSON.parse(
+                responseText
+              )
             : null;
       } catch {
         data = {
-          error: responseText,
+          error:
+            responseText,
         };
       }
 
@@ -413,37 +960,102 @@ export default function AllowNotifications() {
         );
       }
 
-      // ===================================================
-      // 4. BRISANJE IZ BROWSERA
-      // ===================================================
+      // ---------------------------------------------------
+      // REMOVE FROM BROWSER
+      // ---------------------------------------------------
+
+      console.log(
+        "🗑️ Brišem subscription iz browsera..."
+      );
 
       const unsubscribed =
         await subscription.unsubscribe();
 
-      if (!unsubscribed) {
-        throw new Error(
-          "Subscription nije uklonjen iz browsera."
+      console.log(
+        "🗑️ Browser unsubscribe:",
+        unsubscribed
+      );
+
+      // ---------------------------------------------------
+      // VERIFY DATABASE
+      // ---------------------------------------------------
+
+      console.log(
+        "🔍 Proveravam Drupal bazu nakon unsubscribe..."
+      );
+
+      const statusResponse =
+        await fetch(
+          "/api/push/status",
+          {
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+            },
+
+            cache: "no-store",
+          }
         );
+
+      const statusText =
+        await statusResponse.text();
+
+      console.log(
+        "📥 Status nakon unsubscribe:",
+        statusText
+      );
+
+      let statusData:
+        | PushStatusResponse
+        | null = null;
+
+      try {
+        statusData =
+          statusText
+            ? JSON.parse(
+                statusText
+              )
+            : null;
+      } catch {
+        statusData = null;
       }
 
-      // ===================================================
-      // 5. SUCCESS
-      // ===================================================
+      // ---------------------------------------------------
+      // FINAL
+      // ---------------------------------------------------
 
       setEnabled(false);
       setSuccess(true);
 
-      setMessage(
-        data?.message ||
-          "Notifikacije su uspešno isključene."
+      if (
+        statusResponse.ok &&
+        statusData?.subscribed ===
+          false
+      ) {
+        setMessage(
+          data?.message ||
+            "Notifikacije su uspešno isključene."
+        );
+      } else {
+        setMessage(
+          "Browser subscription je uklonjen, ali proveru Drupal baze nije bilo moguće potvrditi."
+        );
+      }
+
+      console.log(
+        "🔴 NOTIFIKACIJE ISKLJUČENE"
       );
+
     } catch (error) {
       console.error(
-        "❌ Disable notifications error:",
+        "❌ Disable error:",
         error
       );
 
-      setEnabled(true);
+      await checkSubscription();
+
       setSuccess(false);
 
       setMessage(
@@ -451,26 +1063,44 @@ export default function AllowNotifications() {
           ? error.message
           : "Greška prilikom isključivanja notifikacija."
       );
+
     } finally {
       setLoading(false);
     }
   }
 
   // =======================================================
-  // SWITCH CHANGE
+  // SWITCH CLICK
   // =======================================================
 
-  async function handleSwitchChange(
-    checked: boolean
-  ) {
+  async function handleSwitchClick() {
+    console.log(
+      "🖱️ SWITCH CLICK",
+      {
+        enabled,
+        loading,
+        checking,
+
+        permission:
+          "Notification" in window
+            ? Notification.permission
+            : "unsupported",
+      }
+    );
+
+    // Operacija u toku.
     if (loading) {
+      console.log(
+        "⏳ Operacija je već u toku."
+      );
+
       return;
     }
 
-    if (checked) {
-      await enableNotifications();
-    } else {
+    if (enabled) {
       await disableNotifications();
+    } else {
+      await enableNotifications();
     }
   }
 
@@ -480,24 +1110,42 @@ export default function AllowNotifications() {
 
   return (
     <div className="flex flex-col gap-3">
+
       <div className="flex items-center justify-between gap-6">
+
         {/* TEXT */}
 
         <div className="space-y-1">
+
           <h3 className="text-base font-semibold text-gray-900">
             Push notifikacije
           </h3>
 
           <p className="text-sm text-gray-500">
-            {enabled
+            {checking
+              ? "Provera..."
+              : enabled
               ? "Notifikacije su uključene."
               : "Notifikacije su isključene."}
           </p>
+
         </div>
 
-        {/* APPLE STYLE SWITCH */}
+        {/* SWITCH */}
 
-        <label
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Push notifikacije"
+          aria-busy={loading}
+          onClick={
+            handleSwitchClick
+          }
+          disabled={
+            loading || checking
+          }
+
           className={`
             relative
             inline-flex
@@ -508,33 +1156,23 @@ export default function AllowNotifications() {
             rounded-full
             border
             p-px
-            transition-colors
+            transition-all
             duration-200
+
             ${
               enabled
                 ? "border-green-500"
                 : "border-red-500"
             }
+
             ${
-              loading
+              loading ||
+              checking
                 ? "cursor-not-allowed opacity-50"
-                : "cursor-pointer"
+                : "cursor-pointer opacity-100"
             }
           `}
         >
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={enabled}
-            disabled={loading}
-            onChange={(event) =>
-              handleSwitchChange(
-                event.target.checked
-              )
-            }
-          />
-
-          {/* SWITCH BUTTON */}
 
           <span
             className={`
@@ -548,6 +1186,7 @@ export default function AllowNotifications() {
               transition-all
               duration-200
               ease-in-out
+
               ${
                 enabled
                   ? "left-[calc(100%-29px)] bg-green-500"
@@ -555,10 +1194,12 @@ export default function AllowNotifications() {
               }
             `}
           />
-        </label>
+
+        </button>
+
       </div>
 
-      {/* STATUS MESSAGE */}
+      {/* STATUS */}
 
       {message && (
         <p
@@ -571,6 +1212,7 @@ export default function AllowNotifications() {
           {message}
         </p>
       )}
+
     </div>
   );
 }
