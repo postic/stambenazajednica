@@ -1,95 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// =========================================================
-// CONFIGURATION
-// =========================================================
-
 const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
-// =========================================================
+// ==================================================
 // TYPES
-// =========================================================
-
-interface NextAuthUser {
-  uid: string | number;
-  name?: string;
-  email?: string;
-}
-
-interface PushKeys {
-  p256dh: string;
-  auth: string;
-}
+// ==================================================
 
 interface PushSubscriptionData {
-  endpoint: string;
-  expirationTime?: number | null;
-  keys: PushKeys;
-}
-
-interface SubscribeRequest {
-  subscription?: PushSubscriptionData;
-
   endpoint?: string;
   expirationTime?: number | null;
-  keys?: PushKeys;
+  keys?: {
+    p256dh?: string;
+    auth?: string;
+  };
 }
 
-// =========================================================
-// READ NEXT_AUTH COOKIE
-// =========================================================
+interface PushRequestBody {
+  endpoint?: string;
+  expirationTime?: number | null;
+  keys?: {
+    p256dh?: string;
+    auth?: string;
+  };
+
+  // Podržavamo i:
+  subscription?: PushSubscriptionData;
+}
+
+// ==================================================
+// GET USER FROM next_auth
+// ==================================================
 
 function getNextAuthUser(
   request: NextRequest
-): NextAuthUser | null {
+) {
   try {
     const cookie =
       request.cookies.get("next_auth")?.value;
 
-    console.log(
-      "[Push] next_auth cookie postoji:",
-      Boolean(cookie)
-    );
-
     if (!cookie) {
-      console.error(
-        "[Push] next_auth cookie nije pronađen."
-      );
-
       return null;
     }
 
     const decoded =
       decodeURIComponent(cookie);
 
-    console.log(
-      "[Push] next_auth cookie length:",
-      decoded.length
-    );
-
-    // =====================================================
-    // TRY JSON
-    // =====================================================
+    // ==================================================
+    // DIRECT JSON
+    // ==================================================
 
     try {
-      const parsed =
-        JSON.parse(decoded);
-
-      console.log(
-        "[Push] next_auth JSON:",
-        {
-          uid:
-            parsed?.uid ??
-            parsed?.user?.uid ??
-            null,
-          name:
-            parsed?.name ??
-            parsed?.user?.name ??
-            null,
-        }
-      );
+      const parsed = JSON.parse(decoded);
 
       if (
         parsed &&
@@ -98,21 +61,15 @@ function getNextAuthUser(
           parsed.user?.uid !== undefined
         )
       ) {
-        return (
-          parsed.user || parsed
-        );
+        return parsed.user || parsed;
       }
     } catch {
-      console.log(
-        "[Push] next_auth nije JSON, koristim parser."
-      );
+      // Nastavljamo sa regex proverom.
     }
 
-    // =====================================================
-    // OBJECT FORMAT
-    //
-    // Object uid:"226" name:"S5"
-    // =====================================================
+    // ==================================================
+    // REGEX UID
+    // ==================================================
 
     const uidMatch =
       decoded.match(
@@ -124,32 +81,25 @@ function getNextAuthUser(
         /name["']?\s*[:=]\s*["']?([^,"'}]+)/
       );
 
-    if (!uidMatch) {
-      console.error(
-        "[Push] UID nije pronađen u next_auth cookie-u."
+    const emailMatch =
+      decoded.match(
+        /email["']?\s*[:=]\s*["']?([^,"'}]+)/
       );
 
+    if (!uidMatch) {
       return null;
     }
 
-    const user = {
+    return {
       uid: uidMatch[1],
-      name:
-        nameMatch?.[1]?.trim(),
+      name: nameMatch?.[1]?.trim(),
+      email: emailMatch?.[1]?.trim(),
     };
 
-    console.log(
-      "[Push] Korisnik pronađen:",
-      {
-        uid: user.uid,
-        name: user.name,
-      }
-    );
-
-    return user;
   } catch (error) {
+
     console.error(
-      "[Push] Greška pri čitanju next_auth:",
+      "[Push Subscribe] Greška pri čitanju next_auth:",
       error
     );
 
@@ -157,45 +107,35 @@ function getNextAuthUser(
   }
 }
 
-// =========================================================
+// ==================================================
 // POST
-// =========================================================
+// ==================================================
 
 export async function POST(
   request: NextRequest
 ) {
-  console.log(
-    "================================================="
-  );
-
-  console.log(
-    "[Push] POST /api/push/subscribe"
-  );
-
-  console.log(
-    "================================================="
-  );
 
   try {
-    // =====================================================
-    // 1. CHECK DRUPAL URL
-    // =====================================================
 
     console.log(
-      "[Push] Drupal URL:",
-      DRUPAL_BASE_URL
+      "[Push Subscribe] ==============================="
     );
 
-    // =====================================================
-    // 2. AUTH USER
-    // =====================================================
+    console.log(
+      "[Push Subscribe] POST"
+    );
+
+    // ==================================================
+    // USER
+    // ==================================================
 
     const user =
       getNextAuthUser(request);
 
     if (!user) {
+
       console.error(
-        "[Push] Korisnik nije pronađen."
+        "[Push Subscribe] Korisnik nije prijavljen."
       );
 
       return NextResponse.json(
@@ -210,9 +150,9 @@ export async function POST(
       );
     }
 
-    // =====================================================
-    // 3. UID
-    // =====================================================
+    // ==================================================
+    // UID
+    // ==================================================
 
     const uid =
       Number(user.uid);
@@ -221,8 +161,9 @@ export async function POST(
       !Number.isInteger(uid) ||
       uid <= 0
     ) {
+
       console.error(
-        "[Push] Neispravan UID:",
+        "[Push Subscribe] Neispravan UID:",
         user.uid
       );
 
@@ -231,8 +172,6 @@ export async function POST(
           success: false,
           error:
             "Neispravan korisnički ID.",
-          userUid:
-            user.uid,
         },
         {
           status: 400,
@@ -241,67 +180,33 @@ export async function POST(
     }
 
     console.log(
-      "[Push] UID:",
+      "[Push Subscribe] UID:",
       uid
     );
 
-    // =====================================================
-    // 4. READ BODY
-    // =====================================================
+    // ==================================================
+    // READ BODY
+    // ==================================================
 
-    const body =
-      (await request.json()) as SubscribeRequest;
+    let body: PushRequestBody;
 
-    console.log(
-      "[Push] Request body keys:",
-      Object.keys(body || {})
-    );
+    try {
 
-    // =====================================================
-    // 5. EXTRACT SUBSCRIPTION
-    // =====================================================
+      body =
+        await request.json();
 
-    let subscription:
-      | PushSubscriptionData
-      | null = null;
+    } catch (error) {
 
-    if (body.subscription) {
-      subscription =
-        body.subscription;
-
-      console.log(
-        "[Push] Subscription pronađen u body.subscription."
-      );
-    } else if (
-      body.endpoint &&
-      body.keys
-    ) {
-      subscription = {
-        endpoint:
-          body.endpoint,
-
-        expirationTime:
-          body.expirationTime ??
-          null,
-
-        keys: body.keys,
-      };
-
-      console.log(
-        "[Push] Subscription pronađen direktno u body-u."
-      );
-    }
-
-    if (!subscription) {
       console.error(
-        "[Push] Subscription nije pronađen."
+        "[Push Subscribe] JSON greška:",
+        error
       );
 
       return NextResponse.json(
         {
           success: false,
           error:
-            "Push subscription nije prosleđen.",
+            "Neispravan JSON zahtev.",
         },
         {
           status: 400,
@@ -309,42 +214,96 @@ export async function POST(
       );
     }
 
-    // =====================================================
-    // 6. VALIDATE ENDPOINT
-    // =====================================================
+    console.log(
+      "[Push Subscribe] Primljeni body:",
+      body
+    );
+
+    // ==================================================
+    // SUPPORT BOTH FORMATS
+    //
+    // FORMAT 1:
+    //
+    // {
+    //   endpoint,
+    //   keys
+    // }
+    //
+    // FORMAT 2:
+    //
+    // {
+    //   subscription: {
+    //     endpoint,
+    //     keys
+    //   }
+    // }
+    // ==================================================
+
+    const subscription =
+      body.subscription || body;
+
+    // ==================================================
+    // ENDPOINT
+    // ==================================================
+
+    const endpoint =
+      typeof subscription.endpoint ===
+        "string"
+        ? subscription.endpoint.trim()
+        : "";
+
+    console.log(
+      "[Push Subscribe] Endpoint:",
+      endpoint
+        ? endpoint
+        : "NEMA ENDPOINTA"
+    );
+
+    if (!endpoint) {
+
+      console.error(
+        "[Push Subscribe] Push subscription endpoint nedostaje.",
+        {
+          body,
+        }
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Push subscription endpoint nedostaje.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // ==================================================
+    // KEYS
+    // ==================================================
+
+    const p256dh =
+      subscription.keys?.p256dh;
+
+    const auth =
+      subscription.keys?.auth;
 
     if (
-      typeof subscription.endpoint !==
-        "string" ||
-      !subscription.endpoint
+      typeof p256dh !== "string" ||
+      !p256dh
     ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Push endpoint nije validan.",
-        },
-        {
-          status: 400,
-        }
+
+      console.error(
+        "[Push Subscribe] p256dh key nedostaje."
       );
-    }
 
-    // =====================================================
-    // 7. VALIDATE KEYS
-    // =====================================================
-
-    if (
-      !subscription.keys ||
-      typeof subscription.keys.p256dh !==
-        "string" ||
-      !subscription.keys.p256dh
-    ) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "p256dh key nije validan.",
+            "Push subscription p256dh key nedostaje.",
         },
         {
           status: 400,
@@ -353,15 +312,19 @@ export async function POST(
     }
 
     if (
-      typeof subscription.keys.auth !==
-        "string" ||
-      !subscription.keys.auth
+      typeof auth !== "string" ||
+      !auth
     ) {
+
+      console.error(
+        "[Push Subscribe] auth key nedostaje."
+      );
+
       return NextResponse.json(
         {
           success: false,
           error:
-            "auth key nije validan.",
+            "Push subscription auth key nedostaje.",
         },
         {
           status: 400,
@@ -369,100 +332,82 @@ export async function POST(
       );
     }
 
-    console.log(
-      "[Push] Subscription validan."
-    );
-
-    console.log(
-      "[Push] Endpoint:",
-      subscription.endpoint
-    );
-
-    console.log(
-      "[Push] p256dh postoji:",
-      Boolean(
-        subscription.keys.p256dh
-      )
-    );
-
-    console.log(
-      "[Push] auth postoji:",
-      Boolean(
-        subscription.keys.auth
-      )
-    );
-
-    // =====================================================
-    // 8. PREPARE DRUPAL PAYLOAD
-    // =====================================================
+    // ==================================================
+    // DRUPAL PAYLOAD
+    // ==================================================
 
     const drupalPayload = {
-      user_id: uid,
+
+      user_id:
+        uid,
 
       endpoint:
-        subscription.endpoint,
+        endpoint,
 
       expirationTime:
         subscription.expirationTime ??
         null,
 
       keys: {
+
         p256dh:
-          subscription.keys.p256dh,
+          p256dh,
 
         auth:
-          subscription.keys.auth,
+          auth,
       },
     };
 
     console.log(
-      "[Push] Šaljem subscription Drupal-u:"
+      "[Push Subscribe] Drupal payload:",
+      {
+        user_id:
+          drupalPayload.user_id,
+
+        endpoint:
+          drupalPayload.endpoint,
+
+        has_p256dh:
+          Boolean(
+            drupalPayload.keys.p256dh
+          ),
+
+        has_auth:
+          Boolean(
+            drupalPayload.keys.auth
+          ),
+      }
     );
 
-    console.log({
-      user_id:
-        drupalPayload.user_id,
-
-      endpoint:
-        drupalPayload.endpoint,
-
-      expirationTime:
-        drupalPayload.expirationTime,
-
-      hasP256dh:
-        Boolean(
-          drupalPayload.keys.p256dh
-        ),
-
-      hasAuth:
-        Boolean(
-          drupalPayload.keys.auth
-        ),
-    });
-
-    // =====================================================
-    // 9. CALL DRUPAL
-    // =====================================================
+    // ==================================================
+    // DRUPAL ENDPOINT
+    // ==================================================
 
     const drupalUrl =
       `${DRUPAL_BASE_URL}/api/webpush/subscribe`;
 
     console.log(
-      "[Push] Drupal endpoint:",
+      "[Push Subscribe] Drupal endpoint:",
       drupalUrl
     );
+
+    // ==================================================
+    // SEND TO DRUPAL
+    // ==================================================
 
     const drupalResponse =
       await fetch(
         drupalUrl,
         {
-          method: "POST",
+          method:
+            "POST",
 
           headers: {
+
             "Content-Type":
               "application/json",
 
-            Accept:
+            "Accept":
               "application/json",
           },
 
@@ -476,48 +421,63 @@ export async function POST(
         }
       );
 
-    // =====================================================
-    // 10. READ DRUPAL RESPONSE
-    // =====================================================
+    // ==================================================
+    // DRUPAL RESPONSE
+    // ==================================================
 
     const responseText =
       await drupalResponse.text();
 
     console.log(
-      "[Push] Drupal HTTP status:",
+      "[Push Subscribe] Drupal HTTP status:",
       drupalResponse.status
     );
 
     console.log(
-      "[Push] Drupal response:",
+      "[Push Subscribe] Drupal response:",
       responseText
     );
 
+    // ==================================================
+    // PARSE
+    // ==================================================
+
     let drupalData:
-      | Record<string, unknown>
+      | {
+          success?: boolean;
+          action?: string;
+          id?: number;
+          user_id?: number;
+          endpoint?: string;
+          error?: string;
+        }
       | null = null;
 
     try {
+
       drupalData =
         responseText
           ? JSON.parse(
               responseText
             )
           : null;
+
     } catch {
-      drupalData = {
-        raw:
-          responseText,
-      };
+
+      console.error(
+        "[Push Subscribe] Drupal response nije validan JSON."
+      );
+
     }
 
-    // =====================================================
-    // 11. DRUPAL ERROR
-    // =====================================================
+    // ==================================================
+    // DRUPAL ERROR
+    // ==================================================
 
     if (!drupalResponse.ok) {
+
       console.error(
-        "[Push] Drupal nije prihvatio subscription.",
+        "[Push Subscribe] Drupal nije prihvatio subscription.",
         {
           status:
             drupalResponse.status,
@@ -532,15 +492,13 @@ export async function POST(
           success: false,
 
           error:
-            typeof drupalData?.error ===
-            "string"
-              ? drupalData.error
-              : "Drupal nije uspeo da sačuva subscription.",
+            drupalData?.error ||
+            "Drupal nije prihvatio subscription.",
 
           drupalStatus:
             drupalResponse.status,
 
-          drupal:
+          drupalData:
             drupalData,
         },
         {
@@ -549,71 +507,97 @@ export async function POST(
       );
     }
 
-    // =====================================================
-    // 12. SUCCESS
-    // =====================================================
+    // ==================================================
+    // SUCCESS FALSE
+    // ==================================================
+
+    if (
+      drupalData &&
+      drupalData.success === false
+    ) {
+
+      return NextResponse.json(
+        {
+          success: false,
+
+          error:
+            drupalData.error ||
+            "Drupal nije sačuvao subscription.",
+
+          drupalData,
+        },
+        {
+          status: 502,
+        }
+      );
+    }
+
+    // ==================================================
+    // SUCCESS
+    // ==================================================
 
     console.log(
-      "[Push] ========================================="
-    );
-
-    console.log(
-      "[Push] SUBSCRIPTION USPEŠNO SAČUVAN"
-    );
-
-    console.log(
-      "[Push] UID:",
-      uid
-    );
-
-    console.log(
-      "[Push] Drupal response:",
-      drupalData
-    );
-
-    console.log(
-      "[Push] ========================================="
-    );
-
-    return NextResponse.json({
-      success: true,
-
-      uid,
-
-      message:
-        "Web Push subscription je uspešno sačuvan u Drupal bazi.",
-
-      drupal:
-        drupalData,
-    });
-  } catch (error) {
-    console.error(
-      "[Push] ========================================="
-    );
-
-    console.error(
-      "[Push] SUBSCRIBE ERROR"
-    );
-
-    console.error(
-      error
-    );
-
-    console.error(
-      "[Push] ========================================="
+      "[Push Subscribe] Subscription uspešno sačuvan.",
+      {
+        uid,
+        action:
+          drupalData?.action,
+        id:
+          drupalData?.id,
+      }
     );
 
     return NextResponse.json(
       {
-        success: false,
+        success:
+          true,
+
+        user_id:
+          uid,
+
+        action:
+          drupalData?.action ||
+          "saved",
+
+        id:
+          drupalData?.id ??
+          null,
+
+        endpoint:
+          drupalData?.endpoint ||
+          endpoint,
+      },
+      {
+        status:
+          200,
+
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "[Push Subscribe] Fatal error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success:
+          false,
 
         error:
           error instanceof Error
             ? error.message
-            : "Greška prilikom čuvanja Web Push subscription-a.",
+            : "Greška prilikom čuvanja push subscription-a.",
       },
       {
-        status: 500,
+        status:
+          500,
       }
     );
   }

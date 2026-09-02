@@ -1,24 +1,31 @@
 const withPWA = require("next-pwa")({
   dest: "public",
 
+  // =======================================================
+  // SERVICE WORKER REGISTRATION
+  // =======================================================
+
   register: false,
 
-  skipWaiting: true,
-
   // =======================================================
-  // CUSTOM SERVICE WORKER
+  // SERVICE WORKER
   // =======================================================
 
   swSrc: "src/sw.js",
 
   // =======================================================
+  // UPDATE
+  // =======================================================
+
+  skipWaiting: true,
+
+  // =======================================================
   // DEVELOPMENT
   // =======================================================
 
-  // next-pwa ne obrađuje Service Worker u developmentu.
-  // Naš /sw.js registrujemo ručno iz AllowNotifications.tsx.
-  disable:
-    process.env.NODE_ENV === "development",
+  // U developmentu next-pwa ne generiše SW.
+  // /sw.js se registruje ručno iz AllowNotifications.tsx.
+  disable: process.env.NODE_ENV === "development",
 });
 
 /** @type {import('next').NextConfig} */
