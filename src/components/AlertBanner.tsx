@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import Link from "next/link";
 
 export default function AlertBanner() {
   const [visible, setVisible] = useState(true);
@@ -10,8 +11,22 @@ export default function AlertBanner() {
 
   return (
     <div className="bg-blue-500 text-white px-6 py-2 flex items-center justify-between">
-      <span>System maintenance scheduled at 12:00 AM</span>
-      <button onClick={() => setVisible(false)}>
+      <span>
+        Za podešavanje obaveštenja i drugih opcija, posetite stranicu {" "}
+        <Link
+          href="/podesavanja"
+          className="font-semibold underline underline-offset-2"
+        >
+          Podešavanja
+        </Link>
+        .
+      </span>
+
+      <button
+        onClick={() => setVisible(false)}
+        aria-label="Zatvori obaveštenje"
+        className="ml-4 shrink-0"
+      >
         <X size={18} />
       </button>
     </div>

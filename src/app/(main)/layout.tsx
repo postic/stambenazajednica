@@ -9,6 +9,7 @@ import Statistics from "@/components/Statistics";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import TelefoniSidebar from "@/components/TelefoniSidebar";
+import AlertBanner from "@/components/AlertBanner";
 import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import { Toaster } from "sonner";
 
@@ -26,6 +27,9 @@ export default function RootLayout({
 
           {/* NAVBAR */}
           <Navbar setMobileOpen={setMobileOpen} />
+
+          {/* ALERT BANNER */}
+          <AlertBanner />
 
           {/* MAIN LAYOUT */}
           <div className="flex h-[calc(100dvh-64px)] overflow-hidden">
@@ -48,6 +52,7 @@ export default function RootLayout({
 
               {/* PAGE CONTENT */}
               <Statistics />
+
               <div className="mt-4">
                 {children}
               </div>
@@ -66,7 +71,10 @@ export default function RootLayout({
 
           </div>
 
-          <Toaster position="top-center" richColors />
+          <Toaster
+            position="top-center"
+            richColors
+          />
 
         </AuthProvider>
       </body>
