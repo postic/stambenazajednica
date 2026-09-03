@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
-import OnboardingModal from "@/components/onboarding-modal"
 
 export default function LoginLayout({
   children,
@@ -10,8 +9,6 @@ export default function LoginLayout({
 }) {
   return (
     <AuthProvider>
-      {/* Onboarding mora biti ovde */}
-      <OnboardingModal />
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         {children}
       </div>
