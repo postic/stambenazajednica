@@ -52,10 +52,7 @@ interface PushRequest {
 // VAPID
 // =========================================================
 
-if (
-  VAPID_PUBLIC_KEY &&
-  VAPID_PRIVATE_KEY
-) {
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
     VAPID_SUBJECT,
     VAPID_PUBLIC_KEY,
@@ -79,9 +76,7 @@ function isAuthorized(
   }
 
   const authorization =
-    request.headers.get(
-      "authorization"
-    );
+    request.headers.get("authorization");
 
   return (
     authorization ===
@@ -109,8 +104,7 @@ async function getSubscriptions(): Promise<
       method: "GET",
 
       headers: {
-        Accept:
-          "application/json",
+        Accept: "application/json",
       },
 
       cache: "no-store",
@@ -178,43 +172,86 @@ async function getSubscriptions(): Promise<
 
 async function deleteSubscription(
   subscription: DrupalSubscription
-) {
+): Promise<boolean> {
   try {
     const url =
       `${DRUPAL_BASE_URL}/api/webpush/unsubscribe`;
 
-    await fetch(url, {
-      method: "POST",
+    const response =
+      await fetch(url, {
+        method: "POST",
 
-      headers: {
-        "Content-Type":
-          "application/json",
+        headers: {
+          "Content-Type":
+            "application/json",
 
-        Accept:
-          "application/json",
-      },
+          Accept:
+            "application/json",
+        },
 
-      body: JSON.stringify({
-        user_id:
-          subscription.user_id,
+        body: JSON.stringify({
+          user_id:
+            subscription.user_id,
 
-        endpoint:
-          subscription.endpoint,
-      }),
+          endpoint:
+            subscription.endpoint,
+        }),
 
-      cache: "no-store",
-    });
+        cache: "no-store",
+      });
+
+    const text =
+      await response.text();
+
+    if (!response.ok) {
+      console.error(
+        "[Push Send] Drupal nije obrisao subscription:",
+        subscription.id,
+        "status:",
+        response.status,
+        text
+      );
+
+      return false;
+    }
 
     console.log(
-      "[Push Send] Nevažeći subscription uklonjen:",
+      "[Push Send] Nevažeći subscription obrisan:",
       subscription.id
     );
+
+    return true;
   } catch (error) {
     console.error(
       "[Push Send] Greška prilikom brisanja subscription-a:",
+      subscription.id,
       error
     );
+
+    return false;
   }
+}
+
+// =========================================================
+// GET STATUS CODE FROM WEB-PUSH ERROR
+// =========================================================
+
+function getStatusCode(
+  error: unknown
+): number | undefined {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error
+  ) {
+    return (
+      error as {
+        statusCode?: number;
+      }
+    ).statusCode;
+  }
+
+  return undefined;
 }
 
 // =========================================================
@@ -265,6 +302,10 @@ export async function POST(
       !VAPID_PUBLIC_KEY ||
       !VAPID_PRIVATE_KEY
     ) {
+      console.error(
+        "[Push Send] VAPID ključevi nisu podešeni."
+      );
+
       return NextResponse.json(
         {
           success: false,
@@ -394,14 +435,28 @@ export async function POST(
       of subscriptions
     ) {
       try {
+        // -------------------------------------------------
+        // Validate subscription
+        // -------------------------------------------------
+
         if (
           !subscription.endpoint ||
           !subscription.keys?.p256dh ||
           !subscription.keys?.auth
         ) {
           failed++;
+
+          console.error(
+            "[Push Send] Neispravan subscription:",
+            subscription.id
+          );
+
           continue;
         }
+
+        // -------------------------------------------------
+        // Send push
+        // -------------------------------------------------
 
         await webpush.sendNotification(
           {
@@ -427,41 +482,45 @@ export async function POST(
 
         console.log(
           "[Push Send] Poslato korisniku:",
-          subscription.user_id
+          subscription.user_id,
+          "subscription:",
+          subscription.id
         );
       } catch (error: unknown) {
         failed++;
 
         const statusCode =
-          typeof error === "object" &&
-          error !== null &&
-          "statusCode" in error
-            ? (
-                error as {
-                  statusCode?: number;
-                }
-              ).statusCode
-            : undefined;
+          getStatusCode(error);
 
         console.error(
           "[Push Send] Greška za subscription:",
           subscription.id,
+          "status:",
           statusCode
         );
 
         // =================================================
-        // INVALID SUBSCRIPTION
+        // INVALID / EXPIRED SUBSCRIPTION
         // =================================================
 
         if (
           statusCode === 404 ||
           statusCode === 410
         ) {
-          await deleteSubscription(
-            subscription
+          console.log(
+            "[Push Send] Subscription je nevažeći.",
+            "Pokušavam brisanje:",
+            subscription.id
           );
 
-          removed++;
+          const deleted =
+            await deleteSubscription(
+              subscription
+            );
+
+          if (deleted) {
+            removed++;
+          }
         }
       }
     }
@@ -506,7 +565,7 @@ export async function POST(
       removed,
 
       message:
-        `Push poslato. Uspešno: ${sent}, neuspešno: ${failed}.`,
+        `Push poslato. Uspešno: ${sent}, neuspešno: ${failed}, obrisano: ${removed}.`,
     });
   } catch (error) {
     console.error(
