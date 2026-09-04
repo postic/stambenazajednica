@@ -12,7 +12,7 @@ export default function AlertBanner() {
   return (
     <div className="bg-blue-500 text-white px-4 py-2 flex items-center justify-between">
       <span>
-        Za obaveštenja i ostale opcije posetite {" "}
+        Za obaveštenja i ostale opcije posetite stranicu {" "}
         <Link
           href="/podesavanja"
           className="font-semibold"
