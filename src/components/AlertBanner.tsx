@@ -10,14 +10,14 @@ export default function AlertBanner() {
   if (!visible) return null;
 
   return (
-    <div className="bg-blue-500 text-white px-6 py-2 flex items-center justify-between">
+    <div className="bg-blue-500 text-white px-4 py-2 flex items-center justify-between">
       <span>
-        Za podešavanje obaveštenja i drugih opcija, posetite stranicu {" "}
+        Za obaveštenja i ostale opcije posetite {" "}
         <Link
           href="/podesavanja"
-          className="font-semibold underline underline-offset-2"
+          className="font-semibold"
         >
-          Podešavanja
+          podešavanja
         </Link>
         .
       </span>
