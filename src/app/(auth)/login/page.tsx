@@ -181,7 +181,7 @@ export default function LoginPage() {
               </h2>
 
               <p className="text-sm text-gray-500 mt-3 leading-relaxed">
-                Za dobijanje Vašeg PIN-a obratite se administratoru.
+                Za dobijanje Vašeg PIN-a kontaktirajte administratora na telefon: 064 2302636.
               </p>
 
               <Button
