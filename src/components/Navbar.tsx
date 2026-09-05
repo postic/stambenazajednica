@@ -24,6 +24,8 @@ import {
   Home,
   Bell,
   Wrench,
+  CircleHelp,
+  Info,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -207,6 +209,15 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
               >
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Podešavanja</span>
+              </DropdownMenuItem>
+
+              {/* Pomoć i uputstvo */}
+              <DropdownMenuItem
+                onClick={() => router.push("/info")}
+                className="cursor-pointer"
+              >
+                <Info className="mr-2 h-4 w-4" />
+                <span>Pomoć i uputstvo</span>
               </DropdownMenuItem>
 
               {/* Separator */}
