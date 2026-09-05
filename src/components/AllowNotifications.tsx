@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 /**
  * =========================================================
@@ -16,11 +17,10 @@ function urlBase64ToArrayBuffer(
       (4 - (base64String.length % 4)) % 4
     );
 
-  const base64 = (
+  const base64 =
     base64String
       .replace(/-/g, "+")
-      .replace(/_/g, "/") + padding
-  );
+      .replace(/_/g, "/") + padding;
 
   const rawData = window.atob(base64);
 
@@ -52,11 +52,6 @@ interface SaveResponse {
  * =========================================================
  * SERVICE WORKER
  * =========================================================
- *
- * Čeka da Service Worker postane ACTIVE.
- *
- * Ako worker postane "redundant", odmah prijavljujemo
- * grešku umesto da čekamo 15 sekundi.
  */
 
 async function getActiveServiceWorker(): Promise<
@@ -71,22 +66,10 @@ async function getActiveServiceWorker(): Promise<
     );
   }
 
-  /**
-   * -------------------------------------------------------
-   * POSTOJEĆA REGISTRACIJA
-   * -------------------------------------------------------
-   */
-
   let registration =
     await navigator.serviceWorker.getRegistration(
       "/"
     );
-
-  /**
-   * -------------------------------------------------------
-   * AKO NE POSTOJI → REGISTRUJ /sw.js
-   * -------------------------------------------------------
-   */
 
   if (!registration) {
     console.log(
@@ -107,12 +90,6 @@ async function getActiveServiceWorker(): Promise<
     );
   }
 
-  /**
-   * -------------------------------------------------------
-   * AKO JE VEĆ ACTIVE
-   * -------------------------------------------------------
-   */
-
   if (registration.active) {
     console.log(
       "[Push] Service Worker je već ACTIVE."
@@ -120,12 +97,6 @@ async function getActiveServiceWorker(): Promise<
 
     return registration;
   }
-
-  /**
-   * -------------------------------------------------------
-   * ČEKANJE NA ACTIVE
-   * -------------------------------------------------------
-   */
 
   console.log(
     "[Push] Čekam da Service Worker postane ACTIVE..."
@@ -135,8 +106,8 @@ async function getActiveServiceWorker(): Promise<
     (resolve, reject) => {
       let finished = false;
 
-      const timeout = window.setTimeout(
-        () => {
+      const timeout =
+        window.setTimeout(() => {
           if (finished) {
             return;
           }
@@ -148,24 +119,12 @@ async function getActiveServiceWorker(): Promise<
               "Service Worker nije postao aktivan u očekivanom vremenu."
             )
           );
-        },
-        15000
-      );
-
-      /**
-       * ---------------------------------------------------
-       * PROVERA STATE
-       * ---------------------------------------------------
-       */
+        }, 15000);
 
       const checkState = () => {
         if (finished) {
           return;
         }
-
-        /**
-         * ACTIVE
-         */
 
         if (registration.active) {
           finished = true;
@@ -183,10 +142,6 @@ async function getActiveServiceWorker(): Promise<
           return;
         }
 
-        /**
-         * INSTALLING
-         */
-
         if (
           registration.installing
         ) {
@@ -196,10 +151,6 @@ async function getActiveServiceWorker(): Promise<
           );
         }
 
-        /**
-         * WAITING
-         */
-
         if (
           registration.waiting
         ) {
@@ -208,12 +159,6 @@ async function getActiveServiceWorker(): Promise<
           );
         }
       };
-
-      /**
-       * ---------------------------------------------------
-       * STATE CHANGE
-       * ---------------------------------------------------
-       */
 
       const worker =
         registration.installing ||
@@ -228,10 +173,6 @@ async function getActiveServiceWorker(): Promise<
               worker.state
             );
 
-            /**
-             * ACTIVE
-             */
-
             if (
               worker.state ===
               "activated"
@@ -239,10 +180,6 @@ async function getActiveServiceWorker(): Promise<
               checkState();
               return;
             }
-
-            /**
-             * REDUNDANT
-             */
 
             if (
               worker.state ===
@@ -268,12 +205,6 @@ async function getActiveServiceWorker(): Promise<
         );
       }
 
-      /**
-       * ---------------------------------------------------
-       * FALLBACK POLLING
-       * ---------------------------------------------------
-       */
-
       const interval =
         window.setInterval(() => {
           if (finished) {
@@ -294,10 +225,6 @@ async function getActiveServiceWorker(): Promise<
             );
           }
         }, 100);
-
-      /**
-       * Prva provera odmah
-       */
 
       checkState();
     }
@@ -320,51 +247,16 @@ export default function AllowNotifications() {
   const [checking, setChecking] =
     useState(true);
 
-  const [message, setMessage] =
-    useState("");
-
-  const [messageType, setMessageType] =
-    useState<
-      "success" | "error" | "info"
-    >("info");
-
-  /**
-   * =======================================================
-   * MESSAGE
-   * =======================================================
-   */
-
-  const showMessage = (
-    text: string,
-    type:
-      | "success"
-      | "error"
-      | "info"
-  ) => {
-    setMessage(text);
-    setMessageType(type);
-  };
-
   /**
    * =======================================================
    * PROVERA TRENUTNOG STATUSA
    * =======================================================
-   *
-   * ON/OFF stanje određuje browser PushSubscription.
-   *
-   * NE proveravamo Drupal bazu.
    */
 
   const checkSubscription =
     async () => {
       try {
         setChecking(true);
-
-        /**
-         * ---------------------------------------------------
-         * BROWSER SUPPORT
-         * ---------------------------------------------------
-         */
 
         if (
           typeof window ===
@@ -378,12 +270,6 @@ export default function AllowNotifications() {
           setEnabled(false);
           return;
         }
-
-        /**
-         * ---------------------------------------------------
-         * SERVICE WORKER
-         * ---------------------------------------------------
-         */
 
         const registration =
           await navigator.serviceWorker.getRegistration(
@@ -399,12 +285,6 @@ export default function AllowNotifications() {
           return;
         }
 
-        /**
-         * ---------------------------------------------------
-         * PUSH SUBSCRIPTION
-         * ---------------------------------------------------
-         */
-
         const subscription =
           await registration.pushManager.getSubscription();
 
@@ -415,10 +295,6 @@ export default function AllowNotifications() {
           "[Push] Browser subscription:",
           browserSubscribed
         );
-
-        /**
-         * Browser subscription je source of truth
-         */
 
         setEnabled(
           browserSubscribed
@@ -455,8 +331,6 @@ export default function AllowNotifications() {
     async () => {
       try {
         setLoading(true);
-
-        setMessage("");
 
         /**
          * ---------------------------------------------------
@@ -698,10 +572,9 @@ export default function AllowNotifications() {
 
         setEnabled(true);
 
-        showMessage(
+        toast.success(
           saveData.message ||
-            "Notifikacije su uspešno uključene.",
-          "success"
+            "Obaveštenja su uspešno uključena."
         );
 
         console.log(
@@ -718,14 +591,7 @@ export default function AllowNotifications() {
             ? error.message
             : "Došlo je do greške prilikom uključivanja notifikacija.";
 
-        showMessage(
-          errorMessage,
-          "error"
-        );
-
-        /**
-         * Ponovna provera
-         */
+        toast.error(errorMessage);
 
         await checkSubscription();
       } finally {
@@ -743,8 +609,6 @@ export default function AllowNotifications() {
     async () => {
       try {
         setLoading(true);
-
-        setMessage("");
 
         /**
          * ---------------------------------------------------
@@ -777,9 +641,8 @@ export default function AllowNotifications() {
         if (!registration) {
           setEnabled(false);
 
-          showMessage(
-            "Notifikacije su isključene.",
-            "success"
+          toast.success(
+            "Obaveštenja su isključena."
           );
 
           return;
@@ -797,9 +660,8 @@ export default function AllowNotifications() {
         if (!subscription) {
           setEnabled(false);
 
-          showMessage(
-            "Notifikacije su isključene.",
-            "success"
+          toast.success(
+            "Obaveštenja su isključena."
           );
 
           return;
@@ -881,9 +743,8 @@ export default function AllowNotifications() {
 
         setEnabled(false);
 
-        showMessage(
-          "Notifikacije su isključene.",
-          "success"
+        toast.success(
+          "Obaveštenja su isključena."
         );
       } catch (error) {
         console.error(
@@ -894,12 +755,9 @@ export default function AllowNotifications() {
         const errorMessage =
           error instanceof Error
             ? error.message
-            : "Došlo je do greške prilikom isključivanja notifikacija.";
+            : "Došlo je do greške prilikom isključivanja obaveštenja.";
 
-        showMessage(
-          errorMessage,
-          "error"
-        );
+        toast.error(errorMessage);
 
         await checkSubscription();
       } finally {
@@ -936,78 +794,66 @@ export default function AllowNotifications() {
    */
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={enabled}
-          aria-label="Push obaveštenja"
-          aria-busy={loading}
-          onClick={
-            handleSwitchClick
+    <div className="flex items-center">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label="Push obaveštenja"
+        aria-busy={loading}
+        onClick={handleSwitchClick}
+        disabled={
+          loading ||
+          checking
+        }
+        className={`
+          relative
+          inline-flex
+          h-8
+          w-16
+          shrink-0
+          items-center
+          rounded-full
+          border
+          p-px
+          transition-all
+          duration-200
+
+          ${
+            enabled
+              ? "border-green-500"
+              : "border-red-500"
           }
-          disabled={
+
+          ${
             loading ||
             checking
+              ? "cursor-not-allowed opacity-50"
+              : "cursor-pointer opacity-100"
           }
+        `}
+      >
+        <span
           className={`
-            relative
-            inline-flex
-            h-8
-            w-16
-            shrink-0
-            items-center
+            absolute
+            top-1/2
+            h-7
+            w-7
+            -translate-y-1/2
             rounded-full
-            border
-            p-px
+            shadow-sm
             transition-all
             duration-200
+            ease-in-out
 
             ${
               enabled
-                ? "border-green-500"
-                : "border-red-500"
-            }
-
-            ${
-              loading ||
-              checking
-                ? "cursor-not-allowed opacity-50"
-                : "cursor-pointer opacity-100"
+                ? "left-[calc(100%-29px)] bg-green-500"
+                : "left-px bg-red-500"
             }
           `}
-        >
-          <span
-            className={`
-              absolute
-              top-1/2
-              h-7
-              w-7
-              -translate-y-1/2
-              rounded-full
-              shadow-sm
-              transition-all
-              duration-200
-              ease-in-out
-
-              ${
-                enabled
-                  ? "left-[calc(100%-29px)] bg-green-500"
-                  : "left-px bg-red-500"
-              }
-            `}
-          />
-        </button>
-
-        <span className="text-sm text-gray-500">
-          {checking
-            ? "Provera..."
-            : enabled
-            ? "Notifikacije su uključene"
-            : "Notifikacije su isključene"}
-        </span>
-      </div>
+        />
+      </button>
     </div>
   );
 }

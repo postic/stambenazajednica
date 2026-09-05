@@ -1,66 +1,68 @@
+"use client";
+
 import AllowNotifications from "@/components/AllowNotifications";
 import KontaktPodaci from "@/components/KontaktPodaci";
+import PromenaPin from "@/components/PromenaPin";
 
-export default function PodesavanjePage() {
+export default function PodesavanjaPage() {
   return (
     <div className="max-w-4xl">
-      {/* ==========================================
-          NASLOV
-          ========================================== */}
 
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div data-field>
-          <h1 className="text-xl font-semibold">
-            Podešavanja
-          </h1>
+      {/* HEADER */}
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-4">
+          <div data-field>
+            <h1 className="text-xl font-semibold">
+              Podešavanja
+            </h1>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Upravljajte podešavanjima svog prostora i korisničkog naloga.</p>
+            <p className="mt-1 text-sm text-slate-500">
+            Upravljajte svojim podešavanjima.</p>
+          </div>
         </div>
       </div>
 
-      {/* ==========================================
-          NOTIFIKACIJE
-          ========================================== */}
+      {/* SETTINGS */}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 mb-4">
-        <div className="mb-3">
-          <h2 className="text-base font-semibold text-slate-900">
-            Push obaveštenja
-          </h2>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Uključite push obaveštenja kako biste primali
-            važne informacije direktno na ovom uređaju.
-          </p>
-        </div>
+        {/* OBAVEŠTENJA */}
 
-        <div className="border-t border-slate-100 pt-5">
-          <AllowNotifications />
-        </div>
-      </section>
+        <section className="px-5 py-6 sm:px-7">
+          <div className="flex items-center justify-between gap-6">
+            <div className="min-w-0">
+              <h2 className="text-[15px] font-semibold text-slate-900">
+                Obaveštenja
+              </h2>
 
-      {/* ==========================================
-          KONTAKT PODACI
-          ========================================== */}
+              <p className="mt-1.5 max-w-xl text-sm leading-6 text-slate-500">
+                Uključite obaveštenja kako biste pravovremeno
+                dobijali važne informacije.
+              </p>
+            </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 mb-4">
-        <div className="mb-3">
-          <h2 className="text-base font-semibold text-slate-900">
-            Kontakt podaci
-          </h2>
+            <div className="shrink-0">
+              <AllowNotifications />
+            </div>
+          </div>
+        </section>
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Unesite email adresu i broj telefona na koji možemo
-            da Vas kontaktiramo.
-          </p>
-        </div>
+        <div className="border-t border-slate-100" />
 
-        <div className="border-t border-slate-100 pt-5">
+        {/* KONTAKT PODACI */}
+
+        <section className="px-5 py-6 sm:px-7">
           <KontaktPodaci />
-        </div>
-      </section>
+        </section>
 
+        <div className="border-t border-slate-100" />
+
+        {/* PIN */}
+
+        <section className="px-5 py-6 sm:px-7">
+          <PromenaPin />
+        </section>
+      </div>
     </div>
   );
 }

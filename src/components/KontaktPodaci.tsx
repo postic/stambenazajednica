@@ -1,18 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-interface KontaktPodaciResponse {
-  success?: boolean;
-
-  data?: {
-    id?: string;
-    field_prostor_email?: string | null;
-    field_prostor_telefon?: string | null;
-  };
-
-  error?: string;
-}
+import { toast } from "sonner";
 
 export default function KontaktPodaci() {
   const [email, setEmail] = useState("");
@@ -20,8 +9,8 @@ export default function KontaktPodaci() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
 
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -38,28 +27,7 @@ export default function KontaktPodaci() {
           }
         );
 
-        const result =
-          await response.json();
-
-        console.log(
-          "KONTAKT API CEO ODGOVOR:",
-          result
-        );
-
-        console.log(
-          "KONTAKT API DATA:",
-          result?.data
-        );
-
-        console.log(
-          "EMAIL IZ API:",
-          result?.data?.field_prostor_email
-        );
-
-        console.log(
-          "TELEFON IZ API:",
-          result?.data?.field_prostor_telefon
-        );
+        const result = await response.json();
 
         if (!response.ok) {
           throw new Error(
@@ -68,38 +36,12 @@ export default function KontaktPodaci() {
           );
         }
 
-        /*
-         * Uzimamo vrednosti direktno iz API odgovora.
-         */
-
-        const apiEmail =
-          result?.data?.field_prostor_email;
-
-        const apiTelefon =
-          result?.data?.field_prostor_telefon;
-
-        console.log(
-          "POSTAVLJAM EMAIL STATE:",
-          apiEmail
-        );
-
-        console.log(
-          "POSTAVLJAM TELEFON STATE:",
-          apiTelefon
-        );
-
         setEmail(
-          apiEmail !== null &&
-          apiEmail !== undefined
-            ? String(apiEmail)
-            : ""
+          result?.data?.field_prostor_email ?? ""
         );
 
         setTelefon(
-          apiTelefon !== null &&
-          apiTelefon !== undefined
-            ? String(apiTelefon)
-            : ""
+          result?.data?.field_prostor_telefon ?? ""
         );
       } catch (err) {
         console.error(
@@ -120,36 +62,10 @@ export default function KontaktPodaci() {
     loadKontaktPodaci();
   }, []);
 
-  /*
-   * DEBUG
-   */
-  useEffect(() => {
-    console.log(
-      "REACT EMAIL STATE:",
-      email
-    );
-
-    console.log(
-      "REACT TELEFON STATE:",
-      telefon
-    );
-  }, [email, telefon]);
-
   async function handleSave() {
     try {
       setSaving(true);
-      setMessage("");
       setError("");
-
-      console.log(
-        "ŠALJEM EMAIL:",
-        email
-      );
-
-      console.log(
-        "ŠALJEM TELEFON:",
-        telefon
-      );
 
       const response = await fetch(
         "/api/podesavanja/kontakt",
@@ -160,22 +76,13 @@ export default function KontaktPodaci() {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            field_prostor_email:
-              email.trim(),
-
-            field_prostor_telefon:
-              telefon.trim(),
+            field_prostor_email: email.trim(),
+            field_prostor_telefon: telefon.trim(),
           }),
         }
       );
 
-      const result =
-        await response.json();
-
-      console.log(
-        "PATCH ODGOVOR:",
-        result
-      );
+      const result = await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -189,8 +96,7 @@ export default function KontaktPodaci() {
         undefined
       ) {
         setEmail(
-          result.data.field_prostor_email ??
-            ""
+          result.data.field_prostor_email ?? ""
         );
       }
 
@@ -199,12 +105,13 @@ export default function KontaktPodaci() {
         undefined
       ) {
         setTelefon(
-          result.data.field_prostor_telefon ??
-            ""
+          result.data.field_prostor_telefon ?? ""
         );
       }
 
-      setMessage(
+      setEditing(false);
+
+      toast.success(
         "Kontakt podaci su sačuvani."
       );
     } catch (err) {
@@ -213,7 +120,7 @@ export default function KontaktPodaci() {
         err
       );
 
-      setError(
+      toast.error(
         err instanceof Error
           ? err.message
           : "Greška pri čuvanju podataka."
@@ -225,106 +132,124 @@ export default function KontaktPodaci() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <div>
-          <div className="mb-2 h-4 w-12 animate-pulse rounded bg-slate-100" />
-
-          <div className="h-11 animate-pulse rounded-lg bg-slate-100" />
-        </div>
-
-        <div>
-          <div className="mb-2 h-4 w-14 animate-pulse rounded bg-slate-100" />
-
-          <div className="h-11 animate-pulse rounded-lg bg-slate-100" />
-        </div>
+      <div className="space-y-3">
+        <div className="h-4 w-32 animate-pulse rounded bg-slate-100" />
+        <div className="h-4 w-64 animate-pulse rounded bg-slate-100" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div>
+      {/* HEADER */}
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="flex items-center justify-between gap-6">
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold text-slate-900">
+            Kontakt podaci
+          </h2>
 
-        {/* EMAIL */}
-
-        <div>
-          <label
-            htmlFor="prostor-email"
-            className="mb-2 block text-sm font-medium text-slate-700"
-          >
-            Email
-          </label>
-
-          <input
-            id="prostor-email"
-            name="email"
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-            }}
-            placeholder="korisnik@email.com"
-            autoComplete="email"
-            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00]"
-          />
+          <p className="mt-1.5 text-sm leading-6 text-slate-500">
+            Email i telefon za kontakt.
+          </p>
         </div>
 
-        {/* TELEFON */}
-
-        <div>
-          <label
-            htmlFor="prostor-telefon"
-            className="mb-2 block text-sm font-medium text-slate-700"
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="shrink-0 text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
           >
-            Telefon
-          </label>
+            Izmeni
+          </button>
+        )}
+      </div>
 
-          <input
-            id="prostor-telefon"
-            name="telefon"
-            type="tel"
-            value={telefon}
-            onChange={(event) => {
-              setTelefon(event.target.value);
-            }}
-            placeholder="+381 64 123 456"
-            autoComplete="tel"
-            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00]"
-          />
+      {/* FORM */}
+
+      {editing && (
+        <div className="mt-6">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+            {/* EMAIL */}
+
+            <div>
+              <label
+                htmlFor="prostor-email"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Email
+              </label>
+
+              <input
+                id="prostor-email"
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                placeholder="korisnik@email.com"
+                autoComplete="email"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#ff6a00] focus:bg-white focus:ring-1 focus:ring-[#ff6a00]"
+              />
+            </div>
+
+            {/* TELEFON */}
+
+            <div>
+              <label
+                htmlFor="prostor-telefon"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Telefon
+              </label>
+
+              <input
+                id="prostor-telefon"
+                type="tel"
+                value={telefon}
+                onChange={(event) =>
+                  setTelefon(event.target.value)
+                }
+                placeholder="+381 64 123 456"
+                autoComplete="tel"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#ff6a00] focus:bg-white focus:ring-1 focus:ring-[#ff6a00]"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <p className="mt-4 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+
+          <div className="mt-5 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving
+                ? "Čuvanje..."
+                : "Sačuvaj"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setError("");
+              }}
+              disabled={saving}
+              className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
+            >
+              Otkaži
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* PORUKA */}
-
-      {message && (
-        <p className="text-sm text-green-600">
-          {message}
-        </p>
       )}
-
-      {/* GREŠKA */}
-
-      {error && (
-        <p className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      {/* DUGME */}
-
-      <div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving
-            ? "Čuvanje..."
-            : "Sačuvaj izmene"}
-        </button>
-      </div>
     </div>
   );
 }

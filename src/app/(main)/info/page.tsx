@@ -15,57 +15,42 @@ export default function InfoPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl border border-slate-200 bg-white p-6 mb-4">
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-slate-900">
+            O aplikaciji
+          </h2>
 
-        <div className="space-y-1">
-
-          <div>
-            <h2 className="text-base font-semibold text-slate-900">
-              O aplikaciji
-            </h2>
-
-            <p className="text-sm leading-6 text-slate-500">
-              Aplikacija omogućava stanarima da na jednom mestu
-              dobijaju važne informacije, obaveštenja i učestvuju
-              u anketama.
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold text-slate-900">
-              Obaveštenja
-            </h2>
-
-            <p className="text-sm leading-6 text-slate-500">
-              Uključite obaveštenja kako biste pravovremeno
-              dobijali važne informacije.
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold text-slate-900">
-              Pomoć
-            </h2>
-
-            <p className="text-sm leading-6 text-slate-500">
-              Ako imate problem sa korišćenjem aplikacije,
-              obratite se administratoru.
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold text-slate-900">
-              Moj profil
-            </h2>
-
-            <p className="text-sm leading-6 text-slate-500">
-              U svom profilu možete uneti ili izmeniti svoje kontakt podatke.
-            </p>
-          </div>
-
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Ova aplikacija vam omogućava da na jednostavan način pratite važne informacije, obaveštenja i dešavanja u vašoj zajednici.
+            Sve važne informacije možete pronaći na jednom mestu, a uključivanjem obaveštenja možete na vreme saznati kada se objavi nešto novo.
+          </p>
         </div>
 
-      </div>
+        <div className="mb-3 border-t border-slate-100 pt-3">
+          <h2 className="text-base font-semibold text-slate-900">
+            Pomoć
+          </h2>
+
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Ova aplikacija vam omogućava da na jednostavan način pratite važne informacije, obaveštenja i dešavanja u vašoj zajednici.
+            Sve važne informacije možete pronaći na jednom mestu, a uključivanjem obaveštenja možete na vreme saznati kada se objavi nešto novo.
+          </p>
+        </div>
+
+        <div className="border-t border-slate-100 pt-3">
+          <h2 className="text-base font-semibold text-slate-900">
+            Uputstvo
+          </h2>
+
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Ova aplikacija vam omogućava da na jednostavan način pratite važne informacije, obaveštenja i dešavanja u vašoj zajednici.
+            Sve važne informacije možete pronaći na jednom mestu, a uključivanjem obaveštenja možete na vreme saznati kada se objavi nešto novo.
+          </p>
+        </div>
+
+      </section>
+
     </div>
   );
 }
