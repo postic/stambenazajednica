@@ -170,14 +170,6 @@ export async function getFieldOptions(
     | "field_status_kvara"
     | "field_prioritet_kvara"
 ) {
-  /*
-   * Ova funkcija je ostavljena zbog
-   * kompatibilnosti sa postojećim kodom.
-   *
-   * Ako ti trenutno nije potrebna,
-   * možeš je kasnije ukloniti.
-   */
-
   console.warn(
     "getFieldOptions nije implementiran preko /api/obavestenja:",
     fieldName
@@ -332,4 +324,40 @@ export async function updateObavestenje(
       obavestenje.created ??
       "",
   };
+}
+
+// ==================================================
+// DELETE
+// ==================================================
+
+export async function deleteObavestenje(
+  id: string
+): Promise<void> {
+  const res = await fetch(
+    `/api/obavestenja?id=${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+
+      headers: {
+        Accept: "application/json",
+      },
+
+      cache: "no-store",
+    }
+  );
+
+  const json =
+    await parseResponse(res);
+
+  if (!res.ok) {
+    console.error(
+      "Greška pri brisanju obaveštenja:",
+      json
+    );
+
+    throw new Error(
+      json.error ||
+        "Greška pri brisanju obaveštenja"
+    );
+  }
 }
