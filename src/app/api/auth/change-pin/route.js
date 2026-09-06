@@ -429,7 +429,7 @@ export async function POST(req) {
         {
           success: false,
           error:
-            "Ovaj PIN već koristi drugi korisnik. Izaberite drugi.",
+            "Ovaj PIN već koristi drugi korisnik.",
         },
         {
           status: 400,
