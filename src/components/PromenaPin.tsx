@@ -199,7 +199,7 @@ export default function PromenaPin() {
             onClick={() =>
               setEditing(true)
             }
-            className="shrink-0 text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+            className="shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
             Izmeni
           </button>
@@ -305,6 +305,8 @@ export default function PromenaPin() {
           ================================================= */}
 
           <div className="mt-5 flex items-center gap-3">
+            {/* PROMENI PIN */}
+
             <button
               type="submit"
               disabled={loading}
@@ -314,6 +316,8 @@ export default function PromenaPin() {
                 ? "Čuvanje..."
                 : "Promeni PIN"}
             </button>
+
+            {/* OTKAŽI */}
 
             <button
               type="button"
@@ -325,7 +329,7 @@ export default function PromenaPin() {
                 setNoviPin("");
                 setPotvrdaPin("");
               }}
-              className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Otkaži
             </button>

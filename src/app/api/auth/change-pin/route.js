@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
@@ -101,7 +101,10 @@ async function parseDrupalResponse(response) {
     console.error("Drupal nije vratio JSON:", text);
 
     throw new Error(
-      `Drupal je vratio neispravan odgovor: ${text.substring(0, 300)}`
+      `Drupal je vratio neispravan odgovor: ${text.substring(
+        0,
+        300
+      )}`
     );
   }
 }
@@ -148,6 +151,55 @@ async function findProstor(uid, cookieHeader) {
 }
 
 // =========================================================
+// CHECK PIN UNIQUE
+// =========================================================
+
+async function isPinAlreadyUsed(
+  pin,
+  currentProstorId,
+  cookieHeader
+) {
+  const url =
+    `${DRUPAL_BASE_URL}/jsonapi/node/prostor` +
+    `?filter[field_prostor_pin]=${encodeURIComponent(
+      pin
+    )}` +
+    `&page[limit]=50`;
+
+  console.log(
+    "Proveravam da li PIN već postoji."
+  );
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/vnd.api+json",
+      Cookie: cookieHeader,
+    },
+    cache: "no-store",
+  });
+
+  const data = await parseDrupalResponse(response);
+
+  if (!response.ok) {
+    console.error(
+      "Drupal provera jedinstvenosti PIN-a:",
+      data
+    );
+
+    throw new Error(
+      `Greška pri proveri jedinstvenosti PIN-a: ${response.status}`
+    );
+  }
+
+  const prostori = data.data || [];
+
+  return prostori.some(
+    (item) => item.id !== currentProstorId
+  );
+}
+
+// =========================================================
 // POST - CHANGE PIN
 // =========================================================
 
@@ -191,8 +243,13 @@ export async function POST(req) {
       );
     }
 
-    const trenutniPin = String(body.trenutniPin ?? "");
-    const noviPin = String(body.noviPin ?? "");
+    const trenutniPin = String(
+      body.trenutniPin ?? ""
+    );
+
+    const noviPin = String(
+      body.noviPin ?? ""
+    );
 
     // =======================================================
     // OSNOVNA VALIDACIJA
@@ -202,7 +259,8 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          error: "Trenutni i novi PIN su obavezni.",
+          error:
+            "Trenutni i novi PIN su obavezni.",
         },
         {
           status: 400,
@@ -210,12 +268,16 @@ export async function POST(req) {
       );
     }
 
-    // Samo slova i cifre
+    // =======================================================
+    // DOZVOLJENI KARAKTERI
+    // =======================================================
+
     if (!/^[a-zA-Z0-9]+$/.test(trenutniPin)) {
       return NextResponse.json(
         {
           success: false,
-          error: "PIN može sadržati samo slova i cifre.",
+          error:
+            "PIN može sadržati samo slova i cifre.",
         },
         {
           status: 400,
@@ -227,7 +289,8 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          error: "PIN može sadržati samo slova i cifre.",
+          error:
+            "PIN može sadržati samo slova i cifre.",
         },
         {
           status: 400,
@@ -243,7 +306,8 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          error: "PIN mora imati najmanje 4 karaktera.",
+          error:
+            "PIN mora imati najmanje 4 karaktera.",
         },
         {
           status: 400,
@@ -255,7 +319,8 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          error: "PIN može imati najviše 20 karaktera.",
+          error:
+            "PIN može imati najviše 20 karaktera.",
         },
         {
           status: 400,
@@ -271,7 +336,8 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          error: "Novi PIN mora biti drugačiji od trenutnog PIN-a.",
+          error:
+            "Novi PIN mora biti drugačiji od trenutnog PIN-a.",
         },
         {
           status: 400,
@@ -283,15 +349,17 @@ export async function POST(req) {
     // DRUPAL LOGIN
     // =======================================================
 
-    const { cookieHeader, csrfToken } =
-      await loginToDrupal();
+    const {
+      cookieHeader,
+      csrfToken,
+    } = await loginToDrupal();
 
     // =======================================================
     // FIND PROSTOR
     // =======================================================
 
     const prostor = await findProstor(
-      authUser.uid,
+      String(authUser.uid),
       cookieHeader
     );
 
@@ -330,11 +398,38 @@ export async function POST(req) {
     // CHECK CURRENT PIN
     // =======================================================
 
-    if (trenutniPinIzBaze !== trenutniPin) {
+    if (
+      trenutniPinIzBaze !== trenutniPin
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: "Trenutni PIN nije ispravan.",
+          error:
+            "Trenutni PIN nije ispravan.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // =======================================================
+    // CHECK NEW PIN UNIQUE
+    // =======================================================
+
+    const pinAlreadyUsed =
+      await isPinAlreadyUsed(
+        noviPin,
+        prostor.id,
+        cookieHeader
+      );
+
+    if (pinAlreadyUsed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Ovaj PIN već koristi drugi korisnik. Izaberite drugi.",
         },
         {
           status: 400,
@@ -390,7 +485,8 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          error: "Greška pri čuvanju novog PIN-a.",
+          error:
+            "Greška pri čuvanju novog PIN-a.",
           details: updateData,
         },
         {
@@ -410,7 +506,8 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: true,
-      message: "PIN je uspešno promenjen.",
+      message:
+        "PIN je uspešno promenjen.",
     });
   } catch (error) {
     console.error(

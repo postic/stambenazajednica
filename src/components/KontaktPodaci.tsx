@@ -158,7 +158,7 @@ export default function KontaktPodaci() {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="shrink-0 text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+            className="shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
             Izmeni
           </button>
@@ -224,17 +224,21 @@ export default function KontaktPodaci() {
             </p>
           )}
 
+          {/* DUGMAD */}
+
           <div className="mt-5 flex items-center gap-3">
+            {/* SAČUVAJ */}
+
             <button
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving
-                ? "Čuvanje..."
-                : "Sačuvaj"}
+              {saving ? "Čuvanje..." : "Sačuvaj"}
             </button>
+
+            {/* OTKAŽI */}
 
             <button
               type="button"
@@ -243,7 +247,7 @@ export default function KontaktPodaci() {
                 setError("");
               }}
               disabled={saving}
-              className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Otkaži
             </button>
