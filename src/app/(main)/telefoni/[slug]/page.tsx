@@ -77,9 +77,12 @@ export default function TelefoniKategorijaPage() {
       key: "naziv",
       header: "Naziv",
       render: (row) => (
-        <span className="font-medium text-slate-900">
+        <a
+          href={`tel:${row.broj}`}
+          className="font-medium text-slate-900 hover:underline"
+        >
           {row.naziv}
-        </span>
+        </a>
       ),
     },
     {
