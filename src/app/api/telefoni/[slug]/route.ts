@@ -1,19 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
-
-// ==================================================
-// TYPES
-// ==================================================
-
-interface KategorijaTelefona {
-  id: string;
-  name: string;
-  slug: string;
-  brojTelefona: number;
-}
 
 // ==================================================
 // SLUG
@@ -33,12 +22,25 @@ function createSlug(value: string): string {
 // GET
 // ==================================================
 
-export async function GET() {
+export async function GET(
+  request: NextRequest,
+  context: {
+    params: Promise<{
+      slug: string;
+    }>;
+  }
+) {
   try {
+    const { slug } = await context.params;
+
+    // ==================================================
+    // DOHVATI TELEFONE
+    // ==================================================
+
     const url =
       `${DRUPAL_BASE_URL}/jsonapi/node/telefon` +
       `?include=field_kategorija` +
-      `&sort=-created` +
+      `&sort=title` +
       `&page[limit]=100`;
 
     const response = await fetch(url, {
@@ -70,69 +72,79 @@ export async function GET() {
     const included = data.included || [];
 
     // ==================================================
-    // KATEGORIJE
+    // PRONAĐI KATEGORIJU
     // ==================================================
 
-    const kategorije = new Map<
-      string,
-      KategorijaTelefona
-    >();
-
-    included
-      .filter(
-        (item: any) =>
-          item.type ===
+    const kategorija = included.find(
+      (item: any) => {
+        if (
+          item.type !==
           "taxonomy_term--kategorija_telefon"
-      )
-      .forEach((item: any) => {
+        ) {
+          return false;
+        }
+
         const name =
           item.attributes?.name || "";
 
-        const slug = createSlug(name);
+        return createSlug(name) === slug;
+      }
+    );
 
-        kategorije.set(item.id, {
-          id: item.id,
-          name,
-          slug,
-          brojTelefona: 0,
-        });
-      });
+    if (!kategorija) {
+      return NextResponse.json(
+        {
+          error: "Kategorija nije pronađena",
+        },
+        { status: 404 }
+      );
+    }
 
     // ==================================================
-    // BROJ TELEFONA PO KATEGORIJI
+    // FILTRIRAJ TELEFONE
     // ==================================================
 
-    (data.data || []).forEach(
-      (item: any) => {
+    const telefoni = (data.data || [])
+      .filter((item: any) => {
         const categoryId =
           item.relationships
             ?.field_kategorija
             ?.data?.id;
 
-        if (
-          categoryId &&
-          kategorije.has(categoryId)
-        ) {
-          const kategorija =
-            kategorije.get(categoryId)!;
+        return categoryId === kategorija.id;
+      })
+      .map((item: any) => ({
+        id: item.id,
 
-          kategorija.brojTelefona++;
-        }
-      }
-    );
+        naziv:
+          item.attributes?.title || "",
+
+        broj:
+          item.attributes?.field_phone || "",
+
+        kategorija: {
+          id: kategorija.id,
+          name:
+            kategorija.attributes?.name || "",
+        },
+      }));
 
     // ==================================================
     // RESPONSE
     // ==================================================
 
     return NextResponse.json({
-      data: Array.from(
-        kategorije.values()
-      ),
+      data: telefoni,
+      kategorija: {
+        id: kategorija.id,
+        name:
+          kategorija.attributes?.name || "",
+        slug,
+      },
     });
   } catch (error) {
     console.error(
-      "Server error fetching kategorije telefona:",
+      "Server error fetching telefona:",
       error
     );
 

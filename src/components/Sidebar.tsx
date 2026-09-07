@@ -16,6 +16,7 @@ import {
   Grid,
   Building,
   Menu,
+  Phone,
   Mail,
 } from "lucide-react";
 
@@ -49,6 +50,7 @@ const iconMap: Record<string, any> = {
   Stanovi: Building,
   Dokumenti: FileText,
   Ostalo: Grid,
+  Telefoni: Phone,
   Kontakt: Mail,
 };
 
@@ -58,6 +60,7 @@ const iconMap: Record<string, any> = {
 
 const dropdownMenus = [
   "Dokumenti",
+  "Telefoni",
   "Ostalo",
 ];
 
