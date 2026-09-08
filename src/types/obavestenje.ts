@@ -17,9 +17,8 @@ export interface Obavestenje {
 export interface ObavestenjeDetalj {
   id: string;
   title: string;
-  body: any;
-  created: string | null;
-  changed: string | null;
-  categoryId: string | null;
-  categoryName: string | null;
+  body: string;
+  created: string;
+  author: string | null;
+  images: string[];
 }

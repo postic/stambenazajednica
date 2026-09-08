@@ -7,7 +7,7 @@ import { isEmptyHtml } from "@/lib/text";
 import ImageGridLightbox from "@/components/ImageGridLightbox";
 import ObavestenjeActions from "./ObavestenjeActions";
 
-import type { Obavestenje } from "@/types/obavestenje";
+import type { ObavestenjeDetalj } from "@/types/obavestenje";
 
 const NEXT_PUBLIC_DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
@@ -16,7 +16,7 @@ const NEXT_PUBLIC_DRUPAL_BASE_URL =
 async function getObavestenje(
   id: string
 ): Promise<{
-  obavestenje: Obavestenje;
+  obavestenje: ObavestenjeDetalj;
   authorUuid: string | null;
 } | null> {
   try {
@@ -24,10 +24,8 @@ async function getObavestenje(
       `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}?include=field_image,uid`,
       {
         headers: {
-          Accept:
-            "application/vnd.api+json",
+          Accept: "application/vnd.api+json",
         },
-
         cache: "no-store",
       }
     );
@@ -36,11 +34,9 @@ async function getObavestenje(
       return null;
     }
 
-    const data =
-      await res.json();
+    const data = await res.json();
 
-    const item =
-      data?.data;
+    const item = data?.data;
 
     if (!item) {
       return null;
@@ -59,8 +55,7 @@ async function getObavestenje(
       item.relationships?.uid?.data;
 
     const authorUuid =
-      authorRelationship?.id ??
-      null;
+      authorRelationship?.id ?? null;
 
     if (
       authorRelationship &&
@@ -69,15 +64,13 @@ async function getObavestenje(
       const authorObject =
         data.included.find(
           (includedItem: any) =>
-            includedItem.type ===
-              "user--user" &&
+            includedItem.type === "user--user" &&
             includedItem.id ===
               authorRelationship.id
         );
 
       author =
-        authorObject?.attributes?.name ??
-        null;
+        authorObject?.attributes?.name ?? null;
     }
 
     return {
@@ -85,16 +78,13 @@ async function getObavestenje(
         id: item.id,
 
         title:
-          item.attributes?.title ??
-          "",
+          item.attributes?.title ?? "",
 
         body:
-          item.attributes?.body?.value ??
-          "",
+          item.attributes?.body?.value ?? "",
 
         created:
-          item.attributes?.created ??
-          "",
+          item.attributes?.created ?? "",
 
         author,
         images,
@@ -116,13 +106,10 @@ async function getCurrentUserUuid(): Promise<
   string | null
 > {
   try {
-    const cookieStore =
-      await cookies();
+    const cookieStore = await cookies();
 
     const authCookie =
-      cookieStore.get(
-        "next_auth"
-      );
+      cookieStore.get("next_auth");
 
     if (!authCookie?.value) {
       return null;
@@ -131,10 +118,9 @@ async function getCurrentUserUuid(): Promise<
     let authUser: any;
 
     try {
-      authUser =
-        JSON.parse(
-          authCookie.value
-        );
+      authUser = JSON.parse(
+        authCookie.value
+      );
     } catch {
       return null;
     }
@@ -152,7 +138,6 @@ async function getCurrentUserUuid(): Promise<
           Accept:
             "application/vnd.api+json",
         },
-
         cache: "no-store",
       }
     );
@@ -161,8 +146,7 @@ async function getCurrentUserUuid(): Promise<
       return null;
     }
 
-    const data =
-      await res.json();
+    const data = await res.json();
 
     const user =
       Array.isArray(data?.data)
@@ -182,6 +166,7 @@ async function getCurrentUserUuid(): Promise<
 
 interface PageProps {
   params: Promise<{
+    slug: string;
     id: string;
   }>;
 }
@@ -189,8 +174,7 @@ interface PageProps {
 export default async function ObavestenjePage({
   params,
 }: PageProps) {
-  const { id } =
-    await params;
+  const { id } = await params;
 
   const result =
     await getObavestenje(id);
@@ -210,8 +194,7 @@ export default async function ObavestenjePage({
   const isOwner =
     !!currentUserUuid &&
     !!authorUuid &&
-    currentUserUuid ===
-      authorUuid;
+    currentUserUuid === authorUuid;
 
   const images =
     obavestenje.images ?? [];
@@ -226,16 +209,17 @@ export default async function ObavestenjePage({
             </h1>
 
             <p className="text-sm text-slate-400 mt-1">
-              {new Date(
-                obavestenje.created
-              ).toLocaleDateString(
-                "sr-Latn-RS",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }
-              )}
+              {obavestenje.created &&
+                new Date(
+                  obavestenje.created
+                ).toLocaleDateString(
+                  "sr-Latn-RS",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
 
               {obavestenje.author && (
                 <>
@@ -250,9 +234,7 @@ export default async function ObavestenjePage({
 
           {isOwner && (
             <ObavestenjeActions
-              id={
-                obavestenje.id
-              }
+              id={obavestenje.id}
             />
           )}
         </div>

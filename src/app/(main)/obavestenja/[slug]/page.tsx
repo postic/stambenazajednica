@@ -10,7 +10,7 @@ import { obavestenjaColumns } from "@/features/obavestenja/ObavestenjaColumns";
 
 import type {
   Obavestenje,
-} from "@/types/obavestenja";
+} from "@/types/obavestenje";
 
 export default function ObavestenjaKategorijaPage() {
   const params = useParams();

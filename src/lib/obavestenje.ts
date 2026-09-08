@@ -1,4 +1,7 @@
-import type { Obavestenje } from "@/types/obavestenje";
+import type {
+  Obavestenje,
+  ObavestenjeDetalj,
+} from "@/types/obavestenje";
 
 // ==================================================
 // API RESPONSE
@@ -38,7 +41,7 @@ async function parseResponse(
 
 export async function fetchObavestenje(
   id: string
-): Promise<Obavestenje> {
+): Promise<ObavestenjeDetalj> {
   const res = await fetch(
     `/api/obavestenja?id=${encodeURIComponent(id)}`,
     {
@@ -87,6 +90,14 @@ export async function fetchObavestenje(
     created:
       data.attributes?.created ??
       "",
+
+    author:
+      data.author ??
+      null,
+
+    images:
+      data.images ??
+      [],
   };
 }
 
@@ -141,15 +152,25 @@ export async function fetchObavestenja(): Promise<
 
       title:
         item.attributes?.title ??
-        "",
-
-      body:
-        item.attributes?.body?.value ??
+        item.title ??
         "",
 
       created:
         item.attributes?.created ??
-        "",
+        item.created ??
+        null,
+
+      categoryId:
+        item.categoryId ??
+        null,
+
+      categoryName:
+        item.categoryName ??
+        null,
+
+      categorySlug:
+        item.categorySlug ??
+        null,
     })
   );
 }
@@ -187,7 +208,7 @@ export async function createObavestenje(
     title: string;
     body: string;
   }
-): Promise<Obavestenje> {
+): Promise<ObavestenjeDetalj> {
   const res = await fetch(
     "/api/obavestenja",
     {
@@ -248,6 +269,14 @@ export async function createObavestenje(
     created:
       item.attributes?.created ??
       "",
+
+    author:
+      item.author ??
+      null,
+
+    images:
+      item.images ??
+      [],
   };
 }
 
@@ -256,8 +285,8 @@ export async function createObavestenje(
 // ==================================================
 
 export async function updateObavestenje(
-  obavestenje: Obavestenje
-): Promise<Obavestenje> {
+  obavestenje: ObavestenjeDetalj
+): Promise<ObavestenjeDetalj> {
   const res = await fetch(
     "/api/obavestenja",
     {
@@ -323,6 +352,16 @@ export async function updateObavestenje(
       item.attributes?.created ??
       obavestenje.created ??
       "",
+
+    author:
+      item.author ??
+      obavestenje.author ??
+      null,
+
+    images:
+      item.images ??
+      obavestenje.images ??
+      [],
   };
 }
 

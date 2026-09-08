@@ -8,7 +8,7 @@ import { kategorijeColumns } from "@/features/obavestenja/KategorijeColumns";
 
 import type {
   KategorijaObavestenja,
-} from "@/types/obavestenja";
+} from "@/types/obavestenje";
 
 export default function ObavestenjaPage() {
   const [loading, setLoading] = useState(true);

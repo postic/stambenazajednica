@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import type {
   Obavestenje,
-} from "@/types/obavestenja";
+} from "@/types/obavestenje";
 
 export const obavestenjaColumns = [
   {
