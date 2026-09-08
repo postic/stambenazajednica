@@ -144,3 +144,245 @@ export async function GET() {
     );
   }
 }
+
+// ==================================================
+// POST
+// ==================================================
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+
+    const {
+      title,
+      description,
+      kategorija,
+    } = body;
+
+    // ==================================================
+    // VALIDACIJA
+    // ==================================================
+
+    if (
+      !title ||
+      !description ||
+      !kategorija
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Naslov, tekst i tip obaveštenja su obavezni.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // ==================================================
+    // DRUPAL LOGIN
+    // ==================================================
+
+    const loginResponse = await fetch(
+      `${DRUPAL_BASE_URL}/user/login?_format=json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: process.env.DRUPAL_API_USER,
+          pass: process.env.DRUPAL_API_PASSWORD,
+        }),
+      }
+    );
+
+    if (!loginResponse.ok) {
+      const text =
+        await loginResponse.text();
+
+      console.error(
+        "Drupal login error:",
+        loginResponse.status,
+        text
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Drupal prijava nije uspela.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // ==================================================
+    // SESSION COOKIE
+    // ==================================================
+
+    const setCookie =
+      loginResponse.headers.get(
+        "set-cookie"
+      );
+
+    if (!setCookie) {
+      return NextResponse.json(
+        {
+          error:
+            "Drupal nije vratio session cookie.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const cookie =
+      setCookie.split(";")[0];
+
+    // ==================================================
+    // CSRF TOKEN
+    // ==================================================
+
+    const csrfResponse = await fetch(
+      `${DRUPAL_BASE_URL}/session/token`,
+      {
+        headers: {
+          Cookie: cookie,
+        },
+      }
+    );
+
+    if (!csrfResponse.ok) {
+      const text =
+        await csrfResponse.text();
+
+      console.error(
+        "Drupal CSRF error:",
+        csrfResponse.status,
+        text
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Nije moguće dobiti Drupal CSRF token.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const csrfToken =
+      await csrfResponse.text();
+
+    // ==================================================
+    // CREATE OBAVEŠTENJE
+    // ==================================================
+
+    const createResponse = await fetch(
+      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/vnd.api+json",
+          Accept:
+            "application/vnd.api+json",
+          Cookie: cookie,
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({
+          data: {
+            type: "node--obavestenje",
+
+            attributes: {
+              title,
+
+              body: {
+                value: description,
+                format: "plain_text",
+              },
+            },
+
+            relationships: {
+              field_tip_obavestenja: {
+                data: {
+                  type:
+                    "taxonomy_term--tip_obavestenja",
+                  id: kategorija,
+                },
+              },
+            },
+          },
+        }),
+      }
+    );
+
+    // ==================================================
+    // RESPONSE
+    // ==================================================
+
+    const responseText =
+      await createResponse.text();
+
+    if (!createResponse.ok) {
+      console.error(
+        "Drupal create obavestenje error:",
+        createResponse.status,
+        responseText
+      );
+
+      let errorData: any = {};
+
+      try {
+        errorData = responseText
+          ? JSON.parse(responseText)
+          : {};
+      } catch {
+        // Drupal nije vratio JSON
+      }
+
+      return NextResponse.json(
+        {
+          error:
+            errorData?.errors?.[0]?.detail ||
+            errorData?.error ||
+            "Greška prilikom kreiranja obaveštenja.",
+        },
+        {
+          status:
+            createResponse.status,
+        }
+      );
+    }
+
+    let result: any = {};
+
+    try {
+      result = responseText
+        ? JSON.parse(responseText)
+        : {};
+    } catch {
+      result = {};
+    }
+
+    return NextResponse.json(
+      {
+        data: result.data ?? null,
+      },
+      {
+        status: 201,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Server error creating obaveštenje:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Interna greška servera.",
+      },
+      { status: 500 }
+    );
+  }
+}

@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/table/DataTable";
-
 import { kategorijeColumns } from "@/features/obavestenja/KategorijeColumns";
 
 import type {
@@ -32,7 +32,7 @@ export default function ObavestenjaPage() {
         if (ignore) return;
 
         console.error(
-          "Greška pri učitavanju kategorija:",
+          "Greška pri učitavanju obaveštenja:",
           err
         );
 
@@ -51,29 +51,33 @@ export default function ObavestenjaPage() {
 
   return (
     <div className="max-w-4xl">
-
       {/* HEADER */}
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">
+            Obaveštenja
+          </h1>
 
-      <div className="mb-6">
+          <p className="mt-1 text-sm text-slate-500">
+            Obaveštenja organizovana po kategorijama
+          </p>
+        </div>
 
-        <h1 className="text-xl font-semibold">
-          Obaveštenja
-        </h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Obaveštenja organizovana po kategorijama
-        </p>
+        <Link
+          href="/obavestenja/add"
+          className="bg-primary !text-white px-4 py-2 rounded text-sm whitespace-nowrap"
+        >
+          Dodaj obaveštenje
+        </Link>
 
       </div>
 
       {/* TABLE */}
-
       <DataTable<KategorijaObavestenja>
         data={kategorije}
         columns={kategorijeColumns}
         loading={loading}
       />
-
     </div>
   );
 }
