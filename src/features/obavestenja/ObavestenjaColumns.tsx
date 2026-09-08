@@ -1,39 +1,39 @@
-import { Column } from "@/components/table/types";
-import type { Obavestenje } from "@/types/obavestenje";
+"use client";
+
 import Link from "next/link";
 
-export const obavestenjaColumns: Column<Obavestenje>[] = [
+import type {
+  Obavestenje,
+} from "@/types/obavestenja";
+
+export const obavestenjaColumns = [
   {
     key: "title",
-    header: "Naslov",
-    render: (o) => (
+    header: "Obaveštenje",
+
+    render: (row: Obavestenje) => (
       <Link
-        href={`/obavestenja/${o.id}`}
+        href={`/obavestenja/${row.categorySlug}/${row.id}`}
         className="hover:underline"
-        title={o.title}
+        title={row.title}
       >
-        {o.title}
+        {row.title}
       </Link>
     ),
   },
 
   {
-    key: "author",
-    header: "Autor",
-    render: (o) => o.author ?? "—",
-  },
-
-  {
-    key: "date",
+    key: "created",
     header: "Datum",
-    render: (o) =>
-      new Date(o.created).toLocaleDateString(
-        "sr-Latn-RS",
-        {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }
-      ),
+
+    render: (row: Obavestenje) => {
+      if (!row.created) {
+        return "";
+      }
+
+      return new Date(
+        row.created
+      ).toLocaleDateString("sr-RS");
+    },
   },
 ];

@@ -43,7 +43,7 @@ const iconMap: Record<string, any> = {
   Transakcije: Wallet,
   Prostori: Building,
   Ankete: Vote,
-  Kvarovi: Wrench,
+  //Kvarovi: Wrench,
   Obaveštenja: Megaphone,
   Sednice: CalendarCheck,
   Stanari: Users,
@@ -59,6 +59,7 @@ const iconMap: Record<string, any> = {
 // =========================================================
 
 const dropdownMenus = [
+  "Obaveštenja",
   "Dokumenti",
   "Telefoni",
   "Ostalo",

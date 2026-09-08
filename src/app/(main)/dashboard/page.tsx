@@ -43,13 +43,13 @@ export default function DashboardPage() {
       iconColor: "text-blue-600",
       href: "/ankete",
     },
-    {
-      title: "Kvarovi",
-      value: stats.kvarovi,
-      icon: AlertTriangle,
-      iconColor: "text-yellow-600",
-      href: "/kvarovi",
-    },
+    //{
+    //  title: "Kvarovi",
+    //  value: stats.kvarovi,
+    //  icon: AlertTriangle,
+    //  iconColor: "text-yellow-600",
+    //  href: "/kvarovi",
+    //},
     {
       title: "Obaveštenja",
       value: stats.obavestenja,

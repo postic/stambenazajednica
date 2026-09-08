@@ -4,21 +4,6 @@ const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
-// ==================================================
-// TYPES
-// ==================================================
-
-interface KategorijaObavestenja {
-  id: string;
-  name: string;
-  slug: string;
-  brojObavestenja: number;
-}
-
-// ==================================================
-// SLUG
-// ==================================================
-
 function createSlug(value: string): string {
   return value
     .toLowerCase()
@@ -29,12 +14,15 @@ function createSlug(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-// ==================================================
-// GET
-// ==================================================
-
-export async function GET() {
+export async function GET(
+  request: Request,
+  context: {
+    params: Promise<{ slug: string }>;
+  }
+) {
   try {
+    const { slug } = await context.params;
+
     const url =
       `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje` +
       `?include=field_tip_obavestenja` +
@@ -69,14 +57,11 @@ export async function GET() {
 
     const included = data.included || [];
 
-    // ==================================================
-    // KATEGORIJE
-    // ==================================================
+    // ================================================
+    // PRONAĐI KATEGORIJU
+    // ================================================
 
-    const kategorije = new Map<
-      string,
-      KategorijaObavestenja
-    >();
+    const categoryMap = new Map<string, any>();
 
     included
       .filter(
@@ -88,51 +73,58 @@ export async function GET() {
         const name =
           item.attributes?.name || "";
 
-        const slug = createSlug(name);
-
-        kategorije.set(item.id, {
+        categoryMap.set(item.id, {
           id: item.id,
           name,
-          slug,
-          brojObavestenja: 0,
+          slug: createSlug(name),
         });
       });
 
-    // ==================================================
-    // BROJ OBAVEŠTENJA PO KATEGORIJI
-    // ==================================================
+    // ================================================
+    // PRONAĐI OBAVEŠTENJA IZ KATEGORIJE
+    // ================================================
 
-    (data.data || []).forEach(
-      (item: any) => {
+    const obavestenja = (data.data || [])
+      .map((item: any) => {
         const categoryId =
           item.relationships
             ?.field_tip_obavestenja
             ?.data?.id;
 
-        if (
-          categoryId &&
-          kategorije.has(categoryId)
-        ) {
-          const kategorija =
-            kategorije.get(categoryId)!;
+        const category =
+          categoryId
+            ? categoryMap.get(categoryId)
+            : null;
 
-          kategorija.brojObavestenja++;
-        }
-      }
-    );
+        return {
+          id: item.id,
+          title:
+            item.attributes?.title || "",
+          created:
+            item.attributes?.created || null,
+          categoryId:
+            category?.id || null,
+          categoryName:
+            category?.name || null,
+          categorySlug:
+            category?.slug || null,
+        };
+      })
+      .filter(
+        (item: any) =>
+          item.categorySlug === slug
+      );
 
-    // ==================================================
+    // ================================================
     // RESPONSE
-    // ==================================================
+    // ================================================
 
     return NextResponse.json({
-      data: Array.from(
-        kategorije.values()
-      ),
+      data: obavestenja,
     });
   } catch (error) {
     console.error(
-      "Server error fetching kategorije obaveštenja:",
+      "Server error fetching obaveštenja:",
       error
     );
 
