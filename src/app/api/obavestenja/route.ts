@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
@@ -178,64 +179,52 @@ export async function POST(request: Request) {
     }
 
     // ==================================================
-    // DRUPAL LOGIN
+    // UZMI DRUPAL SESIJU TRENUTNO ULOGOVANOG KORISNIKA
     // ==================================================
 
-    const loginResponse = await fetch(
-      `${DRUPAL_BASE_URL}/user/login?_format=json`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: process.env.DRUPAL_API_USER,
-          pass: process.env.DRUPAL_API_PASSWORD,
-        }),
-      }
+    const cookieStore = await cookies();
+
+    const allCookies = cookieStore.getAll();
+
+    console.log(
+      "COOKIES:",
+      allCookies.map(
+        (cookie) => cookie.name
+      )
     );
 
-    if (!loginResponse.ok) {
-      const text =
-        await loginResponse.text();
+    const drupalCookies = allCookies
+      .filter(
+        (cookie) =>
+          cookie.name.startsWith("SESS") ||
+          cookie.name.startsWith("SSESS")
+      )
+      .map(
+        (cookie) =>
+          `${cookie.name}=${cookie.value}`
+      )
+      .join("; ");
 
-      console.error(
-        "Drupal login error:",
-        loginResponse.status,
-        text
-      );
+    console.log(
+      "DRUPAL COOKIE:",
+      drupalCookies
+        ? "FOUND"
+        : "NOT FOUND"
+    );
 
+    // ==================================================
+    // NEMA DRUPAL SESIJE
+    // ==================================================
+
+    if (!drupalCookies) {
       return NextResponse.json(
         {
           error:
-            "Drupal prijava nije uspela.",
+            "Drupal sesija nije pronađena. Prijavite se ponovo.",
         },
-        { status: 500 }
+        { status: 401 }
       );
     }
-
-    // ==================================================
-    // SESSION COOKIE
-    // ==================================================
-
-    const setCookie =
-      loginResponse.headers.get(
-        "set-cookie"
-      );
-
-    if (!setCookie) {
-      return NextResponse.json(
-        {
-          error:
-            "Drupal nije vratio session cookie.",
-        },
-        { status: 500 }
-      );
-    }
-
-    const cookie =
-      setCookie.split(";")[0];
 
     // ==================================================
     // CSRF TOKEN
@@ -244,9 +233,12 @@ export async function POST(request: Request) {
     const csrfResponse = await fetch(
       `${DRUPAL_BASE_URL}/session/token`,
       {
+        method: "GET",
         headers: {
-          Cookie: cookie,
+          Cookie: drupalCookies,
+          Accept: "text/plain",
         },
+        cache: "no-store",
       }
     );
 
@@ -265,7 +257,7 @@ export async function POST(request: Request) {
           error:
             "Nije moguće dobiti Drupal CSRF token.",
         },
-        { status: 500 }
+        { status: 502 }
       );
     }
 
@@ -283,11 +275,16 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type":
             "application/vnd.api+json",
+
           Accept:
             "application/vnd.api+json",
-          Cookie: cookie,
-          "X-CSRF-Token": csrfToken,
+
+          Cookie: drupalCookies,
+
+          "X-CSRF-Token":
+            csrfToken,
         },
+
         body: JSON.stringify({
           data: {
             type: "node--obavestenje",
@@ -306,6 +303,7 @@ export async function POST(request: Request) {
                 data: {
                   type:
                     "taxonomy_term--tip_obavestenja",
+
                   id: kategorija,
                 },
               },

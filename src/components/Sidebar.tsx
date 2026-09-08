@@ -49,7 +49,7 @@ const iconMap: Record<string, any> = {
   Stanari: Users,
   Stanovi: Building,
   Dokumenti: FileText,
-  Ostalo: Grid,
+  //Ostalo: Grid,
   Telefoni: Phone,
   Kontakt: Mail,
 };

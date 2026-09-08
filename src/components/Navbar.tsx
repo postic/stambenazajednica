@@ -193,15 +193,6 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
                 <span>Moja obaveštenja</span>
               </DropdownMenuItem>
 
-              {/* Moji kvarovi */}
-              <DropdownMenuItem
-                onClick={() => router.push("/moji-kvarovi")}
-                className="cursor-pointer"
-              >
-                <Wrench className="mr-2 h-4 w-4" />
-                <span>Moji kvarovi</span>
-              </DropdownMenuItem>
-
               {/* Podesavanja */}
               <DropdownMenuItem
                 onClick={() => router.push("/podesavanja")}
