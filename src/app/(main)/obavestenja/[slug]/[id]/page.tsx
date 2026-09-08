@@ -174,7 +174,7 @@ interface PageProps {
 export default async function ObavestenjePage({
   params,
 }: PageProps) {
-  const { id } = await params;
+  const { slug, id } = await params;
 
   const result =
     await getObavestenje(id);
@@ -234,6 +234,7 @@ export default async function ObavestenjePage({
 
           {isOwner && (
             <ObavestenjeActions
+              slug={slug}
               id={obavestenje.id}
             />
           )}

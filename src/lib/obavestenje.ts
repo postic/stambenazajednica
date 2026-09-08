@@ -8,6 +8,10 @@ type CreateObavestenjeData = {
   kategorija: string;
 };
 
+// ==================================================
+// CREATE
+// ==================================================
+
 export async function createObavestenje({
   title,
   description,
@@ -30,6 +34,36 @@ export async function createObavestenje({
   if (!response.ok) {
     throw new Error(
       data?.error || "Greška prilikom kreiranja obaveštenja"
+    );
+  }
+
+  return data;
+}
+
+// ==================================================
+// DELETE
+// ==================================================
+
+export async function deleteObavestenje(
+  slug: string,
+  id: string
+) {
+  if (!slug || !id) {
+    throw new Error("Slug i ID obaveštenja su obavezni");
+  }
+
+  const response = await fetch(
+    `/api/obavestenja/${slug}/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error || "Greška prilikom brisanja obaveštenja"
     );
   }
 

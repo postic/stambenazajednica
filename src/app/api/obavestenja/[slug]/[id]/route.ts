@@ -4,6 +4,10 @@ const DRUPAL_BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
+// ==================================================
+// GET
+// ==================================================
+
 export async function GET(
   request: Request,
   context: {
@@ -47,8 +51,7 @@ export async function GET(
 
       return NextResponse.json(
         {
-          error:
-            "Greška pri dohvaćanju obaveštenja",
+          error: "Greška pri dohvaćanju obaveštenja",
         },
         { status: 502 }
       );
@@ -105,6 +108,85 @@ export async function GET(
   } catch (error) {
     console.error(
       "Server error fetching obaveštenje:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error: "Interna greška servera",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// ==================================================
+// DELETE
+// ==================================================
+
+export async function DELETE(
+  request: Request,
+  context: {
+    params: Promise<{
+      slug: string;
+      id: string;
+    }>;
+  }
+) {
+  try {
+    const { id } = await context.params;
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "ID obaveštenja je obavezan",
+        },
+        { status: 400 }
+      );
+    }
+
+    const response = await fetch(
+      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Accept: "application/vnd.api+json",
+        },
+      }
+    );
+
+    if (response.status === 404) {
+      return NextResponse.json(
+        {
+          error: "Obaveštenje nije pronađeno",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (!response.ok) {
+      const text = await response.text();
+
+      console.error(
+        "Drupal DELETE error:",
+        response.status,
+        text
+      );
+
+      return NextResponse.json(
+        {
+          error: "Greška prilikom brisanja obaveštenja",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(
+      "Server error deleting obaveštenje:",
       error
     );
 
