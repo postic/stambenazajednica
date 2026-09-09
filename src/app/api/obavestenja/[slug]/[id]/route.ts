@@ -6,6 +6,78 @@ const DRUPAL_BASE_URL =
   "http://localhost:8888";
 
 // ==================================================
+// GET
+// ==================================================
+
+export async function GET(
+  request: Request,
+  context: {
+    params: Promise<{
+      slug: string;
+      id: string;
+    }>;
+  }
+) {
+  try {
+    const { id } = await context.params;
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "ID obaveštenja je obavezan",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const response = await fetch(
+      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}?include=field_image,field_tip_obavestenja`,
+      {
+        headers: {
+          Accept: "application/vnd.api+json",
+        },
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+
+      return NextResponse.json(
+        {
+          error:
+            "Greška pri učitavanju obaveštenja",
+          details: text,
+        },
+        {
+          status: response.status,
+        }
+      );
+    }
+
+    const data = await response.json();
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error(
+      "Greška pri GET obaveštenja:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error: "Greška na serveru",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+// ==================================================
 // DELETE
 // ==================================================
 
@@ -21,37 +93,25 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
-    // ================================================
-    // PROVERA ID-a
-    // ================================================
-
     if (!id) {
       return NextResponse.json(
         {
           error: "ID obaveštenja je obavezan",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
-    // ================================================
-    // COOKIES
-    // ================================================
+    // ----------------------------------------------
+    // Drupal cookies
+    // ----------------------------------------------
 
     const cookieStore = await cookies();
 
-    const allCookies = cookieStore.getAll();
-
-    console.log(
-      "COOKIES:",
-      allCookies.map((cookie) => cookie.name)
-    );
-
-    // ================================================
-    // DRUPAL COOKIE
-    // ================================================
-
-    const drupalCookies = allCookies
+    const drupalCookies = cookieStore
+      .getAll()
       .filter(
         (cookie) =>
           cookie.name.startsWith("SESS") ||
@@ -63,34 +123,27 @@ export async function DELETE(
       )
       .join("; ");
 
-    console.log(
-      "DRUPAL COOKIE:",
-      drupalCookies
-        ? "FOUND"
-        : "NOT FOUND"
-    );
-
     if (!drupalCookies) {
       return NextResponse.json(
         {
           error:
-            "Drupal sesija nije pronađena",
+            "Drupal sesija nije pronađena.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
-    // ================================================
-    // CSRF TOKEN
-    // ================================================
+    // ----------------------------------------------
+    // CSRF token
+    // ----------------------------------------------
 
     const csrfResponse = await fetch(
       `${DRUPAL_BASE_URL}/session/token`,
       {
-        method: "GET",
         headers: {
           Cookie: drupalCookies,
-          Accept: "text/plain",
         },
         cache: "no-store",
       }
@@ -99,115 +152,104 @@ export async function DELETE(
     if (!csrfResponse.ok) {
       const text = await csrfResponse.text();
 
-      console.error(
-        "Drupal CSRF error:",
-        csrfResponse.status,
-        text
-      );
-
       return NextResponse.json(
         {
           error:
             "Nije moguće dobiti Drupal CSRF token",
+          details: text,
         },
-        { status: 502 }
+        {
+          status: csrfResponse.status,
+        }
       );
     }
 
     const csrfToken =
       await csrfResponse.text();
 
-    // ================================================
-    // DELETE FROM DRUPAL
-    // ================================================
+    // ----------------------------------------------
+    // Brisanje obaveštenja
+    // ----------------------------------------------
 
     const response = await fetch(
       `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${id}`,
       {
         method: "DELETE",
+
         headers: {
           Accept: "application/vnd.api+json",
-          "X-CSRF-Token": csrfToken,
           Cookie: drupalCookies,
+          "X-CSRF-Token": csrfToken,
         },
       }
     );
-
-    // ================================================
-    // 404
-    // ================================================
 
     if (response.status === 404) {
       return NextResponse.json(
         {
           error:
-            "Obaveštenje nije pronađeno",
+            "Obaveštenje nije pronađeno.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
-    // ================================================
-    // 401
-    // ================================================
-
     if (response.status === 401) {
-      const text = await response.text();
-
-      console.error(
-        "Drupal DELETE 401:",
-        text
-      );
-
       return NextResponse.json(
         {
           error:
-            "Drupal nije prihvatio autentifikaciju",
+            "Niste prijavljeni ili Drupal sesija nije validna.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
-
-    // ================================================
-    // OSTALI ERROR
-    // ================================================
 
     if (!response.ok) {
       const text = await response.text();
 
-      console.error(
-        "Drupal DELETE error:",
-        response.status,
-        text
-      );
+      let data: any = null;
+
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
 
       return NextResponse.json(
         {
           error:
-            "Greška prilikom brisanja obaveštenja",
+            data?.errors?.[0]?.detail ||
+            data?.message ||
+            "Brisanje obaveštenja nije uspelo.",
+
+          details: data ?? text,
         },
-        { status: 502 }
+        {
+          status: response.status,
+        }
       );
     }
-
-    // ================================================
-    // SUCCESS
-    // ================================================
 
     return NextResponse.json({
       success: true,
     });
   } catch (error) {
     console.error(
-      "Server error deleting obaveštenje:",
+      "Greška pri brisanju obaveštenja:",
       error
     );
 
     return NextResponse.json(
       {
-        error: "Interna greška servera",
+        error: "Greška na serveru",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

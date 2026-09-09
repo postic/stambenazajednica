@@ -26,7 +26,7 @@ export default function ObavestenjaPage() {
       .then((data) => {
         if (ignore) return;
 
-        setKategorije(data.data ?? []);
+        setKategorije(data.categories ?? []);
       })
       .catch((err) => {
         if (ignore) return;
@@ -69,7 +69,6 @@ export default function ObavestenjaPage() {
         >
           Dodaj obaveštenje
         </Link>
-
       </div>
 
       {/* TABLE */}

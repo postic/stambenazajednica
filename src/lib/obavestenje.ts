@@ -6,27 +6,28 @@ type CreateObavestenjeData = {
   title: string;
   description: string;
   kategorija: string;
+  image?: File | null;
 };
-
-// ==================================================
-// CREATE
-// ==================================================
 
 export async function createObavestenje({
   title,
   description,
   kategorija,
+  image,
 }: CreateObavestenjeData) {
+  const formData = new FormData();
+
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("kategorija", kategorija);
+
+  if (image) {
+    formData.append("image", image);
+  }
+
   const response = await fetch("/api/obavestenja", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      title,
-      description,
-      kategorija,
-    }),
+    body: formData,
   });
 
   const data = await response.json();
@@ -39,10 +40,6 @@ export async function createObavestenje({
 
   return data;
 }
-
-// ==================================================
-// DELETE
-// ==================================================
 
 export async function deleteObavestenje(
   slug: string,

@@ -6,142 +6,162 @@ const DRUPAL_BASE_URL =
   "http://localhost:8888";
 
 // ==================================================
-// TYPES
-// ==================================================
-
-interface KategorijaObavestenja {
-  id: string;
-  name: string;
-  slug: string;
-  brojObavestenja: number;
-}
-
-// ==================================================
-// SLUG
-// ==================================================
-
-function createSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-// ==================================================
 // GET
 // ==================================================
 
 export async function GET() {
   try {
-    const url =
-      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje` +
-      `?include=field_tip_obavestenja` +
-      `&sort=-created` +
-      `&page[limit]=100`;
+    // ----------------------------------------------
+    // 1. Učitaj obaveštenja
+    // ----------------------------------------------
 
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.api+json",
-      },
-      cache: "no-store",
-    });
+    const response = await fetch(
+      `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje?include=field_tip_obavestenja&sort=-created&page[limit]=100`,
+      {
+        headers: {
+          Accept: "application/vnd.api+json",
+        },
+        cache: "no-store",
+      }
+    );
 
     if (!response.ok) {
       const text = await response.text();
 
-      console.error(
-        "Drupal API error:",
-        response.status,
-        text
-      );
-
       return NextResponse.json(
         {
-          error: "Greška pri dohvaćanju obaveštenja",
+          error: "Greška pri učitavanju obaveštenja",
+          details: text,
         },
-        { status: 502 }
+        {
+          status: response.status,
+        }
       );
     }
 
-    const data = await response.json();
+    const json = await response.json();
 
-    const included = data.included || [];
+    const items = Array.isArray(json?.data)
+      ? json.data
+      : [];
 
-    // ==================================================
-    // KATEGORIJE
-    // ==================================================
+    // ----------------------------------------------
+    // 2. Učitaj sve kategorije
+    // ----------------------------------------------
 
-    const kategorije = new Map<
-      string,
-      KategorijaObavestenja
-    >();
-
-    included
-      .filter(
-        (item: any) =>
-          item.type ===
-          "taxonomy_term--tip_obavestenja"
-      )
-      .forEach((item: any) => {
-        const name =
-          item.attributes?.name || "";
-
-        const slug = createSlug(name);
-
-        kategorije.set(item.id, {
-          id: item.id,
-          name,
-          slug,
-          brojObavestenja: 0,
-        });
-      });
-
-    // ==================================================
-    // BROJ OBAVEŠTENJA PO KATEGORIJI
-    // ==================================================
-
-    (data.data || []).forEach(
-      (item: any) => {
-        const categoryId =
-          item.relationships
-            ?.field_tip_obavestenja
-            ?.data?.id;
-
-        if (
-          categoryId &&
-          kategorije.has(categoryId)
-        ) {
-          const kategorija =
-            kategorije.get(categoryId)!;
-
-          kategorija.brojObavestenja++;
-        }
+    const categoriesResponse = await fetch(
+      `${DRUPAL_BASE_URL}/jsonapi/taxonomy_term/tip_obavestenja?sort=weight`,
+      {
+        headers: {
+          Accept: "application/vnd.api+json",
+        },
+        cache: "no-store",
       }
     );
 
-    // ==================================================
-    // RESPONSE
-    // ==================================================
+    if (!categoriesResponse.ok) {
+      const text = await categoriesResponse.text();
+
+      return NextResponse.json(
+        {
+          error: "Greška pri učitavanju kategorija",
+          details: text,
+        },
+        {
+          status: categoriesResponse.status,
+        }
+      );
+    }
+
+    const categoriesJson =
+      await categoriesResponse.json();
+
+    const terms = Array.isArray(categoriesJson?.data)
+      ? categoriesJson.data
+      : [];
+
+    // ----------------------------------------------
+    // 3. Prebroj obaveštenja po kategoriji
+    // ----------------------------------------------
+
+    const counts = new Map<string, number>();
+
+    for (const item of items) {
+      const relationship =
+        item?.relationships?.field_tip_obavestenja?.data;
+
+      if (!relationship) {
+        continue;
+      }
+
+      const relations = Array.isArray(relationship)
+        ? relationship
+        : [relationship];
+
+      for (const relation of relations) {
+        if (!relation?.id) {
+          continue;
+        }
+
+        counts.set(
+          relation.id,
+          (counts.get(relation.id) || 0) + 1
+        );
+      }
+    }
+
+    // ----------------------------------------------
+    // 4. Napravi kategorije
+    // ----------------------------------------------
+
+    const categories = terms.map((term: any) => {
+      const id = term.id;
+
+      const name =
+        term.attributes?.name || "";
+
+      const slug = name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      return {
+        id,
+        name,
+        slug,
+        brojObavestenja:
+          counts.get(id) || 0,
+      };
+    });
+
+    console.log(
+      "KATEGORIJE:",
+      categories
+    );
+
+    // ----------------------------------------------
+    // 5. Response
+    // ----------------------------------------------
 
     return NextResponse.json({
-      data: Array.from(
-        kategorije.values()
-      ),
+      data: items,
+      categories,
     });
   } catch (error) {
     console.error(
-      "Server error fetching kategorije obaveštenja:",
+      "Greška pri GET /api/obavestenja:",
       error
     );
 
     return NextResponse.json(
       {
-        error: "Interna greška servera",
+        error: "Greška na serveru",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
@@ -152,48 +172,80 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const formData = await request.formData();
 
-    const {
-      title,
-      description,
-      kategorija,
-    } = body;
+    const title =
+      formData.get("title")?.toString().trim() || "";
 
-    // ==================================================
-    // VALIDACIJA
-    // ==================================================
+    const description =
+      formData.get("description")?.toString().trim() || "";
 
-    if (
-      !title ||
-      !description ||
-      !kategorija
-    ) {
+    const kategorija =
+      formData.get("kategorija")?.toString().trim() || "";
+
+    const imageValue = formData.get("image");
+
+    const image =
+      imageValue instanceof File && imageValue.size > 0
+        ? imageValue
+        : null;
+
+    // ----------------------------------------------
+    // Validacija
+    // ----------------------------------------------
+
+    if (!title) {
       return NextResponse.json(
         {
-          error:
-            "Naslov, tekst i tip obaveštenja su obavezni.",
+          error: "Naslov je obavezan",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
-    // ==================================================
-    // UZMI DRUPAL SESIJU TRENUTNO ULOGOVANOG KORISNIKA
-    // ==================================================
+    if (!description) {
+      return NextResponse.json(
+        {
+          error: "Opis je obavezan",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!kategorija) {
+      return NextResponse.json(
+        {
+          error: "Kategorija je obavezna",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (image && !image.type.startsWith("image/")) {
+      return NextResponse.json(
+        {
+          error: "Dozvoljeno je dodavanje samo slike.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // ----------------------------------------------
+    // Drupal cookies
+    // ----------------------------------------------
 
     const cookieStore = await cookies();
 
-    const allCookies = cookieStore.getAll();
-
-    console.log(
-      "COOKIES:",
-      allCookies.map(
-        (cookie) => cookie.name
-      )
-    );
-
-    const drupalCookies = allCookies
+    const drupalCookies = cookieStore
+      .getAll()
       .filter(
         (cookie) =>
           cookie.name.startsWith("SESS") ||
@@ -205,59 +257,44 @@ export async function POST(request: Request) {
       )
       .join("; ");
 
-    console.log(
-      "DRUPAL COOKIE:",
-      drupalCookies
-        ? "FOUND"
-        : "NOT FOUND"
-    );
-
-    // ==================================================
-    // NEMA DRUPAL SESIJE
-    // ==================================================
-
     if (!drupalCookies) {
       return NextResponse.json(
         {
           error:
-            "Drupal sesija nije pronađena. Prijavite se ponovo.",
+            "Drupal sesija nije pronađena. Potrebno je biti prijavljen.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
-    // ==================================================
-    // CSRF TOKEN
-    // ==================================================
+    // ----------------------------------------------
+    // CSRF token
+    // ----------------------------------------------
 
     const csrfResponse = await fetch(
       `${DRUPAL_BASE_URL}/session/token`,
       {
-        method: "GET",
         headers: {
           Cookie: drupalCookies,
-          Accept: "text/plain",
         },
         cache: "no-store",
       }
     );
 
     if (!csrfResponse.ok) {
-      const text =
-        await csrfResponse.text();
-
-      console.error(
-        "Drupal CSRF error:",
-        csrfResponse.status,
-        text
-      );
+      const text = await csrfResponse.text();
 
       return NextResponse.json(
         {
           error:
-            "Nije moguće dobiti Drupal CSRF token.",
+            "Nije moguće dobiti Drupal CSRF token",
+          details: text,
         },
-        { status: 502 }
+        {
+          status: csrfResponse.status,
+        }
       );
     }
 
@@ -265,24 +302,20 @@ export async function POST(request: Request) {
       await csrfResponse.text();
 
     // ==================================================
-    // CREATE OBAVEŠTENJE
+    // 1. KREIRANJE OBAVEŠTENJA
     // ==================================================
 
     const createResponse = await fetch(
       `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje`,
       {
         method: "POST",
+
         headers: {
+          Accept: "application/vnd.api+json",
           "Content-Type":
             "application/vnd.api+json",
-
-          Accept:
-            "application/vnd.api+json",
-
           Cookie: drupalCookies,
-
-          "X-CSRF-Token":
-            csrfToken,
+          "X-CSRF-Token": csrfToken,
         },
 
         body: JSON.stringify({
@@ -303,7 +336,6 @@ export async function POST(request: Request) {
                 data: {
                   type:
                     "taxonomy_term--tip_obavestenja",
-
                   id: kategorija,
                 },
               },
@@ -313,74 +345,150 @@ export async function POST(request: Request) {
       }
     );
 
-    // ==================================================
-    // RESPONSE
-    // ==================================================
-
-    const responseText =
+    const createText =
       await createResponse.text();
+
+    let createData: any = null;
+
+    try {
+      createData = createText
+        ? JSON.parse(createText)
+        : null;
+    } catch {
+      createData = null;
+    }
 
     if (!createResponse.ok) {
       console.error(
-        "Drupal create obavestenje error:",
-        createResponse.status,
-        responseText
+        "Drupal greška pri kreiranju obaveštenja:",
+        createText
       );
-
-      let errorData: any = {};
-
-      try {
-        errorData = responseText
-          ? JSON.parse(responseText)
-          : {};
-      } catch {
-        // Drupal nije vratio JSON
-      }
 
       return NextResponse.json(
         {
           error:
-            errorData?.errors?.[0]?.detail ||
-            errorData?.error ||
-            "Greška prilikom kreiranja obaveštenja.",
+            createData?.errors?.[0]?.detail ||
+            createData?.message ||
+            "Greška pri kreiranju obaveštenja",
+
+          details:
+            createData ?? createText,
         },
         {
-          status:
-            createResponse.status,
+          status: createResponse.status,
         }
       );
     }
 
-    let result: any = {};
+    const nodeData = createData?.data;
 
-    try {
-      result = responseText
-        ? JSON.parse(responseText)
-        : {};
-    } catch {
-      result = {};
+    if (!nodeData?.id) {
+      return NextResponse.json(
+        {
+          error:
+            "Obaveštenje je kreirano, ali Drupal nije vratio UUID.",
+        },
+        {
+          status: 500,
+        }
+      );
     }
 
-    return NextResponse.json(
-      {
-        data: result.data ?? null,
-      },
-      {
-        status: 201,
+    // ==================================================
+    // 2. UPLOAD SLIKE
+    // ==================================================
+
+    if (image) {
+      const imageBuffer = Buffer.from(
+        await image.arrayBuffer()
+      );
+
+      const uploadResponse = await fetch(
+        `${DRUPAL_BASE_URL}/jsonapi/node/obavestenje/${nodeData.id}/field_image`,
+        {
+          method: "POST",
+
+          headers: {
+            Accept: "application/vnd.api+json",
+
+            "Content-Type":
+              "application/octet-stream",
+
+            "Content-Disposition":
+              `file; filename="${image.name}"`,
+
+            Cookie: drupalCookies,
+
+            "X-CSRF-Token":
+              csrfToken,
+          },
+
+          body: imageBuffer,
+        }
+      );
+
+      const uploadText =
+        await uploadResponse.text();
+
+      let uploadData: any = null;
+
+      try {
+        uploadData = uploadText
+          ? JSON.parse(uploadText)
+          : null;
+      } catch {
+        uploadData = null;
       }
-    );
+
+      if (!uploadResponse.ok) {
+        console.error(
+          "Drupal greška pri uploadu slike:",
+          uploadText
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              uploadData?.errors?.[0]?.detail ||
+              uploadData?.message ||
+              "Obaveštenje je kreirano, ali upload slike nije uspeo.",
+
+            details:
+              uploadData ?? uploadText,
+          },
+          {
+            status: uploadResponse.status,
+          }
+        );
+      }
+
+      console.log(
+        "Slika uspešno uploadovana:",
+        uploadData?.data?.id
+      );
+    }
+
+    // ==================================================
+    // USPEH
+    // ==================================================
+
+    return NextResponse.json({
+      data: nodeData,
+      imageUploaded: !!image,
+    });
   } catch (error) {
     console.error(
-      "Server error creating obaveštenje:",
+      "Greška pri POST /api/obavestenja:",
       error
     );
 
     return NextResponse.json(
       {
-        error:
-          "Interna greška servera.",
+        error: "Greška na serveru",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

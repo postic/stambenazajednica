@@ -14,6 +14,7 @@ export default function ObavestenjeForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [kategorija, setKategorija] = useState("");
+  const [image, setImage] = useState<File | null>(null);
 
   const [tipovi, setTipovi] = useState<TipObavestenja[]>([]);
   const [loadingTipovi, setLoadingTipovi] = useState(true);
@@ -44,6 +45,7 @@ export default function ObavestenjeForm() {
         if (ignore) return;
 
         console.error(err);
+
         toast.error(
           "Nije moguće učitati tipove obaveštenja"
         );
@@ -71,6 +73,7 @@ export default function ObavestenjeForm() {
         title,
         description,
         kategorija,
+        image,
       });
 
       toast.success(
@@ -148,6 +151,30 @@ export default function ObavestenjeForm() {
           rows={6}
           className="w-full border-b py-2 outline-none resize-none border-slate-300 focus:border-blue-500 bg-transparent"
         />
+      </div>
+
+      {/* SLIKA */}
+      <div>
+        <label className="block text-sm text-slate-600 mb-1">
+          Slika
+        </label>
+
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={(e) => {
+            const file = e.target.files?.[0] ?? null;
+            setImage(file);
+          }}
+          className="w-full text-sm"
+        />
+
+        {image && (
+          <p className="text-sm text-slate-500 mt-2">
+            Izabrana slika: {image.name}
+          </p>
+        )}
       </div>
 
       {/* DUGME */}
