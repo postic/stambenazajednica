@@ -237,7 +237,7 @@ export default function ObavestenjeForm() {
       </div>
 
       {/* ==================================================
-          SLIKA
+      SLIKA
       ================================================== */}
 
       <div>
@@ -245,30 +245,25 @@ export default function ObavestenjeForm() {
           Slika
         </label>
 
-        {/* Skriveni file input */}
         <input
           ref={fileInputRef}
+          id="obavestenje-slika"
           type="file"
           accept="image/*"
           capture="environment"
           onChange={handleImageChange}
-          className="hidden"
+          className="sr-only"
         />
 
-        {/* Dugme za izbor slike */}
         {!image && (
-          <button
-            type="button"
-            onClick={() =>
-              fileInputRef.current?.click()
-            }
-            className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+          <label
+            htmlFor="obavestenje-slika"
+            className="flex items-center justify-center w-full border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer"
           >
             📷 Dodaj sliku
-          </button>
+          </label>
         )}
 
-        {/* Preview */}
         {image && imagePreview && (
           <div className="relative">
             <img
