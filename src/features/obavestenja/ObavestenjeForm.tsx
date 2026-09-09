@@ -14,6 +14,7 @@ export default function ObavestenjeForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [kategorija, setKategorija] = useState("");
+
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -21,7 +22,8 @@ export default function ObavestenjeForm() {
   const [loadingTipovi, setLoadingTipovi] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
 
@@ -94,16 +96,16 @@ export default function ObavestenjeForm() {
       return;
     }
 
+    // Provera da je slika
     if (!file.type.startsWith("image/")) {
       toast.error("Molimo izaberite sliku.");
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      e.target.value = "";
 
       return;
     }
 
+    // Oslobodi prethodni preview
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
@@ -111,6 +113,7 @@ export default function ObavestenjeForm() {
     setImage(file);
 
     const previewUrl = URL.createObjectURL(file);
+
     setImagePreview(previewUrl);
   };
 
@@ -126,8 +129,13 @@ export default function ObavestenjeForm() {
     setImage(null);
     setImagePreview(null);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    // Omogućava ponovno biranje iste slike
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
+    }
+
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = "";
     }
   };
 
@@ -211,7 +219,10 @@ export default function ObavestenjeForm() {
           </option>
 
           {tipovi.map((tip) => (
-            <option key={tip.id} value={tip.id}>
+            <option
+              key={tip.id}
+              value={tip.id}
+            >
               {tip.naziv}
             </option>
           ))}
@@ -248,25 +259,58 @@ export default function ObavestenjeForm() {
         </label>
 
         {!image && (
-          <input
-            ref={fileInputRef}
-            id="obavestenje-slika"
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleImageChange}
-            className="block w-full text-sm text-slate-600
-              file:mr-4
-              file:py-2
-              file:px-4
-              file:rounded-lg
-              file:border-0
-              file:text-sm
-              file:font-medium
-              file:bg-slate-100
-              file:text-slate-700
-              hover:file:bg-slate-200"
-          />
+          <>
+            {/* ==========================================
+                SKRIVENI INPUT ZA KAMERU
+            ========================================== */}
+
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+
+            {/* ==========================================
+                SKRIVENI INPUT ZA GALERIJU
+            ========================================== */}
+
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+
+            {/* ==========================================
+                DUGMAD
+            ========================================== */}
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  cameraInputRef.current?.click()
+                }
+                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+              >
+                📷 Slikaj
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  galleryInputRef.current?.click()
+                }
+                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+              >
+                🖼️ Izaberi iz galerije
+              </button>
+            </div>
+          </>
         )}
 
         {/* ==================================================
