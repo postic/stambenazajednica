@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createObavestenje } from "@/lib/obavestenje";
@@ -21,9 +21,6 @@ export default function ObavestenjeForm() {
   const [tipovi, setTipovi] = useState<TipObavestenja[]>([]);
   const [loadingTipovi, setLoadingTipovi] = useState(true);
   const [loading, setLoading] = useState(false);
-
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
 
@@ -72,7 +69,7 @@ export default function ObavestenjeForm() {
   }, []);
 
   // =========================================================
-  // PREVIEW CLEANUP
+  // ČIŠĆENJE PREVIEW URL-A
   // =========================================================
 
   useEffect(() => {
@@ -104,7 +101,7 @@ export default function ObavestenjeForm() {
   };
 
   // =========================================================
-  // KAMERA / GALERIJA
+  // IZBOR / SNIMANJE SLIKE
   // =========================================================
 
   const handleImageChange = (
@@ -118,8 +115,7 @@ export default function ObavestenjeForm() {
 
     setSelectedImage(file);
 
-    // Omogućava da korisnik ponovo izabere
-    // istu fotografiju
+    // Omogućava ponovno biranje iste slike
     e.target.value = "";
   };
 
@@ -134,14 +130,6 @@ export default function ObavestenjeForm() {
 
     setImage(null);
     setImagePreview(null);
-
-    if (cameraInputRef.current) {
-      cameraInputRef.current.value = "";
-    }
-
-    if (galleryInputRef.current) {
-      galleryInputRef.current.value = "";
-    }
   };
 
   // =========================================================
@@ -187,7 +175,9 @@ export default function ObavestenjeForm() {
       onSubmit={handleSubmit}
       className="flex flex-col gap-6"
     >
-      {/* NASLOV */}
+      {/* =====================================================
+          NASLOV
+      ====================================================== */}
 
       <div>
         <label className="block text-sm text-slate-600 mb-1">
@@ -205,7 +195,9 @@ export default function ObavestenjeForm() {
         />
       </div>
 
-      {/* TIP OBAVEŠTENJA */}
+      {/* =====================================================
+          TIP OBAVEŠTENJA
+      ====================================================== */}
 
       <div>
         <label className="block text-sm text-slate-600 mb-1">
@@ -238,7 +230,9 @@ export default function ObavestenjeForm() {
         </select>
       </div>
 
-      {/* TEKST */}
+      {/* =====================================================
+          TEKST OBAVEŠTENJA
+      ====================================================== */}
 
       <div>
         <label className="block text-sm text-slate-600 mb-1">
@@ -256,7 +250,9 @@ export default function ObavestenjeForm() {
         />
       </div>
 
-      {/* SLIKA */}
+      {/* =====================================================
+          SLIKA
+      ====================================================== */}
 
       <div>
         <label className="block text-sm text-slate-600 mb-2">
@@ -265,56 +261,63 @@ export default function ObavestenjeForm() {
 
         {!image && (
           <>
-            {/* KAMERA */}
+            {/* =================================================
+                KAMERA
+
+                capture="environment" traži zadnju kameru
+                na telefonu.
+            ================================================== */}
 
             <input
-              ref={cameraInputRef}
+              id="camera-input"
               type="file"
               accept="image/*"
               capture="environment"
               onChange={handleImageChange}
-              className="hidden"
+              className="absolute w-px h-px opacity-0 pointer-events-none"
             />
 
-            {/* GALERIJA */}
+            {/* =================================================
+                GALERIJA
+            ================================================== */}
 
             <input
-              ref={galleryInputRef}
+              id="gallery-input"
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="hidden"
+              className="absolute w-px h-px opacity-0 pointer-events-none"
             />
 
+            {/* =================================================
+                DUGMAD
+            ================================================== */}
+
             <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  cameraInputRef.current?.click()
-                }
-                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+              <label
+                htmlFor="camera-input"
+                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer text-center"
               >
                 📷 Slikaj
-              </button>
+              </label>
 
-              <button
-                type="button"
-                onClick={() =>
-                  galleryInputRef.current?.click()
-                }
-                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+              <label
+                htmlFor="gallery-input"
+                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer text-center"
               >
                 🖼️ Izaberi iz galerije
-              </button>
+              </label>
             </div>
 
             <p className="text-xs text-slate-400 mt-2">
-              Dugme „Slikaj“ otvara kameru uređaja.
+              „Slikaj“ otvara kameru uređaja.
             </p>
           </>
         )}
 
-        {/* PREVIEW */}
+        {/* =====================================================
+            PREVIEW SLIKE
+        ====================================================== */}
 
         {image && imagePreview && (
           <div className="relative">
@@ -341,7 +344,9 @@ export default function ObavestenjeForm() {
         )}
       </div>
 
-      {/* SAČUVAJ */}
+      {/* =====================================================
+          SAČUVAJ
+      ====================================================== */}
 
       <button
         type="submit"
