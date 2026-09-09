@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createObavestenje } from "@/lib/obavestenje";
@@ -15,14 +15,20 @@ export default function ObavestenjeForm() {
   const [description, setDescription] = useState("");
   const [kategorija, setKategorija] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [tipovi, setTipovi] = useState<TipObavestenja[]>([]);
   const [loadingTipovi, setLoadingTipovi] = useState(true);
   const [loading, setLoading] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const router = useRouter();
 
-  // Učitavanje tipova obaveštenja iz Drupala
+  // ==================================================
+  // UČITAVANJE TIPOVA OBAVEŠTENJA
+  // ==================================================
+
   useEffect(() => {
     let ignore = false;
 
@@ -63,6 +69,70 @@ export default function ObavestenjeForm() {
     };
   }, []);
 
+  // ==================================================
+  // CLEANUP IMAGE PREVIEW
+  // ==================================================
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  // ==================================================
+  // IZBOR SLIKE
+  // ==================================================
+
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0] ?? null;
+
+    if (!file) {
+      return;
+    }
+
+    // Provera da je slika
+    if (!file.type.startsWith("image/")) {
+      toast.error("Molimo izaberite sliku.");
+      return;
+    }
+
+    // Ako postoji prethodni preview, oslobodi URL
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImage(file);
+
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
+
+  // ==================================================
+  // UKLANJANJE SLIKE
+  // ==================================================
+
+  const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImage(null);
+    setImagePreview(null);
+
+    // Omogućava ponovno biranje iste slike
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // ==================================================
+  // SUBMIT
+  // ==================================================
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -96,7 +166,10 @@ export default function ObavestenjeForm() {
       onSubmit={handleSubmit}
       className="flex flex-col gap-6"
     >
-      {/* NASLOV */}
+      {/* ==================================================
+          NASLOV
+      ================================================== */}
+
       <div>
         <label className="block text-sm text-slate-600 mb-1">
           Naslov
@@ -111,7 +184,10 @@ export default function ObavestenjeForm() {
         />
       </div>
 
-      {/* TIP OBAVEŠTENJA */}
+      {/* ==================================================
+          TIP OBAVEŠTENJA
+      ================================================== */}
+
       <div>
         <label className="block text-sm text-slate-600 mb-1">
           Tip obaveštenja
@@ -121,7 +197,9 @@ export default function ObavestenjeForm() {
           value={kategorija}
           required
           disabled={loadingTipovi}
-          onChange={(e) => setKategorija(e.target.value)}
+          onChange={(e) =>
+            setKategorija(e.target.value)
+          }
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent disabled:opacity-50"
         >
           <option value="">
@@ -138,7 +216,10 @@ export default function ObavestenjeForm() {
         </select>
       </div>
 
-      {/* TEKST */}
+      {/* ==================================================
+          TEKST
+      ================================================== */}
+
       <div>
         <label className="block text-sm text-slate-600 mb-1">
           Tekst obaveštenja
@@ -147,43 +228,87 @@ export default function ObavestenjeForm() {
         <textarea
           value={description}
           required
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) =>
+            setDescription(e.target.value)
+          }
           rows={6}
           className="w-full border-b py-2 outline-none resize-none border-slate-300 focus:border-blue-500 bg-transparent"
         />
       </div>
 
-      {/* SLIKA */}
+      {/* ==================================================
+          SLIKA
+      ================================================== */}
+
       <div>
-        <label className="block text-sm text-slate-600 mb-1">
+        <label className="block text-sm text-slate-600 mb-2">
           Slika
         </label>
 
+        {/* Skriveni file input */}
         <input
+          ref={fileInputRef}
           type="file"
           accept="image/*"
           capture="environment"
-          onChange={(e) => {
-            const file = e.target.files?.[0] ?? null;
-            setImage(file);
-          }}
-          className="w-full text-sm"
+          onChange={handleImageChange}
+          className="hidden"
         />
 
-        {image && (
-          <p className="text-sm text-slate-500 mt-2">
-            Izabrana slika: {image.name}
-          </p>
+        {/* Dugme za izbor slike */}
+        {!image && (
+          <button
+            type="button"
+            onClick={() =>
+              fileInputRef.current?.click()
+            }
+            className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+          >
+            📷 Dodaj sliku
+          </button>
+        )}
+
+        {/* Preview */}
+        {image && imagePreview && (
+          <div className="relative">
+            <img
+              src={imagePreview}
+              alt="Pregled slike"
+              className="w-full max-h-80 object-contain rounded-lg border border-slate-200 bg-slate-50"
+            />
+
+            <div className="flex items-center justify-between mt-2 gap-3">
+              <p className="text-sm text-slate-500 truncate">
+                {image.name}
+              </p>
+
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="shrink-0 text-sm text-red-600 hover:text-red-700"
+              >
+                Ukloni
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* DUGME */}
+      {/* ==================================================
+          DUGME
+      ================================================== */}
+
       <button
         type="submit"
-        disabled={loading || loadingTipovi}
+        disabled={
+          loading ||
+          loadingTipovi
+        }
         className="bg-primary text-white px-4 py-2 rounded disabled:opacity-50"
       >
-        {loading ? "Šaljem..." : "Sačuvaj"}
+        {loading
+          ? "Šaljem..."
+          : "Sačuvaj"}
       </button>
     </form>
   );
