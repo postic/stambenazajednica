@@ -22,8 +22,12 @@ export default function ObavestenjeForm() {
   const [loadingTipovi, setLoadingTipovi] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const router = useRouter();
 
@@ -72,11 +76,30 @@ export default function ObavestenjeForm() {
   }, []);
 
   // ==================================================
-  // CLEANUP IMAGE PREVIEW
+  // CLEANUP KAMERE
   // ==================================================
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop();
+      });
+
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    setCameraOpen(false);
+    setCameraLoading(false);
+  };
 
   useEffect(() => {
     return () => {
+      stopCamera();
+
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
@@ -84,7 +107,157 @@ export default function ObavestenjeForm() {
   }, [imagePreview]);
 
   // ==================================================
-  // IZBOR SLIKE
+  // OTVARANJE KAMERE
+  // ==================================================
+
+  const openCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error(
+        "Kamera nije podržana u ovom browseru."
+      );
+
+      return;
+    }
+
+    try {
+      setCameraLoading(true);
+      setCameraOpen(true);
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: {
+              ideal: "environment",
+            },
+            width: {
+              ideal: 1920,
+            },
+            height: {
+              ideal: 1080,
+            },
+          },
+          audio: false,
+        });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        await videoRef.current.play();
+      }
+
+      setCameraLoading(false);
+    } catch (error) {
+      console.error("Camera error:", error);
+
+      setCameraOpen(false);
+      setCameraLoading(false);
+
+      if (
+        error instanceof DOMException &&
+        error.name === "NotAllowedError"
+      ) {
+        toast.error(
+          "Dozvolite pristup kameri za aplikaciju."
+        );
+      } else if (
+        error instanceof DOMException &&
+        error.name === "NotFoundError"
+      ) {
+        toast.error(
+          "Kamera nije pronađena na uređaju."
+        );
+      } else {
+        toast.error(
+          "Nije moguće pokrenuti kameru."
+        );
+      }
+    }
+  };
+
+  // ==================================================
+  // SNIMANJE FOTOGRAFIJE
+  // ==================================================
+
+  const takePhoto = () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      toast.error("Kamera nije spremna.");
+      return;
+    }
+
+    if (
+      video.readyState < 2 ||
+      video.videoWidth === 0 ||
+      video.videoHeight === 0
+    ) {
+      toast.error("Kamera još nije spremna.");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      toast.error(
+        "Nije moguće napraviti fotografiju."
+      );
+
+      return;
+    }
+
+    context.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          toast.error(
+            "Nije moguće napraviti fotografiju."
+          );
+
+          return;
+        }
+
+        const file = new File(
+          [blob],
+          `obavestenje-${Date.now()}.jpg`,
+          {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          }
+        );
+
+        if (imagePreview) {
+          URL.revokeObjectURL(imagePreview);
+        }
+
+        const previewUrl =
+          URL.createObjectURL(file);
+
+        setImage(file);
+        setImagePreview(previewUrl);
+
+        stopCamera();
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
+
+  // ==================================================
+  // IZBOR SLIKE IZ GALERIJE
   // ==================================================
 
   const handleImageChange = (
@@ -96,7 +269,6 @@ export default function ObavestenjeForm() {
       return;
     }
 
-    // Provera da je slika
     if (!file.type.startsWith("image/")) {
       toast.error("Molimo izaberite sliku.");
 
@@ -105,14 +277,14 @@ export default function ObavestenjeForm() {
       return;
     }
 
-    // Oslobodi prethodni preview
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
 
     setImage(file);
 
-    const previewUrl = URL.createObjectURL(file);
+    const previewUrl =
+      URL.createObjectURL(file);
 
     setImagePreview(previewUrl);
   };
@@ -129,13 +301,8 @@ export default function ObavestenjeForm() {
     setImage(null);
     setImagePreview(null);
 
-    // Omogućava ponovno biranje iste slike
-    if (cameraInputRef.current) {
-      cameraInputRef.current.value = "";
-    }
-
-    if (galleryInputRef.current) {
-      galleryInputRef.current.value = "";
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -143,7 +310,9 @@ export default function ObavestenjeForm() {
   // SUBMIT
   // ==================================================
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
 
     setLoading(true);
@@ -189,7 +358,9 @@ export default function ObavestenjeForm() {
           type="text"
           value={title}
           required
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) =>
+            setTitle(e.target.value)
+          }
           className="w-full border-b py-2 outline-none border-slate-300 focus:border-blue-500 bg-transparent"
         />
       </div>
@@ -258,44 +429,26 @@ export default function ObavestenjeForm() {
           Slika
         </label>
 
-        {!image && (
+        {!image && !cameraOpen && (
           <>
-            {/* ==========================================
-                SKRIVENI INPUT ZA KAMERU
-            ========================================== */}
+            {/* INPUT ZA GALERIJU */}
 
             <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-
-            {/* ==========================================
-                SKRIVENI INPUT ZA GALERIJU
-            ========================================== */}
-
-            <input
-              ref={galleryInputRef}
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
             />
 
-            {/* ==========================================
-                DUGMAD
-            ========================================== */}
+            {/* DUGMAD */}
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
-                onClick={() =>
-                  cameraInputRef.current?.click()
-                }
-                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
+                onClick={openCamera}
+                disabled={cameraLoading}
+                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition disabled:opacity-50"
               >
                 📷 Slikaj
               </button>
@@ -303,7 +456,7 @@ export default function ObavestenjeForm() {
               <button
                 type="button"
                 onClick={() =>
-                  galleryInputRef.current?.click()
+                  fileInputRef.current?.click()
                 }
                 className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition"
               >
@@ -311,6 +464,49 @@ export default function ObavestenjeForm() {
               </button>
             </div>
           </>
+        )}
+
+        {/* ==================================================
+            KAMERA
+        ================================================== */}
+
+        {cameraOpen && !image && (
+          <div className="flex flex-col gap-3">
+            <div className="relative w-full overflow-hidden rounded-lg bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="block w-full aspect-[4/3] object-cover"
+              />
+
+              {cameraLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-sm">
+                  Pokretanje kamere...
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={takePhoto}
+                disabled={cameraLoading}
+                className="flex-1 bg-primary text-white px-4 py-3 rounded-lg disabled:opacity-50"
+              >
+                📸 Snimi fotografiju
+              </button>
+
+              <button
+                type="button"
+                onClick={stopCamera}
+                className="px-4 py-3 rounded-lg border border-slate-300 text-slate-700"
+              >
+                Otkaži
+              </button>
+            </div>
+          </div>
         )}
 
         {/* ==================================================
@@ -350,7 +546,8 @@ export default function ObavestenjeForm() {
         type="submit"
         disabled={
           loading ||
-          loadingTipovi
+          loadingTipovi ||
+          cameraOpen
         }
         className="bg-primary text-white px-4 py-2 rounded disabled:opacity-50"
       >
