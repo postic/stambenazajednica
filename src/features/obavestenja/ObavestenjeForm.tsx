@@ -94,13 +94,16 @@ export default function ObavestenjeForm() {
       return;
     }
 
-    // Provera da je slika
     if (!file.type.startsWith("image/")) {
       toast.error("Molimo izaberite sliku.");
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
       return;
     }
 
-    // Ako postoji prethodni preview, oslobodi URL
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
@@ -123,7 +126,6 @@ export default function ObavestenjeForm() {
     setImage(null);
     setImagePreview(null);
 
-    // Omogućava ponovno biranje iste slike
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -237,7 +239,7 @@ export default function ObavestenjeForm() {
       </div>
 
       {/* ==================================================
-      SLIKA
+          SLIKA
       ================================================== */}
 
       <div>
@@ -245,24 +247,31 @@ export default function ObavestenjeForm() {
           Slika
         </label>
 
-        <input
-          ref={fileInputRef}
-          id="obavestenje-slika"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleImageChange}
-          className="sr-only"
-        />
-
         {!image && (
-          <label
-            htmlFor="obavestenje-slika"
-            className="flex items-center justify-center w-full border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer"
-          >
-            📷 Dodaj sliku
-          </label>
+          <input
+            ref={fileInputRef}
+            id="obavestenje-slika"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleImageChange}
+            className="block w-full text-sm text-slate-600
+              file:mr-4
+              file:py-2
+              file:px-4
+              file:rounded-lg
+              file:border-0
+              file:text-sm
+              file:font-medium
+              file:bg-slate-100
+              file:text-slate-700
+              hover:file:bg-slate-200"
+          />
         )}
+
+        {/* ==================================================
+            PREVIEW
+        ================================================== */}
 
         {image && imagePreview && (
           <div className="relative">
