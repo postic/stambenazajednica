@@ -164,9 +164,11 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
                 size={40}
               />
 
+{/*
               <span className="hidden md:block text-gray-900 dark:text-white text-sm font-medium">
                 {user?.name}
               </span>
+*/}
             </DropdownMenuTrigger>
 
             {/* User menu */}

@@ -48,7 +48,7 @@ export default function UserAvatar({
   size = 40,
 }: UserAvatarProps) {
   const src = fixImageUrl(picture);
-  const initials = getInitials(name);
+  const initials = name;//getInitials(name);
   const bgColor = getColorFromName(name || "user");
 
   if (src && src !== "undefined" && src !== "null") {

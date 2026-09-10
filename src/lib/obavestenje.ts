@@ -9,6 +9,14 @@ type CreateObavestenjeData = {
   image?: File | null;
 };
 
+type UpdateObavestenjeData = {
+  title: string;
+  description: string;
+  kategorija: string;
+  image?: File | null;
+  removeImageIds?: string[];
+};
+
 export async function createObavestenje({
   title,
   description,
@@ -18,23 +26,97 @@ export async function createObavestenje({
   const formData = new FormData();
 
   formData.append("title", title);
-  formData.append("description", description);
-  formData.append("kategorija", kategorija);
+  formData.append(
+    "description",
+    description
+  );
+  formData.append(
+    "kategorija",
+    kategorija
+  );
 
   if (image) {
     formData.append("image", image);
   }
 
-  const response = await fetch("/api/obavestenja", {
-    method: "POST",
-    body: formData,
-  });
+  const response = await fetch(
+    "/api/obavestenja",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
 
-  const data = await response.json();
+  const data =
+    await response.json();
 
   if (!response.ok) {
     throw new Error(
-      data?.error || "Greška prilikom kreiranja obaveštenja"
+      data?.error ||
+        "Greška prilikom kreiranja obaveštenja"
+    );
+  }
+
+  return data;
+}
+
+export async function updateObavestenje(
+  slug: string,
+  id: string,
+  {
+    title,
+    description,
+    kategorija,
+    image,
+    removeImageIds = [],
+  }: UpdateObavestenjeData
+) {
+  if (!slug || !id) {
+    throw new Error(
+      "Slug i ID obaveštenja su obavezni"
+    );
+  }
+
+  const formData = new FormData();
+
+  formData.append("title", title);
+
+  formData.append(
+    "description",
+    description
+  );
+
+  formData.append(
+    "kategorija",
+    kategorija
+  );
+
+  if (image) {
+    formData.append("image", image);
+  }
+
+  for (const imageId of removeImageIds) {
+    formData.append(
+      "removeImageIds",
+      imageId
+    );
+  }
+
+  const response = await fetch(
+    `/api/obavestenja/${slug}/${id}`,
+    {
+      method: "PATCH",
+      body: formData,
+    }
+  );
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+        "Greška prilikom izmene obaveštenja"
     );
   }
 
@@ -46,7 +128,9 @@ export async function deleteObavestenje(
   id: string
 ) {
   if (!slug || !id) {
-    throw new Error("Slug i ID obaveštenja su obavezni");
+    throw new Error(
+      "Slug i ID obaveštenja su obavezni"
+    );
   }
 
   const response = await fetch(
@@ -56,11 +140,13 @@ export async function deleteObavestenje(
     }
   );
 
-  const data = await response.json();
+  const data =
+    await response.json();
 
   if (!response.ok) {
     throw new Error(
-      data?.error || "Greška prilikom brisanja obaveštenja"
+      data?.error ||
+        "Greška pri brisanju obaveštenja"
     );
   }
 

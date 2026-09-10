@@ -17,6 +17,12 @@ const routes: Record<string, string> = {
   "/dokumenti": "Dokumenti",
 };
 
+function formatSegment(segment: string) {
+  return decodeURIComponent(segment)
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function findBreadcrumb(
   pathname: string,
   resolver?: Resolver
@@ -24,7 +30,10 @@ export function findBreadcrumb(
   const segments = pathname.split("/").filter(Boolean);
 
   const items: BreadcrumbItem[] = [
-    { label: "Početna", href: "/" },
+    {
+      label: "Početna",
+      href: "/",
+    },
   ];
 
   let currentPath = "";
@@ -32,30 +41,33 @@ export function findBreadcrumb(
   segments.forEach((segment) => {
     currentPath += `/${segment}`;
 
-    // statičke rute
+    // Statičke rute
     if (routes[currentPath]) {
       items.push({
         label: routes[currentPath],
         href: currentPath,
       });
+
       return;
     }
 
-    // dinamički (npr UUID)
+    // Dinamički segmenti
     if (resolver) {
       const resolved = resolver(segment);
+
       if (resolved) {
         items.push({
           label: resolved,
           href: currentPath,
         });
+
         return;
       }
     }
 
-    // fallback
+    // Fallback
     items.push({
-      label: decodeURIComponent(segment),
+      label: formatSegment(segment),
       href: currentPath,
     });
   });
