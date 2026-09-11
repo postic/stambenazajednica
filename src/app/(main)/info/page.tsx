@@ -8,47 +8,32 @@ export default function InfoPage() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <div data-field>
           <h1 className="text-xl font-semibold">
-            Pomoć i uputstvo
+            Dobro došli
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Sve važne informacije na jednom mestu</p>
+            Sve o našem ulazu na jednom mestu
+          </p>
         </div>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 mb-4">
-        <div className="mb-3">
-          <h2 className="text-base font-semibold text-slate-900">
-            O aplikaciji
-          </h2>
+      <section className="mb-4 rounded-xl border border-slate-200 bg-white p-6">
+        <div className="space-y-3">
+          <p className="text-sm text-slate-500">
+            Komšija je aplikacija namenjena našoj stambenoj zajednici, sa željom da naš ulaz bude lepši, uređeniji i bolje organizovan.
+          </p>
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Ova aplikacija vam omogućava da na jednostavan način pratite važne informacije, obaveštenja i dešavanja u vašoj zajednici.
-            Sve važne informacije možete pronaći na jednom mestu, a uključivanjem obaveštenja možete na vreme saznati kada se objavi nešto novo.
+          <p className="text-sm text-slate-500">
+            Ovde možete na jednom mestu pratiti važne informacije, obaveštenja, radove, uplate i sva dešavanja u našem ulazu.
+          </p>
+
+          <p className="text-sm text-slate-500">
+            Prijavite se svojim PIN-om i budite u toku sa svim što se dešava. Uključite obaveštenja kako biste na vreme saznali kada se pojavi nešto novo.
+          </p>
+
+          <p className="pt-1 text-sm font-medium text-slate-700">
+            Komšija – za naš ulaz i lepši zajednički život.
           </p>
         </div>
-
-        <div className="mb-3 border-t border-slate-100 pt-3">
-          <h2 className="text-base font-semibold text-slate-900">
-            Pomoć
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Ova aplikacija vam omogućava da na jednostavan način pratite važne informacije, obaveštenja i dešavanja u vašoj zajednici.
-            Sve važne informacije možete pronaći na jednom mestu, a uključivanjem obaveštenja možete na vreme saznati kada se objavi nešto novo.
-          </p>
-        </div>
-
-        <div className="border-t border-slate-100 pt-3">
-          <h2 className="text-base font-semibold text-slate-900">
-            Uputstvo
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Ova aplikacija vam omogućava da na jednostavan način pratite važne informacije, obaveštenja i dešavanja u vašoj zajednici.
-            Sve važne informacije možete pronaći na jednom mestu, a uključivanjem obaveštenja možete na vreme saznati kada se objavi nešto novo.
-          </p>
-        </div>
-
       </section>
 
     </div>
