@@ -156,7 +156,7 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
         {!loading && user && (
           <DropdownMenu>
 
-            {/* User avatar + name */}
+            {/* User avatar + name + broj */}
             <DropdownMenuTrigger className="flex items-center gap-2 cursor-pointer outline-none">
               <UserAvatar
                 name={user?.name}
@@ -164,9 +164,15 @@ export default function Navbar({ setMobileOpen }: NavbarProps) {
                 size={40}
               />
 
-              <span className="hidden md:block text-gray-900 dark:text-white text-sm font-medium">
-                {user?.name}
-              </span>
+              <div className="hidden md:block text-left">
+                <div className="text-gray-900 dark:text-white text-sm font-medium">
+                  {user?.name}
+                </div>
+
+                <div className="text-gray-500 dark:text-gray-400 text-xs">
+                  {user?.broj}
+                </div>
+              </div>
             </DropdownMenuTrigger>
 
             {/* User menu */}

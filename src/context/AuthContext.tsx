@@ -12,6 +12,7 @@ interface User {
   name: string;
   mail?: string;
   picture?: string;
+  broj?: string;
 }
 
 interface AuthContextType {
