@@ -6,14 +6,12 @@ import { useEffect, useState } from "react";
 
 import {
   Users,
-  Wrench,
   Megaphone,
   CalendarCheck,
   FileText,
   Vote,
   ChevronDown,
   Wallet,
-  Grid,
   Building,
   Menu,
   Phone,
@@ -32,6 +30,7 @@ interface SidebarProps {
 interface MenuItem {
   title: string;
   href?: string | null;
+  enabled?: boolean;
   children?: MenuItem[];
 }
 
@@ -43,13 +42,11 @@ const iconMap: Record<string, any> = {
   Transakcije: Wallet,
   Prostori: Building,
   Ankete: Vote,
-  //Kvarovi: Wrench,
   Obaveštenja: Megaphone,
   Sednice: CalendarCheck,
   Stanari: Users,
   Stanovi: Building,
   Dokumenti: FileText,
-  //Ostalo: Grid,
   Telefoni: Phone,
   Kontakt: Mail,
 };
@@ -91,6 +88,25 @@ export default function Sidebar({
     useState(true);
 
   // =========================================================
+  // FILTRIRANJE ENABLED STAVKI
+  // =========================================================
+
+  const filterEnabledItems = (
+    items: MenuItem[]
+  ): MenuItem[] => {
+    return items
+      .filter(
+        (item) => item.enabled !== false
+      )
+      .map((item) => ({
+        ...item,
+        children: item.children
+          ? filterEnabledItems(item.children)
+          : undefined,
+      }));
+  };
+
+  // =========================================================
   // UČITAVANJE MENIJA IZ DRUPAL-A
   // =========================================================
 
@@ -119,7 +135,7 @@ export default function Sidebar({
 
         setMenuItems(
           Array.isArray(data)
-            ? data
+            ? filterEnabledItems(data)
             : []
         );
       } catch (error) {
@@ -368,14 +384,6 @@ export default function Sidebar({
           {(!collapsed ||
             mobileOpen) && (
             <>
-              {/* =================================================
-                  Ako parent ima pravi href,
-                  naslov je link.
-
-                  Ako nema href,
-                  naslov samo otvara dropdown.
-              ================================================= */}
-
               {item.href ? (
                 <Link
                   href={item.href}
@@ -600,14 +608,6 @@ export default function Sidebar({
 
                 {menuItems.map(
                   (item) => {
-
-                    {/* =================================================
-                        Dokumenti i Ostalo
-                        su dropdown stavke.
-
-                        Kontakt je običan link i automatski ide
-                        kroz renderNormalLink().
-                    ================================================= */}
 
                     if (
                       dropdownMenus.includes(
