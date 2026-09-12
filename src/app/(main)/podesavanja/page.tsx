@@ -28,10 +28,10 @@ export default function PodesavanjaPage() {
 
         {/* OBAVEŠTENJA */}
 
-        <section className="px-5 py-6 sm:px-7">
+        <section className="p-4">
           <div className="flex items-center justify-between gap-6">
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold text-slate-900">
+              <h2 className="text-[15px] font-semibold">
                 Obaveštenja
               </h2>
 
@@ -51,7 +51,7 @@ export default function PodesavanjaPage() {
 
         {/* KONTAKT PODACI */}
 
-        <section className="px-5 py-6 sm:px-7">
+        <section className="p-4">
           <KontaktPodaci />
         </section>
 
@@ -59,7 +59,7 @@ export default function PodesavanjaPage() {
 
         {/* PIN */}
 
-        <section className="px-5 py-6 sm:px-7">
+        <section className="p-4">
           <PromenaPin />
         </section>
       </div>

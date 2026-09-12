@@ -97,7 +97,7 @@ export default function KontaktPage() {
 
       {/* FORM */}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <form
           onSubmit={handleSubmit}
           className="space-y-5"

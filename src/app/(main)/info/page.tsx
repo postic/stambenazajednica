@@ -16,17 +16,22 @@ export default function InfoPage() {
         </div>
       </div>
 
-      <section className="mb-4 rounded-xl border border-slate-200 bg-white p-6">
+      <section className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+
+        <h3 className="text-sm font-semibold mb-4 border-b border-gray-300 pb-1">
+          O aplikaciji
+        </h3>
+
         <div className="space-y-3">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             Komšija je aplikacija namenjena našoj stambenoj zajednici, sa željom da naš ulaz bude lepši, uređeniji i bolje organizovan.
           </p>
 
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             Ovde možete na jednom mestu pratiti važne informacije, obaveštenja, radove, uplate i sva dešavanja u našem ulazu.
           </p>
 
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             Prijavite se svojim PIN-om i budite u toku sa svim što se dešava. Uključite obaveštenja kako biste na vreme saznali kada se pojavi nešto novo.
           </p>
 
