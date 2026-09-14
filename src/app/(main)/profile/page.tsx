@@ -18,7 +18,6 @@ interface Prostor {
   title: string;
   tip: string | null;
   sprat: string | null;
-  redniBroj: number | null;
   broj_prostora: string | null;
   kvadratura: number | null;
   broj_stanara: number | null;
@@ -26,6 +25,7 @@ interface Prostor {
   korisnik: string | null;
   telefon: string | null;
   email: string | null;
+  prostor_stan: string | null;
 }
 
 interface ProfileData {
@@ -283,6 +283,7 @@ export default function ProfilePage() {
       <div className="w-full py-6 text-sm text-center">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+
           <div className="text-gray-400 text-sm">
             Podaci se učitavaju...
           </div>
@@ -332,14 +333,7 @@ export default function ProfilePage() {
       <div className="mb-6">
 
         <h1 className="text-xl font-semibold">
-
-          {skratiTip(
-            prostor.tip
-          )}
-
-          {prostor.broj_prostora ??
-            prostor.redniBroj}
-
+          {skratiTip(prostor.tip)}{prostor.prostor_stan}
         </h1>
 
         <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">

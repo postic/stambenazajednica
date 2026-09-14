@@ -499,6 +499,11 @@ export async function GET(
           prostorItem.attributes
             ?.field_prostor_email ??
           null,
+
+        prostor_stan:
+          prostorItem.attributes
+            ?.field_prostor_stan ??
+          null,
       },
     });
   } catch (error) {

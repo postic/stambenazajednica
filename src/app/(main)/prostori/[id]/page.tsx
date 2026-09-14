@@ -88,8 +88,7 @@ export default async function ProstorPage({ params }: PageProps) {
       {/* HEADER */}
       <div className="mb-6">
         <h1 className="text-xl font-semibold">
-          {skratiTip(prostor.tip)}
-          {prostor.prostor_stan}
+          {skratiTip(prostor.tip)}{prostor.prostor_stan}
         </h1>
 
         <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
