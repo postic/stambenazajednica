@@ -135,28 +135,6 @@ export async function GET(req: Request) {
           ),
 
         // ------------------------------
-        // Redni broj prostora
-        // ------------------------------
-
-        redniBroj:
-          item.attributes
-            ?.field_prostor_sprat_redni_broj ?? null,
-
-        sortRedniBroj:
-          Number(
-            item.attributes
-              ?.field_prostor_sprat_redni_broj ?? 999999
-          ),
-
-        // ------------------------------
-        // Broj prostora
-        // ------------------------------
-
-        broj_prostora:
-          item.attributes
-            ?.field_prostor_broj ?? null,
-
-        // ------------------------------
         // Prostor
         // ------------------------------
 
@@ -192,6 +170,9 @@ export async function GET(req: Request) {
           item.attributes
             ?.field_prostor_stan ?? null,
 
+        prostor_rbr:
+          item.attributes
+            ?.field_prostor_rbr ?? null,
         // ------------------------------
         // Tip prostora
         // ------------------------------

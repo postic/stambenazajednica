@@ -470,16 +470,6 @@ export async function GET(
           spratIncluded?.attributes?.name ??
           null,
 
-        redniBroj:
-          prostorItem.attributes
-            ?.field_prostor_sprat_redni_broj ??
-          null,
-
-        broj_prostora:
-          prostorItem.attributes
-            ?.field_prostor_broj ??
-          null,
-
         kvadratura:
           prostorItem.attributes
             ?.field_prostor_kvadratura ??

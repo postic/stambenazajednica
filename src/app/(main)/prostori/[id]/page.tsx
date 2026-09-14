@@ -53,9 +53,7 @@ async function getProstor(id: string): Promise<Prostor | null> {
       korisnik: item.attributes.field_prostor_korisnik,
       telefon: item.attributes.field_prostor_telefon,
       email: item.attributes.field_prostor_email,
-      broj_prostora: item.attributes?.field_prostor_broj ?? null,
-      redniBroj: item.attributes?.field_prostor_sprat_redni_broj ?? null,
-      //stanari: item.attributes.field_stanari ?? "",
+      prostor_stan: item.attributes.field_prostor_stan,
     };
   } catch {
     return null;
@@ -91,7 +89,7 @@ export default async function ProstorPage({ params }: PageProps) {
       <div className="mb-6">
         <h1 className="text-xl font-semibold">
           {skratiTip(prostor.tip)}
-          {prostor.broj_prostora ?? prostor.redniBroj}
+          {prostor.prostor_stan}
         </h1>
 
         <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">

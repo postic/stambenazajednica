@@ -15,4 +15,5 @@ export interface Prostor {
   broj_prostora?: number | string | null;
   redniBroj?: number | string | null;
   prostor_stan?: number | string | null;
+  prostor_rbr?: number | string | null;
 }

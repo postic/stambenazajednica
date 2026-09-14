@@ -22,8 +22,7 @@ export const prostoriColumns: Column<Prostor>[] = [
         className="hover:underline"
         title={prostor.title}
       >
-        {skratiTip(prostor.tip)}
-        {prostor.broj_prostora ?? prostor.redniBroj}
+        <span>{prostor.prostor_rbr ?? "-"}</span>
       </Link>
     ),
   },
