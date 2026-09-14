@@ -188,6 +188,10 @@ export async function GET(req: Request) {
           item.attributes
             ?.field_prostor_pin ?? null,
 
+        prostor_stan:
+          item.attributes
+            ?.field_prostor_stan ?? null,
+
         // ------------------------------
         // Tip prostora
         // ------------------------------

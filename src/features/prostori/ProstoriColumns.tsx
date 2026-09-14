@@ -32,7 +32,7 @@ export const prostoriColumns: Column<Prostor>[] = [
     key: "title",
     header: "Stan",
     render: (prostor) => (
-      <span>{prostor.broj_prostora ?? "-"}</span>
+      <span>{prostor.prostor_stan ?? "-"}</span>
     ),
   },
 
