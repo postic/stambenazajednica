@@ -14,6 +14,7 @@ const routes: Record<string, string> = {
   "/sednice": "Sednice",
   "/stanovi": "Stanovi",
   "/stanari": "Stanari",
+  "/prostori": "Prostori",
   "/dokumenti": "Dokumenti",
 };
 
@@ -41,7 +42,9 @@ export function findBreadcrumb(
   segments.forEach((segment) => {
     currentPath += `/${segment}`;
 
-    // Statičke rute
+    /*
+     * Statičke rute
+     */
     if (routes[currentPath]) {
       items.push({
         label: routes[currentPath],
@@ -51,7 +54,9 @@ export function findBreadcrumb(
       return;
     }
 
-    // Dinamički segmenti
+    /*
+     * Dinamički segmenti
+     */
     if (resolver) {
       const resolved = resolver(segment);
 
@@ -65,7 +70,9 @@ export function findBreadcrumb(
       }
     }
 
-    // Fallback
+    /*
+     * Fallback
+     */
     items.push({
       label: formatSegment(segment),
       href: currentPath,

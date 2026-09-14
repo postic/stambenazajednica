@@ -44,12 +44,13 @@ export function AppBreadcrumb() {
 
         /*
          * /obavestenja/[slug]
+         *
+         * Trenutna kategorija se ne prikazuje.
+         * Prikazujemo samo roditelja:
+         *
+         * Početna / Obaveštenja
          */
         if (segments.length === 2) {
-          const categoryName = slug
-            .replace(/-/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase());
-
           if (!cancelled) {
             setItems([
               {
@@ -60,9 +61,6 @@ export function AppBreadcrumb() {
                 label: "Obaveštenja",
                 href: "/obavestenja",
               },
-              {
-                label: categoryName,
-              },
             ]);
           }
 
@@ -71,11 +69,17 @@ export function AppBreadcrumb() {
 
         /*
          * /obavestenja/[slug]/[id]
+         *
+         * Prikazujemo:
+         *
+         * Početna / Obaveštenja / Kategorija
+         *
+         * Trenutno obaveštenje se ne prikazuje.
          */
         if (segments.length >= 3) {
-          const id = segments[2];
-
           try {
+            const id = segments[2];
+
             const response = await fetch(
               `/api/obavestenja/${slug}/${id}`,
               {
@@ -91,29 +95,11 @@ export function AppBreadcrumb() {
 
             const json = await response.json();
 
-            console.log(
-              "Breadcrumb API odgovor:",
-              json
-            );
-
-            /*
-             * Podržavamo različite moguće strukture
-             * JSON odgovora.
-             */
             const node =
               json?.data ??
               json?.node ??
               json;
 
-            const title =
-              node?.attributes?.title ??
-              node?.title ??
-              json?.title ??
-              "";
-
-            /*
-             * Pronađi kategoriju.
-             */
             const categoryId =
               node?.relationships
                 ?.field_tip_obavestenja?.data?.id ??
@@ -127,8 +113,8 @@ export function AppBreadcrumb() {
               );
 
             /*
-             * Ako API vraća included, uzimamo pravi
-             * naziv kategorije.
+             * Ako API vraća included,
+             * uzmi pravi naziv kategorije.
              */
             if (
               categoryId &&
@@ -148,37 +134,6 @@ export function AppBreadcrumb() {
               }
             }
 
-            /*
-             * Ako imamo naslov, koristimo ga.
-             */
-            if (title) {
-              if (!cancelled) {
-                setItems([
-                  {
-                    label: "Početna",
-                    href: "/",
-                  },
-                  {
-                    label: "Obaveštenja",
-                    href: "/obavestenja",
-                  },
-                  {
-                    label: categoryName,
-                    href: `/obavestenja/${slug}`,
-                  },
-                  {
-                    label: title,
-                  },
-                ]);
-              }
-
-              return;
-            }
-
-            /*
-             * Ako iz nekog razloga nema naslova,
-             * ne prikazuj UUID kao naziv.
-             */
             if (!cancelled) {
               setItems([
                 {
@@ -204,16 +159,16 @@ export function AppBreadcrumb() {
             );
 
             /*
-             * Ako API ne radi, prikaži samo sigurne
-             * delove breadcrumb-a — nikako UUID.
+             * Ako API ne radi, ipak prikaži
+             * sigurnu roditeljsku putanju.
              */
-            if (!cancelled) {
-              const categoryName = slug
-                .replace(/-/g, " ")
-                .replace(/\b\w/g, (char) =>
-                  char.toUpperCase()
-                );
+            const categoryName = slug
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, (char) =>
+                char.toUpperCase()
+              );
 
+            if (!cancelled) {
               setItems([
                 {
                   label: "Početna",
@@ -243,13 +198,34 @@ export function AppBreadcrumb() {
 
       const rawItems = findBreadcrumb(pathname);
 
+      /*
+       * Uvek uklanjamo trenutnu stranicu.
+       *
+       * Primer:
+       *
+       * /prostori/5
+       *
+       * rawItems:
+       * Početna / Prostori / 5
+       *
+       * rezultat:
+       * Početna / Prostori
+       */
       const normalItems =
         rawItems.length > 1
           ? rawItems.slice(0, -1)
           : rawItems;
 
+      /*
+       * Sve prikazane stavke treba da budu linkovi.
+       */
+      const linkedItems = normalItems.map((item) => ({
+        ...item,
+        href: item.href,
+      }));
+
       if (!cancelled) {
-        setItems(normalItems);
+        setItems(linkedItems);
       }
     }
 
@@ -277,7 +253,7 @@ export function AppBreadcrumb() {
               className="flex items-center gap-2"
             >
               <BreadcrumbItem>
-                {item.href && !isLast ? (
+                {item.href ? (
                   <BreadcrumbLink asChild>
                     <Link href={item.href}>
                       {item.label}
