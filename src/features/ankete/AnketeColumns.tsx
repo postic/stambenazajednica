@@ -9,15 +9,7 @@ export const anketeColumns: Column<Anketa>[] = [
     key: "title",
     header: "Naziv",
     align: "left",
-    render: (anketa) => (
-      <Link
-        href={`/ankete/${anketa.id}`}
-        className=" hover:underline"
-        title={anketa.title}
-      >
-        {anketa.title}
-      </Link>
-    ),
+    render: (anketa) => anketa.title,
   },
   {
     key: "date",

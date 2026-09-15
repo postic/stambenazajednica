@@ -63,6 +63,7 @@ export default function AnketePage() {
         data={ankete}
         columns={anketeColumns}
         loading={loading}
+        getRowHref={(anketa) => `/ankete/${anketa.id}`}
       />
 
       {/* PAGINATION */}

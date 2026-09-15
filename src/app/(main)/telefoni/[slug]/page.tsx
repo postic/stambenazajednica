@@ -76,26 +76,12 @@ export default function TelefoniKategorijaPage() {
     {
       key: "naziv",
       header: "Naziv",
-      render: (row) => (
-        <a
-          href={`tel:${row.broj}`}
-          className="font-medium text-slate-900 hover:underline"
-        >
-          {row.naziv}
-        </a>
-      ),
+      render: (row) => row.naziv,
     },
     {
       key: "broj",
       header: "Telefon",
-      render: (row) => (
-        <a
-          href={`tel:${row.broj}`}
-          className="text-slate-900 hover:underline"
-        >
-          {row.broj}
-        </a>
-      ),
+      render: (row) => row.broj,
     },
   ];
 
@@ -122,6 +108,7 @@ export default function TelefoniKategorijaPage() {
         data={telefoni}
         columns={columns}
         loading={loading}
+        getRowHref={(t) => `tel:${t.broj}`}
       />
 
     </div>

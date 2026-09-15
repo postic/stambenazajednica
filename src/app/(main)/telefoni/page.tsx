@@ -75,6 +75,7 @@ export default function TelefoniPage() {
         data={kategorije}
         columns={kategorijeColumns}
         loading={loading}
+        getRowHref={(row) => `/telefoni/${row.slug}`}
       />
 
     </div>

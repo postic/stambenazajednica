@@ -10,15 +10,7 @@ export const kategorijeColumns: Column<KategorijaTelefona>[] = [
     key: "name",
     header: "Kategorija",
 
-    render: (row: KategorijaTelefona) => (
-      <Link
-        href={`/telefoni/${row.slug}`}
-        className="hover:underline"
-        title={row.name}
-      >
-        {row.name}
-      </Link>
-    ),
+    render: (row: KategorijaTelefona) => row.name,
   },
 
   {

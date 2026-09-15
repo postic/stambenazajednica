@@ -171,17 +171,6 @@ export async function GET(req: Request) {
             ?.field_prostor_stan ?? null,
 
         // ------------------------------
-        // Redni broj
-        // ------------------------------
-        // Ostavljeno zbog kompatibilnosti
-        // dok se polje potpuno ne ukloni.
-        // Ne koristi se za sortiranje.
-
-        prostor_rbr:
-          item.attributes
-            ?.field_prostor_rbr ?? null,
-
-        // ------------------------------
         // Tip prostora
         // ------------------------------
 

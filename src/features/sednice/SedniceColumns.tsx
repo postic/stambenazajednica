@@ -15,15 +15,7 @@ export const sedniceColumns: Column<Sednica>[] = [
   {
     key: "title",
     header: "Naslov",
-    render: (s) => (
-      <Link
-        href={`/sednice/${s.id}`}
-        className=" hover:underline"
-        title={s.title}
-      >
-        {s.title}
-      </Link>
-    ),
+    render: (s) => s.title,
   },
   {
     key: "created",

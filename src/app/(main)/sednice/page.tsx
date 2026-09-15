@@ -63,6 +63,7 @@ export default function SednicePage() {
         data={sednice}
         columns={sedniceColumns}
         loading={loading}
+        getRowHref={(sednica) => `/sednice/${sednica.id}`}
       />
 
       {/* Numerička paginacija */}

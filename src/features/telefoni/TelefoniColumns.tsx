@@ -9,9 +9,7 @@ export const telefoniColumns: Column<Telefon>[] = [
     header: "Naziv",
 
     render: (row: Telefon) => (
-      <span className="font-medium text-slate-900">
-        {row.naziv}
-      </span>
+      {row.naziv}
     ),
   },
 
@@ -19,13 +17,6 @@ export const telefoniColumns: Column<Telefon>[] = [
     key: "broj",
     header: "Telefon",
 
-    render: (row: Telefon) => (
-      <a
-        href={`tel:${row.broj}`}
-        className="text-slate-900 hover:underline"
-      >
-        {row.broj}
-      </a>
-    ),
+    render: (row: Telefon) => row.broj,
   },
 ];
