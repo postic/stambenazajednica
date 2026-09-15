@@ -8,11 +8,8 @@ export const telefoniColumns: Column<Telefon>[] = [
     key: "naziv",
     header: "Naziv",
 
-    render: (row: Telefon) => (
-      {row.naziv}
-    ),
+    render: (row: Telefon) => row.naziv,
   },
-
   {
     key: "broj",
     header: "Telefon",
