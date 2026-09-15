@@ -8,17 +8,8 @@ export const dokumentiColumns = [
   {
     key: "title",
     header: "Dokument",
-    render: (row: Dokument) => (
-      <Link
-        href={`/dokumenti/${row.categorySlug}/${row.id}`}
-        className="hover:underline"
-        title={row.title}
-      >
-        {row.title}
-      </Link>
-    ),
+    render: (row: Dokument) => row.title,
   },
-
   {
     key: "created",
     header: "Datum",

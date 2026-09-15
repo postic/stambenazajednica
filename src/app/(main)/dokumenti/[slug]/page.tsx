@@ -116,6 +116,9 @@ export default function DokumentiKategorijaPage({
         data={dokumenti}
         columns={dokumentiColumns}
         loading={loading}
+        getRowHref={(row) =>
+          `/dokumenti/${row.categorySlug}/${row.id}`
+        }
       />
 
     </div>

@@ -10,18 +10,8 @@ export const kategorijeColumns = [
   {
     key: "name",
     header: "Kategorija",
-
-    render: (row: KategorijaObavestenja) => (
-      <Link
-        href={`/obavestenja/${row.slug}`}
-        className="hover:underline"
-        title={row.name}
-      >
-        {row.name}
-      </Link>
-    ),
+    render: (row: KategorijaObavestenja) => row.name,
   },
-
   {
     key: "brojObavestenja",
     header: "Broj obaveštenja",

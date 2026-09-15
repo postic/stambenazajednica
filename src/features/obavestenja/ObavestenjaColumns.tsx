@@ -11,15 +11,7 @@ export const obavestenjaColumns = [
     key: "title",
     header: "Obaveštenje",
 
-    render: (row: Obavestenje) => (
-      <Link
-        href={`/obavestenja/${row.categorySlug}/${row.id}`}
-        className="hover:underline"
-        title={row.title}
-      >
-        {row.title}
-      </Link>
-    ),
+    render: (row: Obavestenje) => row.title,
   },
 
   {

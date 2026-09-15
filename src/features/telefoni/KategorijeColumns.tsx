@@ -17,7 +17,6 @@ export const kategorijeColumns: Column<KategorijaTelefona>[] = [
     key: "brojTelefona",
     header: "Broj telefona",
 
-    render: (row: KategorijaTelefona) =>
-      row.brojTelefona,
+    render: (row: KategorijaTelefona) => row.brojTelefona,
   },
 ];

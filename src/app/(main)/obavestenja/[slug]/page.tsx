@@ -87,6 +87,9 @@ export default function ObavestenjaKategorijaPage() {
         data={obavestenja}
         columns={obavestenjaColumns}
         loading={loading}
+        getRowHref={(row) =>
+          `/obavestenja/${row.categorySlug}/${row.id}`
+        }
       />
 
     </div>

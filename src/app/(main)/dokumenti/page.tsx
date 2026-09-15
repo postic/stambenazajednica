@@ -75,6 +75,7 @@ export default function DokumentiPage() {
         data={kategorije}
         columns={kategorijeColumns}
         loading={loading}
+        getRowHref={(row) => `/dokumenti/${row.slug}`}
       />
 
     </div>

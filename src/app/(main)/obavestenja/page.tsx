@@ -76,6 +76,7 @@ export default function ObavestenjaPage() {
         data={kategorije}
         columns={kategorijeColumns}
         loading={loading}
+        getRowHref={(row) => `/obavestenja/${row.slug}`}
       />
     </div>
   );
