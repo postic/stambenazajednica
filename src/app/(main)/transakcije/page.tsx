@@ -61,6 +61,7 @@ export default function TransakcijePage() {
         data={data}
         columns={transakcijeColumns}
         loading={loading}
+        getRowHref={(t) => `/transakcije/${t.id}`}
       />
 
       {/* PAGINATION */}

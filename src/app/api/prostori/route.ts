@@ -170,9 +170,17 @@ export async function GET(req: Request) {
           item.attributes
             ?.field_prostor_stan ?? null,
 
+        // ------------------------------
+        // Redni broj
+        // ------------------------------
+        // Ostavljeno zbog kompatibilnosti
+        // dok se polje potpuno ne ukloni.
+        // Ne koristi se za sortiranje.
+
         prostor_rbr:
           item.attributes
             ?.field_prostor_rbr ?? null,
+
         // ------------------------------
         // Tip prostora
         // ------------------------------
@@ -186,8 +194,7 @@ export async function GET(req: Request) {
     // SORTIRANJE
     //
     // 1. Sprat
-    // 2. Redni broj prostora na tom spratu
-    // 3. Broj prostora
+    // 2. Broj stana unutar sprata
     // --------------------------------------------------
 
     sviProstori.sort((a: any, b: any) => {
@@ -196,14 +203,9 @@ export async function GET(req: Request) {
         return a.spratWeight - b.spratWeight;
       }
 
-      // 2. Redni broj prostora
-      if (a.sortRedniBroj !== b.sortRedniBroj) {
-        return a.sortRedniBroj - b.sortRedniBroj;
-      }
-
-      // 3. Broj prostora
-      return String(a.broj_prostora ?? "").localeCompare(
-        String(b.broj_prostora ?? ""),
+      // 2. Broj stana
+      return String(a.prostor_stan ?? "").localeCompare(
+        String(b.prostor_stan ?? ""),
         "sr",
         {
           numeric: true,

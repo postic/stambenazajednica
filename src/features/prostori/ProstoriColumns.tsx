@@ -1,37 +1,38 @@
 import { Column } from "@/components/table/types";
 import type { Prostor } from "@/types/prostor";
-import Link from "next/link";
 
 function skratiTip(tip: string | null | undefined) {
-  if (!tip) return "-";
+  if (!tip) {
+    return "";
+  }
 
-  return tip
-    .trim()
-    .split(/\s+/)
-    .map((rec) => rec.charAt(0).toUpperCase())
-    .join("");
+  const value = tip.toLowerCase();
+
+  if (value.includes("stan")) {
+    return "S";
+  }
+
+  if (value.includes("lokal")) {
+    return "L";
+  }
+
+  if (value.includes("gara")) {
+    return "G";
+  }
+
+  return tip.charAt(0).toUpperCase();
 }
 
 export const prostoriColumns: Column<Prostor>[] = [
   {
-    key: "redni_broj",
-    header: "#",
-    render: (prostor) => (
-      <Link
-        href={`/prostori/${prostor.id}`}
-        className="hover:underline"
-        title={prostor.title}
-      >
-        <span>{prostor.prostor_rbr ?? "-"}</span>
-      </Link>
-    ),
-  },
-
-  {
     key: "title",
     header: "Stan",
     render: (prostor) => (
-      <span>{prostor.prostor_stan ?? "-"}</span>
+      <span>
+        {prostor.prostor_stan
+          ? `${skratiTip(prostor.tip)}${prostor.prostor_stan}`
+          : "-"}
+      </span>
     ),
   },
 
@@ -39,7 +40,9 @@ export const prostoriColumns: Column<Prostor>[] = [
     key: "sprat",
     header: "Sprat",
     render: (prostor) => (
-      <span>{prostor.sprat ?? "-"}</span>
+      <span>
+        {prostor.sprat ?? "-"}
+      </span>
     ),
   },
 
@@ -47,7 +50,9 @@ export const prostoriColumns: Column<Prostor>[] = [
     key: "korisnik",
     header: "Korisnik",
     render: (prostor) => (
-      <span>{prostor.korisnik ?? "-"}</span>
+      <span>
+        {prostor.korisnik ?? "-"}
+      </span>
     ),
   },
 
@@ -57,7 +62,9 @@ export const prostoriColumns: Column<Prostor>[] = [
     render: (prostor) => (
       <span>
         {prostor.kvadratura != null
-          ? `${Number(prostor.kvadratura).toLocaleString("sr-Latn-RS")} m²`
+          ? `${Number(prostor.kvadratura).toLocaleString(
+              "sr-Latn-RS"
+            )} m²`
           : "-"}
       </span>
     ),
@@ -67,7 +74,9 @@ export const prostoriColumns: Column<Prostor>[] = [
     key: "stanari",
     header: "Članova",
     render: (prostor) => (
-      <span>{prostor.broj_stanara ?? "-"}</span>
+      <span>
+        {prostor.broj_stanara ?? "-"}
+      </span>
     ),
   },
 ];

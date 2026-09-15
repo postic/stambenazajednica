@@ -9,11 +9,7 @@ export const transakcijeColumns: Column<TransakcijaWithBalance>[] = [
   {
     key: "title",
     header: "Naziv",
-    render: (t) => (
-      <Link href={`/transakcije/${t.id}`} className=" hover:underline">
-        {t.title}
-      </Link>
-    ),
+    render: (t) => t.title,
   },
   {
     key: "created",

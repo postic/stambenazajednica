@@ -63,6 +63,7 @@ export default function ProstoriPage() {
         data={prostori}
         columns={prostoriColumns}
         loading={loading}
+        getRowHref={(prostor) => `/prostori/${prostor.id}`}
       />
 
       {/* Numerička paginacija */}
