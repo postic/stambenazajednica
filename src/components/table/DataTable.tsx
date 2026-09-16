@@ -113,7 +113,7 @@ export function DataTable<T extends HasId>({
                   key={row.id}
                   className="
                     odd:bg-white
-                    even:bg-gray-100/35
+                    even:bg-gray-100/45
                   "
                 >
                   {columns.map((col) => (
@@ -179,7 +179,7 @@ export function DataTable<T extends HasId>({
                 ${
                   index % 2 === 0
                     ? "bg-white"
-                    : "bg-gray-100/35"
+                    : "bg-gray-100/45"
                 }
               `}
             >
