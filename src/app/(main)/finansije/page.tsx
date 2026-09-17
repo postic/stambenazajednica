@@ -63,7 +63,10 @@ function formatShortRsd(value: number) {
 }
 
 function monthKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}`;
 }
 
 function monthLabel(date: Date) {
@@ -106,6 +109,9 @@ export default function FinansijePage() {
     fetchData();
   }, []);
 
+  /*
+   * TRANSAKCIJE ZA IZABRANI PERIOD
+   */
   const filteredTransactions = useMemo(() => {
     if (period === "all") {
       return transakcije;
@@ -123,6 +129,9 @@ export default function FinansijePage() {
     });
   }, [transakcije, period]);
 
+  /*
+   * PRIHODI / RASHODI
+   */
   const stats = useMemo(() => {
     let prihod = 0;
     let rashod = 0;
@@ -145,8 +154,10 @@ export default function FinansijePage() {
   }, [filteredTransactions]);
 
   /*
-   * Trenutno stanje računamo iz svih transakcija,
-   * a ne samo iz izabranog perioda.
+   * TRENUTNO STANJE
+   *
+   * Uvek se računa iz SVIH transakcija,
+   * bez obzira na izabrani period.
    */
   const currentBalance = useMemo(() => {
     let balance = 0;
@@ -170,54 +181,58 @@ export default function FinansijePage() {
     return balance;
   }, [transakcije]);
 
+  /*
+   * MESEČNI PODACI
+   *
+   * Važna razlika:
+   *
+   * balance predstavlja STANJE NA KRAJU MESECA.
+   *
+   * Poslednji mesec zato mora odgovarati
+   * currentBalance vrednosti.
+   */
   const monthlyData = useMemo(() => {
-    const map = new Map<string, MonthlyData>();
+    if (!transakcije.length) {
+      return [];
+    }
 
-    const sorted = [...filteredTransactions].sort(
+    /*
+     * Sve transakcije sortiramo od najstarije
+     * ka najnovijoj.
+     */
+    const allSorted = [...transakcije].sort(
       (a, b) =>
         new Date(a.created).getTime() -
         new Date(b.created).getTime()
     );
 
-    let runningBalance = currentBalance;
-
     /*
-     * Za prikaz istorije računamo stanje unazad.
-     * Krećemo od trenutnog stanja i vraćamo transakcije.
+     * Grupisanje svih transakcija po mesecima.
      */
-    const balances = new Map<string, number>();
-
-    for (let i = sorted.length - 1; i >= 0; i--) {
-      const transaction = sorted[i];
-      const key = monthKey(new Date(transaction.created));
-
-      balances.set(key, runningBalance);
-
-      const amount = Math.abs(Number(transaction.amount || 0));
-
-      if (isPrihod(transaction.type)) {
-        runningBalance -= amount;
-      } else if (isRashod(transaction.type)) {
-        runningBalance += amount;
+    const allMonthly = new Map<
+      string,
+      {
+        key: string;
+        label: string;
+        prihod: number;
+        rashod: number;
       }
-    }
+    >();
 
-    sorted.forEach((transaction) => {
+    allSorted.forEach((transaction) => {
       const date = new Date(transaction.created);
       const key = monthKey(date);
 
-      if (!map.has(key)) {
-        map.set(key, {
+      if (!allMonthly.has(key)) {
+        allMonthly.set(key, {
           key,
           label: monthLabel(date),
           prihod: 0,
           rashod: 0,
-          neto: 0,
-          balance: balances.get(key) ?? 0,
         });
       }
 
-      const item = map.get(key)!;
+      const item = allMonthly.get(key)!;
       const amount = Math.abs(Number(transaction.amount || 0));
 
       if (isPrihod(transaction.type)) {
@@ -225,13 +240,65 @@ export default function FinansijePage() {
       } else if (isRashod(transaction.type)) {
         item.rashod += amount;
       }
-
-      item.neto = item.prihod - item.rashod;
     });
 
-    return Array.from(map.values());
-  }, [filteredTransactions, currentBalance]);
+    /*
+     * Računamo stanje na kraju svakog meseca.
+     *
+     * Počinjemo od početka svih transakcija i
+     * dodajemo mesečni neto rezultat.
+     */
+    let runningBalance = 0;
 
+    const allMonthlyData: MonthlyData[] = [];
+
+    Array.from(allMonthly.values()).forEach((item) => {
+      const neto = item.prihod - item.rashod;
+
+      runningBalance += neto;
+
+      allMonthlyData.push({
+        key: item.key,
+        label: item.label,
+        prihod: item.prihod,
+        rashod: item.rashod,
+        neto,
+        balance: runningBalance,
+      });
+    });
+
+    /*
+     * Filtriramo mesece prema izabranom periodu.
+     *
+     * Važno:
+     * balance ostaje saldo na kraju konkretnog meseca,
+     * a ne saldo izabranog perioda.
+     */
+    if (period === "all") {
+      return allMonthlyData;
+    }
+
+    const months = Number(period);
+
+    const limitDate = new Date();
+    limitDate.setMonth(limitDate.getMonth() - months);
+
+    return allMonthlyData.filter((item) => {
+      const [year, month] = item.key.split("-").map(Number);
+
+      const date = new Date(year, month - 1, 1);
+
+      return date >= new Date(
+        limitDate.getFullYear(),
+        limitDate.getMonth(),
+        1
+      );
+    });
+  }, [transakcije, period]);
+
+  /*
+   * MAKSIMALNA VREDNOST ZA GRAFIKON PRIHODA/RASHODA
+   */
   const maxMonthlyValue = useMemo(() => {
     return Math.max(
       ...monthlyData.flatMap((item) => [
@@ -242,18 +309,27 @@ export default function FinansijePage() {
     );
   }, [monthlyData]);
 
+  /*
+   * GRAFIKON STANJA
+   */
   const balanceChart = useMemo(() => {
     if (!monthlyData.length) {
       return [];
     }
 
+    const maxBalance = Math.max(
+      ...monthlyData.map((item) => Math.max(item.balance, 0)),
+      currentBalance,
+      1
+    );
+
     return monthlyData.map((item) => ({
       ...item,
       height:
-        currentBalance > 0
+        item.balance > 0
           ? Math.max(
               8,
-              (item.balance / Math.max(currentBalance, 1)) * 100
+              (item.balance / maxBalance) * 100
             )
           : 8,
     }));
@@ -263,7 +339,9 @@ export default function FinansijePage() {
     return (
       <div className="max-w-5xl">
         <div className="mb-6">
-          <h1 className="text-xl font-semibold">Finansije</h1>
+          <h1 className="text-xl font-semibold">
+            Finansije
+          </h1>
 
           <p className="mt-1 text-sm text-slate-500">
             Pregled finansijskog stanja stambene zajednice
@@ -289,10 +367,13 @@ export default function FinansijePage() {
       {/* HEADER */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Finansije</h1>
+          <h1 className="text-xl font-semibold">
+            Finansije
+          </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Pregled prihoda, rashoda i stanja računa stambene zajednice
+            Pregled prihoda, rashoda i stanja računa
+            stambene zajednice
           </p>
         </div>
       </div>
@@ -422,7 +503,7 @@ export default function FinansijePage() {
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Pregled stanja računa kroz izabrani period
+            Stanje računa na kraju svakog meseca
           </p>
         </div>
 
@@ -520,7 +601,10 @@ export default function FinansijePage() {
                           style={{
                             width: `${
                               item.prihod > 0
-                                ? Math.max(prihodWidth, 2)
+                                ? Math.max(
+                                    prihodWidth,
+                                    2
+                                  )
                                 : 0
                             }%`,
                           }}
@@ -547,7 +631,10 @@ export default function FinansijePage() {
                           style={{
                             width: `${
                               item.rashod > 0
-                                ? Math.max(rashodWidth, 2)
+                                ? Math.max(
+                                    rashodWidth,
+                                    2
+                                  )
                                 : 0
                             }%`,
                           }}
@@ -608,6 +695,10 @@ export default function FinansijePage() {
                 <th className="px-5 py-3 text-right font-medium text-slate-600">
                   Neto
                 </th>
+
+                <th className="px-5 py-3 text-right font-medium text-slate-600">
+                  Stanje
+                </th>
               </tr>
             </thead>
 
@@ -641,6 +732,10 @@ export default function FinansijePage() {
                     >
                       {item.neto >= 0 ? "+" : ""}
                       {formatRsd(item.neto)}
+                    </td>
+
+                    <td className="px-5 py-3 text-right font-medium">
+                      {formatRsd(item.balance)}
                     </td>
                   </tr>
                 ))}
