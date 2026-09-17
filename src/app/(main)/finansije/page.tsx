@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { ArrowDown, ArrowUp, Wallet } from "lucide-react";
 
 type Transakcija = {
@@ -50,9 +49,11 @@ function isRashod(type?: string) {
 }
 
 function formatRsd(value: number) {
-  return new Intl.NumberFormat("sr-RS", {
-    maximumFractionDigits: 0,
-  }).format(value) + " RSD";
+  return (
+    new Intl.NumberFormat("sr-RS", {
+      maximumFractionDigits: 0,
+    }).format(value) + " RSD"
+  );
 }
 
 function formatShortRsd(value: number) {
@@ -250,7 +251,10 @@ export default function FinansijePage() {
       ...item,
       height:
         currentBalance > 0
-          ? Math.max(8, (item.balance / Math.max(currentBalance, 1)) * 100)
+          ? Math.max(
+              8,
+              (item.balance / Math.max(currentBalance, 1)) * 100
+            )
           : 8,
     }));
   }, [monthlyData, currentBalance]);
@@ -260,6 +264,7 @@ export default function FinansijePage() {
       <div className="max-w-5xl">
         <div className="mb-6">
           <h1 className="text-xl font-semibold">Finansije</h1>
+
           <p className="mt-1 text-sm text-slate-500">
             Pregled finansijskog stanja stambene zajednice
           </p>
@@ -462,7 +467,7 @@ export default function FinansijePage() {
         )}
       </div>
 
-      {/* INCOME / EXPENSE CHART */}
+      {/* INCOME / EXPENSE HORIZONTAL CHART */}
       <div className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
         <div className="mb-5">
           <h2 className="font-semibold">
@@ -479,29 +484,45 @@ export default function FinansijePage() {
             Nema transakcija za izabrani period.
           </div>
         ) : (
-          <>
-            <div className="overflow-x-auto">
-              <div className="flex h-72 min-w-[600px] items-end gap-3 border-b border-slate-200 px-2">
-                {monthlyData.map((item) => {
-                  const prihodHeight =
-                    (item.prihod / maxMonthlyValue) * 100;
+          <div className="space-y-5">
+            {monthlyData
+              .slice()
+              .reverse()
+              .map((item) => {
+                const prihodWidth =
+                  (item.prihod / maxMonthlyValue) * 100;
 
-                  const rashodHeight =
-                    (item.rashod / maxMonthlyValue) * 100;
+                const rashodWidth =
+                  (item.rashod / maxMonthlyValue) * 100;
 
-                  return (
-                    <div
-                      key={item.key}
-                      className="flex h-full flex-1 items-end justify-center gap-1"
-                    >
-                      <div className="flex h-full flex-1 flex-col justify-end">
+                return (
+                  <div key={item.key}>
+                    {/* MESEC */}
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="w-12 text-sm font-medium text-slate-700">
+                        {item.label}
+                      </span>
+
+                      <span className="text-xs text-slate-400">
+                        Neto: {formatRsd(item.neto)}
+                      </span>
+                    </div>
+
+                    {/* PRIHOD */}
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="w-12 shrink-0 text-[11px] text-slate-400">
+                        Prihod
+                      </span>
+
+                      <div className="h-6 flex-1 rounded bg-slate-100">
                         <div
-                          className="w-full rounded-t bg-primary/80"
+                          className="h-6 rounded bg-primary/80 transition-all"
                           style={{
-                            height: `${Math.max(
-                              prihodHeight,
-                              item.prihod > 0 ? 3 : 0
-                            )}%`,
+                            width: `${
+                              item.prihod > 0
+                                ? Math.max(prihodWidth, 2)
+                                : 0
+                            }%`,
                           }}
                           title={`Prihod: ${formatRsd(
                             item.prihod
@@ -509,14 +530,26 @@ export default function FinansijePage() {
                         />
                       </div>
 
-                      <div className="flex h-full flex-1 flex-col justify-end">
+                      <span className="w-24 shrink-0 text-right text-xs font-medium text-slate-600">
+                        {formatShortRsd(item.prihod)} RSD
+                      </span>
+                    </div>
+
+                    {/* RASHOD */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-12 shrink-0 text-[11px] text-slate-400">
+                        Rashod
+                      </span>
+
+                      <div className="h-6 flex-1 rounded bg-slate-100">
                         <div
-                          className="w-full rounded-t bg-slate-300"
+                          className="h-6 rounded bg-slate-300 transition-all"
                           style={{
-                            height: `${Math.max(
-                              rashodHeight,
-                              item.rashod > 0 ? 3 : 0
-                            )}%`,
+                            width: `${
+                              item.rashod > 0
+                                ? Math.max(rashodWidth, 2)
+                                : 0
+                            }%`,
                           }}
                           title={`Rashod: ${formatRsd(
                             item.rashod
@@ -524,16 +557,16 @@ export default function FinansijePage() {
                         />
                       </div>
 
-                      <div className="absolute mt-[310px] text-xs text-slate-500">
-                        {item.label}
-                      </div>
+                      <span className="w-24 shrink-0 text-right text-xs font-medium text-slate-600">
+                        {formatShortRsd(item.rashod)} RSD
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  </div>
+                );
+              })}
 
-            <div className="mt-8 flex justify-center gap-6 text-xs text-slate-500">
+            {/* LEGENDA */}
+            <div className="mt-6 flex justify-center gap-6 text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm bg-primary/80" />
                 Prihodi
@@ -544,7 +577,7 @@ export default function FinansijePage() {
                 Rashodi
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
