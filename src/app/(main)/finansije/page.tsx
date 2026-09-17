@@ -467,34 +467,6 @@ export default function FinansijePage() {
         </div>
       </div>
 
-      {/* NETO */}
-      <div className="mt-4 rounded-xl border bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-500">
-              Neto promena
-            </p>
-
-            <p
-              className={`mt-1 text-2xl font-semibold ${
-                stats.neto >= 0
-                  ? "text-emerald-600"
-                  : "text-red-600"
-              }`}
-            >
-              {stats.neto >= 0 ? "+" : ""}
-              {formatRsd(stats.neto)}
-            </p>
-          </div>
-
-          <p className="text-right text-xs text-slate-400">
-            {period === "all"
-              ? "Sve transakcije"
-              : `Poslednjih ${period} meseci`}
-          </p>
-        </div>
-      </div>
-
       {/* BALANCE CHART */}
       <div className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
         <div className="mb-5">
