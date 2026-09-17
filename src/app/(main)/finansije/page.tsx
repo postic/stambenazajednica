@@ -155,9 +155,6 @@ export default function FinansijePage() {
 
   /*
    * TRENUTNO STANJE
-   *
-   * Uvek se računa iz SVIH transakcija,
-   * bez obzira na izabrani period.
    */
   const currentBalance = useMemo(() => {
     let balance = 0;
@@ -183,32 +180,18 @@ export default function FinansijePage() {
 
   /*
    * MESEČNI PODACI
-   *
-   * Važna razlika:
-   *
-   * balance predstavlja STANJE NA KRAJU MESECA.
-   *
-   * Poslednji mesec zato mora odgovarati
-   * currentBalance vrednosti.
    */
   const monthlyData = useMemo(() => {
     if (!transakcije.length) {
       return [];
     }
 
-    /*
-     * Sve transakcije sortiramo od najstarije
-     * ka najnovijoj.
-     */
     const allSorted = [...transakcije].sort(
       (a, b) =>
         new Date(a.created).getTime() -
         new Date(b.created).getTime()
     );
 
-    /*
-     * Grupisanje svih transakcija po mesecima.
-     */
     const allMonthly = new Map<
       string,
       {
@@ -242,12 +225,6 @@ export default function FinansijePage() {
       }
     });
 
-    /*
-     * Računamo stanje na kraju svakog meseca.
-     *
-     * Počinjemo od početka svih transakcija i
-     * dodajemo mesečni neto rezultat.
-     */
     let runningBalance = 0;
 
     const allMonthlyData: MonthlyData[] = [];
@@ -267,13 +244,6 @@ export default function FinansijePage() {
       });
     });
 
-    /*
-     * Filtriramo mesece prema izabranom periodu.
-     *
-     * Važno:
-     * balance ostaje saldo na kraju konkretnog meseca,
-     * a ne saldo izabranog perioda.
-     */
     if (period === "all") {
       return allMonthlyData;
     }
@@ -288,16 +258,19 @@ export default function FinansijePage() {
 
       const date = new Date(year, month - 1, 1);
 
-      return date >= new Date(
-        limitDate.getFullYear(),
-        limitDate.getMonth(),
-        1
+      return (
+        date >=
+        new Date(
+          limitDate.getFullYear(),
+          limitDate.getMonth(),
+          1
+        )
       );
     });
   }, [transakcije, period]);
 
   /*
-   * MAKSIMALNA VREDNOST ZA GRAFIKON PRIHODA/RASHODA
+   * MAKSIMALNA VREDNOST ZA GRAFIKON
    */
   const maxMonthlyValue = useMemo(() => {
     return Math.max(
@@ -318,7 +291,9 @@ export default function FinansijePage() {
     }
 
     const maxBalance = Math.max(
-      ...monthlyData.map((item) => Math.max(item.balance, 0)),
+      ...monthlyData.map((item) =>
+        Math.max(item.balance, 0)
+      ),
       currentBalance,
       1
     );
@@ -404,8 +379,8 @@ export default function FinansijePage() {
         {/* STANJE */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-              <Wallet className="h-5 w-5 text-slate-700" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+              <Wallet className="h-5 w-5 text-blue-500" />
             </div>
 
             <div>
@@ -413,7 +388,7 @@ export default function FinansijePage() {
                 Trenutno stanje
               </p>
 
-              <p className="mt-1 text-2xl font-semibold">
+              <p className="mt-1 text-2xl font-semibold text-slate-800">
                 {formatRsd(currentBalance)}
               </p>
             </div>
@@ -423,8 +398,8 @@ export default function FinansijePage() {
         {/* PRIHOD */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-              <ArrowUp className="h-5 w-5 text-slate-700" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+              <ArrowUp className="h-5 w-5 text-emerald-500" />
             </div>
 
             <div>
@@ -432,7 +407,7 @@ export default function FinansijePage() {
                 Prihodi
               </p>
 
-              <p className="mt-1 text-2xl font-semibold">
+              <p className="mt-1 text-2xl font-semibold text-slate-800">
                 {formatRsd(stats.prihod)}
               </p>
 
@@ -446,8 +421,8 @@ export default function FinansijePage() {
         {/* RASHOD */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-              <ArrowDown className="h-5 w-5 text-slate-700" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
+              <ArrowDown className="h-5 w-5 text-red-500" />
             </div>
 
             <div>
@@ -455,7 +430,7 @@ export default function FinansijePage() {
                 Rashodi
               </p>
 
-              <p className="mt-1 text-2xl font-semibold">
+              <p className="mt-1 text-2xl font-semibold text-slate-800">
                 {formatRsd(stats.rashod)}
               </p>
 
@@ -497,7 +472,7 @@ export default function FinansijePage() {
 
                   <div className="flex flex-1 items-end justify-center">
                     <div
-                      className="w-full max-w-14 rounded-t-md bg-primary/80 transition-all"
+                      className="w-full max-w-14 rounded-t-md bg-blue-500/80 transition-all hover:bg-blue-600"
                       style={{
                         height: `${Math.min(
                           Math.max(item.height, 8),
@@ -569,7 +544,7 @@ export default function FinansijePage() {
 
                       <div className="h-6 flex-1 rounded bg-slate-100">
                         <div
-                          className="h-6 rounded bg-primary/80 transition-all"
+                          className="h-6 rounded bg-emerald-500/80 transition-all hover:bg-emerald-600"
                           style={{
                             width: `${
                               item.prihod > 0
@@ -599,7 +574,7 @@ export default function FinansijePage() {
 
                       <div className="h-6 flex-1 rounded bg-slate-100">
                         <div
-                          className="h-6 rounded bg-slate-300 transition-all"
+                          className="h-6 rounded bg-red-500/80 transition-all hover:bg-red-600"
                           style={{
                             width: `${
                               item.rashod > 0
@@ -627,12 +602,12 @@ export default function FinansijePage() {
             {/* LEGENDA */}
             <div className="mt-6 flex justify-center gap-6 text-xs text-slate-500">
               <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-sm bg-primary/80" />
+                <span className="h-3 w-3 rounded-sm bg-emerald-500" />
                 Prihodi
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-sm bg-slate-300" />
+                <span className="h-3 w-3 rounded-sm bg-red-500" />
                 Rashodi
               </div>
             </div>
