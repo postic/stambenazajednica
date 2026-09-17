@@ -16,6 +16,7 @@ import {
   Menu,
   Phone,
   Mail,
+  ChartColumn,
 } from "lucide-react";
 
 // =========================================================
@@ -40,6 +41,8 @@ interface MenuItem {
 
 const iconMap: Record<string, any> = {
   Transakcije: Wallet,
+  Finansije: Wallet,
+  Pregled: ChartColumn,
   Prostori: Building,
   Ankete: Vote,
   Obaveštenja: Megaphone,
@@ -56,6 +59,7 @@ const iconMap: Record<string, any> = {
 // =========================================================
 
 const dropdownMenus = [
+  "Finansije",
   "Obaveštenja",
   "Dokumenti",
   "Telefoni",
