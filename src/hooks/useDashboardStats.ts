@@ -7,11 +7,11 @@ type Stats = {
   obavestenja: number;
   ankete: number;
   sednice: number;
-  stanari: number;
-  stanovi: number;
+  prostori: number;
   telefoni: number;
   transakcije: number;
   dokumenti: number;
+  forum_topic: number;
 };
 
 export function useDashboardStats() {
@@ -20,11 +20,11 @@ export function useDashboardStats() {
     obavestenja: 0,
     ankete: 0,
     sednice: 0,
-    stanari: 0,
-    stanovi: 0,
+    prostori: 0,
     telefoni: 0,
     transakcije: 0,
     dokumenti: 0,
+    forum_topic: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -47,11 +47,11 @@ export function useDashboardStats() {
           obavestenja: data.obavestenja ?? 0,
           ankete: data.ankete ?? 0,
           sednice: data.sednice ?? 0,
-          stanari: data.stanari ?? 0,
-          stanovi: data.stanovi ?? 0,
+          prostori: data.prostori ?? 0,
           telefoni: data.telefoni ?? 0,
           transakcije: data.transakcije ?? 0,
           dokumenti: data.dokumenti ?? 0,
+          forum_topic: data.forum_topic ?? 0,
         });
       } catch (e) {
         console.error("Dashboard stats error:", e);

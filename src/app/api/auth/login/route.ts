@@ -38,6 +38,7 @@ export async function POST(req: Request) {
         name: data.name,
         roles: data.roles,
         picture: data.picture,
+        broj: data.broj,
       }),
       httpOnly: true,
       sameSite: "lax",

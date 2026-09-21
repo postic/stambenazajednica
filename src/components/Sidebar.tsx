@@ -17,6 +17,11 @@ import {
   Phone,
   Mail,
   ChartColumn,
+  ShoppingBag,
+  Coins,
+  MessagesSquare,
+  Banknote,
+  HandCoins,
 } from "lucide-react";
 
 // =========================================================
@@ -40,18 +45,19 @@ interface MenuItem {
 // =========================================================
 
 const iconMap: Record<string, any> = {
-  Transakcije: Wallet,
-  Finansije: Wallet,
-  Pregled: ChartColumn,
-  Prostori: Building,
-  Ankete: Vote,
-  Obaveštenja: Megaphone,
-  Sednice: CalendarCheck,
-  Stanari: Users,
-  Stanovi: Building,
-  Dokumenti: FileText,
-  Telefoni: Phone,
-  Kontakt: Mail,
+  'Transakcije': Wallet,
+  'Finansije': HandCoins,
+  'Pregled': ChartColumn,
+  'Prostori': Building,
+  'Ankete': Vote,
+  'Obaveštenja': Megaphone,
+  'Sednice': CalendarCheck,
+  'Stanari': Users,
+  'Stanovi': Building,
+  'Dokumenti': FileText,
+  'Telefoni': Phone,
+  'Kontakt': Mail,
+  'Komšijske teme': MessagesSquare,
 };
 
 // =========================================================

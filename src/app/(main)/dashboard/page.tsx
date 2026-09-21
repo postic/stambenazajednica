@@ -12,7 +12,8 @@ import {
   CircleEllipsis,
   CalendarCheck,
   Grid,
-  Phone
+  Phone,
+  MessagesSquare
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,7 +32,7 @@ export default function DashboardPage() {
     },
     {
       title: "Prostori",
-      value: stats.stanovi,
+      value: stats.prostori,
       icon: Home,
       iconColor: "text-red-600",
       href: "/prostori",
@@ -56,6 +57,13 @@ export default function DashboardPage() {
       icon: Megaphone,
       iconColor: "text-blue-600",
       href: "/obavestenja",
+    },
+    {
+      title: "Komšijske teme",
+      value: stats.forum_topic,
+      icon: MessagesSquare,
+      iconColor: "text-yellow-600",
+      href: "/forum",
     },
     {
       title: "Sednice",
