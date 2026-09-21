@@ -576,8 +576,7 @@ export async function POST(
     }
 
     // ----------------------------------------------
-    // 14. Provera autora koji je Drupal stvarno
-    //     postavio
+    // 14. Provera autora
     // ----------------------------------------------
 
     const verifyResponse =
@@ -696,7 +695,7 @@ export async function POST(
     });
   } catch (error) {
     console.error(
-      "Greška pri POST /api/forum/topics/[id]/replies:",
+      "Greška pri POST /api/forum/replies/[id]:",
       error
     );
 

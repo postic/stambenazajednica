@@ -99,7 +99,7 @@ export default function NovaTemaPage() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="O čemu želiš da razgovaramo?"
             disabled={saving}
-            requiyellow
+            required
             className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
           />
         </div>
@@ -120,7 +120,7 @@ export default function NovaTemaPage() {
             placeholder="Napiši šta želiš da podeliš sa komšijama..."
             rows={8}
             disabled={saving}
-            requiyellow
+            required
             className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
           />
         </div>
