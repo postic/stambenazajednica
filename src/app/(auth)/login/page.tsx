@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -151,6 +151,14 @@ export default function LoginPage() {
             >
               Zaboravili ste PIN?
             </button>
+
+            <Link
+              href="/upravnik/login"
+              className="text-sm text-gray-500 hover:text-gray-800"
+            >
+              Logujte se kao upravnik
+            </Link>
+
           </form>
         </CardContent>
       </Card>
