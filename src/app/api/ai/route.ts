@@ -41,33 +41,72 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Preuzimamo cookie prijavljenog korisnika.
-     * Na taj način /api/transakcije može da koristi
-     * postojeću autentifikaciju Komšije.
+     * Cookie prijavljenog korisnika.
+     *
+     * Prosleđujemo ga našim internim API endpointima
+     * kako bi oni koristili postojeću autentifikaciju.
      */
     const cookie = request.headers.get("cookie") || "";
 
     /*
-     * Uzimamo podatke iz postojećeg endpointa Komšije.
+     * Pomoćna funkcija za učitavanje podataka
+     * iz internog Komšija API-ja.
      */
-    const url = new URL("/api/transakcije", request.url);
+    async function fetchApi(path: string) {
+      const url = new URL(path, request.url);
 
-    const transakcijeResponse = await fetch(url, {
-      method: "GET",
-      headers: {
-        Cookie: cookie,
-      },
-      cache: "no-store",
-    });
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            Cookie: cookie,
+          },
+          cache: "no-store",
+        });
 
+        if (!response.ok) {
+          console.error(
+            `Greška ${path}:`,
+            response.status,
+            response.statusText
+          );
 
-    if (!transakcijeResponse.ok) {
-      console.error(
-        "Greška /api/transakcije:",
-        transakcijeResponse.status,
-        transakcijeResponse.statusText
-      );
+          return null;
+        }
 
+        return await response.json();
+      } catch (error) {
+        console.error(`Greška prilikom učitavanja ${path}:`, error);
+
+        return null;
+      }
+    }
+
+    /*
+     * Učitavamo podatke iz više delova aplikacije.
+     */
+    const [
+      transakcijeData,
+      prostoriData,
+      obavestenjaData,
+      sedniceData,
+      anketeData,
+    ] = await Promise.all([
+      fetchApi("/api/transakcije"),
+      fetchApi("/api/prostori"),
+      fetchApi("/api/obavestenja"),
+      fetchApi("/api/sednice"),
+      fetchApi("/api/ankete"),
+    ]);
+
+    /*
+     * Ako nema finansijskih podataka, vraćamo grešku.
+     *
+     * Ostali podaci mogu biti nedostupni, ali AI
+     * i dalje može da odgovori na osnovu onoga
+     * što je uspešno učitano.
+     */
+    if (!transakcijeData) {
       return NextResponse.json(
         {
           error:
@@ -79,14 +118,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const transakcijeData =
-      await transakcijeResponse.json();
-
     /*
-     * Podaci iz Komšije koje prosleđujemo AI-ju.
+     * Objedinjujemo sve podatke koje AI sme da koristi.
      */
-    const finansijskiPodaci =
-      JSON.stringify(transakcijeData);
+    const podaciZgrade = {
+      transakcije: transakcijeData,
+      prostori: prostoriData,
+      obavestenja: obavestenjaData,
+      sednice: sedniceData,
+      ankete: anketeData,
+    };
+
+    const kontekst = JSON.stringify(
+      podaciZgrade,
+      null,
+      2
+    );
 
     /*
      * Poziv Groq AI servisa.
@@ -110,24 +157,22 @@ Komšija je aplikacija za stambene zajednice.
 Odgovaraj korisniku na srpskom jeziku, jasno,
 kratko i prirodno.
 
-Korisnik može da postavlja pitanja o finansijama
-njegove stambene zajednice.
+Korisnik može da postavlja pitanja o svojoj
+stambenoj zajednici.
 
-Ispod se nalaze finansijski podaci koje je Komšija
-dobio iz svog internog API-ja.
+Dostavljeni su ti podaci iz aplikacije Komšija.
 
-FINANSIJSKI PODACI:
-${finansijskiPodaci}
+PODACI ZGRADE:
+${kontekst}
 
 PRAVILA:
 
-1. Koristi samo podatke koji su ti prosleđeni.
+1. Koristi isključivo podatke koji su ti prosleđeni.
 
-2. Nemoj izmišljati stanje računa, transakcije,
-   prihode ili rashode.
+2. Nemoj izmišljati podatke.
 
 3. Ako podatak potreban za odgovor nije dostupan,
-   reci da taj podatak nemaš.
+   jasno reci da taj podatak nemaš.
 
 4. Kada korisnik traži računanje, izračunaj rezultat
    na osnovu dostupnih podataka.
@@ -136,29 +181,66 @@ PRAVILA:
 
 6. Odgovaraj na srpskom jeziku.
 
-7. Budi kratak i konkretan.
+7. Budi kratak, konkretan i prirodan.
 
 8. Nemoj pominjati Drupal, API, JSON, Groq,
    programiranje ili tehničku implementaciju.
 
 9. Ako korisnik pita koliko novca trenutno ima
-   zgrada, pronađi trenutno stanje u dostavljenim
-   podacima.
+   zgrada, koristi trenutno stanje iz dostavljenih
+   finansijskih podataka.
 
-10. Ako korisnik pita da li zgrada može da plati
-    određeni iznos, izračunaj koliko bi novca ostalo
-    nakon plaćanja, ali jasno navedi da je to
-    matematički proračun na osnovu trenutnog stanja.
+10. Ako korisnik pita za prihode ili rashode,
+    koristi samo dostavljene transakcije.
+
+11. Ako korisnik pita koliko postoji prostora,
+    stanova ili drugih prostora, koristi podatke
+    iz sekcije PROSTORI.
+
+12. Ako korisnik pita o obaveštenjima, koristi
+    podatke iz sekcije OBAVEŠTENJA.
+
+13. Ako korisnik pita o sednicama, koristi
+    podatke iz sekcije SEDNICE.
+
+14. Ako korisnik pita o anketama, koristi
+    podatke iz sekcije ANKETE.
+
+15. Ako podatak nije dostavljen, nemoj pokušavati
+    da ga pretpostaviš na osnovu drugih podataka.
+
+16. Ako pitanje nije povezano sa stambenom zajednicom,
+    možeš kratko odgovoriti, ali nemoj izmišljati
+    informacije o konkretnoj zgradi.
+
+17. Kada je potrebno napraviti matematički proračun,
+    prikaži rezultat jasno.
+
+18. Ako korisnik pita da li zgrada može da plati
+    određeni iznos, izračunaj koliko bi ostalo nakon
+    plaćanja i jasno reci da je to matematički
+    proračun na osnovu trenutnog stanja.
 
 Primer:
 
 Pitanje:
 "Imamo li dovoljno za račun od 80.000 dinara?"
 
-Ako je stanje 206.464 RSD, odgovor može biti:
+Ako je trenutno stanje 206.464 RSD:
 
-"Da. Nakon plaćanja od 80.000 RSD, na računu bi ostalo
-126.464 RSD."
+"Da. Nakon plaćanja od 80.000 RSD, na računu bi
+ostalo 126.464 RSD."
+
+Primer:
+
+Pitanje:
+"Koliko imamo stanova?"
+
+Ako podaci pokazuju 24 prostora:
+
+"Zgrada ima 24 prostora."
+
+Ne prikazuj tehničke podatke korisniku.
             `.trim(),
           },
 
