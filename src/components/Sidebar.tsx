@@ -22,6 +22,7 @@ import {
   MessagesSquare,
   Banknote,
   HandCoins,
+  Sparkles,
 } from "lucide-react";
 
 // =========================================================
@@ -58,6 +59,7 @@ const iconMap: Record<string, any> = {
   'Telefoni': Phone,
   'Kontakt': Mail,
   'Komšijske teme': MessagesSquare,
+  'AI': Sparkles,
 };
 
 // =========================================================
