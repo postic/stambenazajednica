@@ -79,7 +79,8 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Učitavamo podatke o transakcijama i prostorima.
+     * Učitavamo kompletne podatke o transakcijama
+     * i prostorima.
      */
     const [
       transakcijeData,
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
     ]);
 
     /*
-     * Finansijski podaci su trenutno obavezni.
+     * Finansijski podaci su obavezni.
      */
     if (!transakcijeData) {
       return NextResponse.json(
@@ -105,29 +106,25 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Uzimamo samo poslednjih 100 transakcija
-     * kako prompt ne bi postao prevelik.
+     * Šaljemo SVE transakcije AI pomoćniku.
+     *
+     * Nema više ograničenja na poslednjih 100.
      */
     let transakcije = transakcijeData;
 
     if (Array.isArray(transakcijeData)) {
-      transakcije = transakcijeData.slice(0, 100);
+      transakcije = transakcijeData;
     } else if (
       Array.isArray(transakcijeData.transakcije)
     ) {
       transakcije = {
         ...transakcijeData,
-        transakcije:
-          transakcijeData.transakcije.slice(0, 100),
+        transakcije: transakcijeData.transakcije,
       };
     }
 
     /*
      * Podaci o prostorima.
-     *
-     * Ako API vrati niz, šaljemo ga direktno.
-     * Ako API nije dostupan, AI i dalje može da radi
-     * sa finansijskim podacima.
      */
     let prostori = prostoriData;
 
@@ -188,7 +185,21 @@ Ako korisnik pita koliko novca trenutno ima
 zgrada, koristi podatke o transakcijama.
 
 Ako korisnik pita za prihode, rashode ili
-transakcije, koristi samo dostavljene podatke.
+transakcije, koristi SVE dostavljene transakcije.
+
+Nemoj pretpostavljati da su dostavljene samo
+poslednje transakcije.
+
+Ako korisnik traži ukupan iznos za određeni
+period, izračunaj ga na osnovu svih dostupnih
+transakcija iz tog perioda.
+
+Ako korisnik traži najveći ili najmanji rashod,
+pretraži sve dostavljene transakcije.
+
+Ako korisnik traži transakcije za određeni
+mesec, godinu, tip ili opis, filtriraj sve
+dostavljene transakcije.
 
 PROSTORI:
 
