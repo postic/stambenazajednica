@@ -5,10 +5,6 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-const DRUPAL_BASE_URL =
-  process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
-  "http://localhost:8888";
-
 export async function POST(request: Request) {
   try {
     if (!process.env.GROQ_API_KEY) {
@@ -42,9 +38,6 @@ export async function POST(request: Request) {
 
     /*
      * Cookie prijavljenog korisnika.
-     *
-     * Prosleđujemo ga našim internim API endpointima
-     * kako bi oni koristili postojeću autentifikaciju.
      */
     const cookie = request.headers.get("cookie") || "";
 
@@ -76,36 +69,23 @@ export async function POST(request: Request) {
 
         return await response.json();
       } catch (error) {
-        console.error(`Greška prilikom učitavanja ${path}:`, error);
+        console.error(
+          `Greška prilikom učitavanja ${path}:`,
+          error
+        );
 
         return null;
       }
     }
 
     /*
-     * Učitavamo podatke iz više delova aplikacije.
-     */
-    const [
-      transakcijeData,
-      prostoriData,
-      obavestenjaData,
-      sedniceData,
-      anketeData,
-    ] = await Promise.all([
-      fetchApi("/api/transakcije"),
-      fetchApi("/api/prostori"),
-      fetchApi("/api/obavestenja"),
-      fetchApi("/api/sednice"),
-      fetchApi("/api/ankete"),
-    ]);
-
-    /*
-     * Ako nema finansijskih podataka, vraćamo grešku.
+     * Trenutno učitavamo samo finansijske podatke.
      *
-     * Ostali podaci mogu biti nedostupni, ali AI
-     * i dalje može da odgovori na osnovu onoga
-     * što je uspešno učitano.
+     * Ostale podatke ćemo dodavati kasnije samo kada
+     * budu potrebni za određeno pitanje.
      */
+    const transakcijeData = await fetchApi("/api/transakcije");
+
     if (!transakcijeData) {
       return NextResponse.json(
         {
@@ -119,21 +99,34 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Objedinjujemo sve podatke koje AI sme da koristi.
+     * Uzimamo samo poslednjih 100 transakcija.
+     *
+     * Cilj je da AI ne dobije nepotrebno veliki prompt.
+     */
+    let transakcije = transakcijeData;
+
+    if (Array.isArray(transakcijeData)) {
+      transakcije = transakcijeData.slice(0, 100);
+    } else if (
+      Array.isArray(transakcijeData.transakcije)
+    ) {
+      transakcije = {
+        ...transakcijeData,
+        transakcije: transakcijeData.transakcije.slice(
+          0,
+          100
+        ),
+      };
+    }
+
+    /*
+     * Objedinjujemo podatke koje AI trenutno sme da koristi.
      */
     const podaciZgrade = {
-      transakcije: transakcijeData,
-      //prostori: prostoriData,
-      //obavestenja: obavestenjaData,
-      //sednice: sedniceData,
-      //ankete: anketeData,
+      transakcije,
     };
 
-    const kontekst = JSON.stringify(
-      podaciZgrade,
-      null,
-      2
-    );
+    const kontekst = JSON.stringify(podaciZgrade);
 
     /*
      * Poziv Groq AI servisa.
@@ -146,104 +139,43 @@ export async function POST(request: Request) {
 
         max_completion_tokens: 1024,
 
+        reasoning_effort: "low",
+
         messages: [
           {
             role: "system",
             content: `
 Ti si AI pomoćnik aplikacije Komšija.
 
-Komšija je aplikacija za stambene zajednice.
+Odgovaraj na srpskom jeziku, kratko, jasno i prirodno.
 
-Odgovaraj korisniku na srpskom jeziku, jasno,
-kratko i prirodno.
+Koristi isključivo podatke koji su ti prosleđeni.
+Ne izmišljaj podatke.
 
-Korisnik može da postavlja pitanja o svojoj
-stambenoj zajednici.
+Ako potreban podatak nije dostupan, reci da taj
+podatak trenutno nemaš.
 
-Dostavljeni su ti podaci iz aplikacije Komšija.
+Novčane iznose prikazuj u RSD.
+
+Kada je potrebno računanje, izračunaj rezultat
+na osnovu dostupnih podataka.
+
+Ako korisnik pita koliko novca trenutno ima zgrada,
+koristi trenutno stanje iz finansijskih podataka.
+
+Ako pita za prihode, rashode ili transakcije,
+koristi samo dostavljene transakcije.
+
+Ako pitanje nije povezano sa podacima koje imaš,
+reci da taj podatak trenutno nemaš.
+
+Ne pominji Drupal, API, JSON, Groq ili tehničku
+implementaciju.
 
 PODACI ZGRADE:
 ${kontekst}
-
-PRAVILA:
-
-1. Koristi isključivo podatke koji su ti prosleđeni.
-
-2. Nemoj izmišljati podatke.
-
-3. Ako podatak potreban za odgovor nije dostupan,
-   jasno reci da taj podatak nemaš.
-
-4. Kada korisnik traži računanje, izračunaj rezultat
-   na osnovu dostupnih podataka.
-
-5. Sve novčane iznose prikazuj u RSD.
-
-6. Odgovaraj na srpskom jeziku.
-
-7. Budi kratak, konkretan i prirodan.
-
-8. Nemoj pominjati Drupal, API, JSON, Groq,
-   programiranje ili tehničku implementaciju.
-
-9. Ako korisnik pita koliko novca trenutno ima
-   zgrada, koristi trenutno stanje iz dostavljenih
-   finansijskih podataka.
-
-10. Ako korisnik pita za prihode ili rashode,
-    koristi samo dostavljene transakcije.
-
-11. Ako korisnik pita koliko postoji prostora,
-    stanova ili drugih prostora, koristi podatke
-    iz sekcije PROSTORI.
-
-12. Ako korisnik pita o obaveštenjima, koristi
-    podatke iz sekcije OBAVEŠTENJA.
-
-13. Ako korisnik pita o sednicama, koristi
-    podatke iz sekcije SEDNICE.
-
-14. Ako korisnik pita o anketama, koristi
-    podatke iz sekcije ANKETE.
-
-15. Ako podatak nije dostavljen, nemoj pokušavati
-    da ga pretpostaviš na osnovu drugih podataka.
-
-16. Ako pitanje nije povezano sa stambenom zajednicom,
-    možeš kratko odgovoriti, ali nemoj izmišljati
-    informacije o konkretnoj zgradi.
-
-17. Kada je potrebno napraviti matematički proračun,
-    prikaži rezultat jasno.
-
-18. Ako korisnik pita da li zgrada može da plati
-    određeni iznos, izračunaj koliko bi ostalo nakon
-    plaćanja i jasno reci da je to matematički
-    proračun na osnovu trenutnog stanja.
-
-Primer:
-
-Pitanje:
-"Imamo li dovoljno za račun od 80.000 dinara?"
-
-Ako je trenutno stanje 206.464 RSD:
-
-"Da. Nakon plaćanja od 80.000 RSD, na računu bi
-ostalo 126.464 RSD."
-
-Primer:
-
-Pitanje:
-"Koliko imamo stanova?"
-
-Ako podaci pokazuju 24 prostora:
-
-"Zgrada ima 24 prostora."
-
-Ne prikazuj tehničke podatke korisniku.
             `.trim(),
           },
-
           {
             role: "user",
             content: question,
@@ -268,8 +200,38 @@ Ne prikazuj tehničke podatke korisniku.
     return NextResponse.json({
       answer,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI greška:", error);
+
+    /*
+     * Groq 413 - zahtev je prevelik.
+     */
+    if (error?.status === 413) {
+      return NextResponse.json(
+        {
+          error:
+            "Podaci koji su poslati AI pomoćniku su preveliki. Pokušajte sa konkretnijim pitanjem.",
+        },
+        {
+          status: 413,
+        }
+      );
+    }
+
+    /*
+     * Groq rate limit.
+     */
+    if (error?.status === 429) {
+      return NextResponse.json(
+        {
+          error:
+            "AI pomoćnik je trenutno zauzet. Pokušajte ponovo za nekoliko sekundi.",
+        },
+        {
+          status: 429,
+        }
+      );
+    }
 
     return NextResponse.json(
       {
