@@ -123,10 +123,10 @@ export async function POST(request: Request) {
      */
     const podaciZgrade = {
       transakcije: transakcijeData,
-      prostori: prostoriData,
-      obavestenja: obavestenjaData,
-      sednice: sedniceData,
-      ankete: anketeData,
+      //prostori: prostoriData,
+      //obavestenja: obavestenjaData,
+      //sednice: sedniceData,
+      //ankete: anketeData,
     };
 
     const kontekst = JSON.stringify(
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
 
         temperature: 0.2,
 
-        max_completion_tokens: 500,
+        max_completion_tokens: 1024,
 
         messages: [
           {
