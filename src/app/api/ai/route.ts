@@ -427,7 +427,7 @@ export async function POST(request: Request) {
 
         temperature: 0.1,
 
-        max_completion_tokens: 2048,
+        max_completion_tokens: 1024,
 
         reasoning_effort: "low",
 
