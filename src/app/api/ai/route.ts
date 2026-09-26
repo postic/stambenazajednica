@@ -39,12 +39,15 @@ export async function POST(request: Request) {
     /*
      * Cookie prijavljenog korisnika.
      */
-    const cookie = request.headers.get("cookie") || "";
+    const cookie =
+      request.headers.get("cookie") || "";
 
     /*
-     * Pomoćna funkcija za učitavanje podataka
-     * iz internog Komšija API-ja.
+     * --------------------------------------------------
+     * POMOĆNA FUNKCIJA ZA UČITAVANJE API PODATAKA
+     * --------------------------------------------------
      */
+
     async function fetchApi(path: string) {
       const url = new URL(path, request.url);
 
@@ -76,6 +79,32 @@ export async function POST(request: Request) {
 
         return null;
       }
+    }
+
+    /*
+     * --------------------------------------------------
+     * NORMALIZACIJA TEKSTA
+     * --------------------------------------------------
+     *
+     * Omogućava poređenje:
+     *
+     * Mirjana
+     * Mirjanu
+     * MIRJANA
+     * Mirjana Poštić
+     *
+     * bez obzira na velika/mala slova i dijakritiku.
+     */
+
+    function normalizeText(value: string) {
+      return value
+        .toLocaleLowerCase("sr-Latn")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     /*
@@ -123,7 +152,7 @@ export async function POST(request: Request) {
           : 1;
 
       /*
-       * Učitavamo sve preostale stranice.
+       * Učitavamo sve ostale stranice.
        */
       if (totalPages > 1) {
         const remainingPages = await Promise.all(
@@ -143,26 +172,28 @@ export async function POST(request: Request) {
             page &&
             Array.isArray(page.data)
           ) {
-            sveTransakcije.push(...page.data);
+            sveTransakcije.push(
+              ...page.data
+            );
           }
         }
       }
 
       /*
        * ------------------------------------------------
-       * DEDUPLIKACIJA
+       * DEDUPLIKACIJA PO ID-U
        * ------------------------------------------------
-       *
-       * Svaka transakcija ima jedinstveni ID.
-       * Isti ID može postojati samo jednom.
        */
+
       const jedinstveneTransakcije =
         Array.from(
           new Map(
-            sveTransakcije.map((transakcija) => [
-              transakcija.id,
-              transakcija,
-            ])
+            sveTransakcije.map(
+              (transakcija: any) => [
+                transakcija.id,
+                transakcija,
+              ]
+            )
           ).values()
         );
 
@@ -207,52 +238,45 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Podaci o prostorima.
+     * --------------------------------------------------
+     * PODACI O PROSTORIMA
+     * --------------------------------------------------
      */
+
     let prostori = prostoriData;
 
     if (Array.isArray(prostoriData)) {
       prostori = prostoriData;
     } else if (
       prostoriData &&
-      Array.isArray(prostoriData.prostori)
+      Array.isArray(
+        prostoriData.prostori
+      )
     ) {
-      prostori = prostoriData.prostori;
+      prostori =
+        prostoriData.prostori;
+    } else if (
+      prostoriData &&
+      Array.isArray(
+        prostoriData.data
+      )
+    ) {
+      prostori =
+        prostoriData.data;
     }
 
     /*
      * --------------------------------------------------
-     * NORMALIZACIJA TEKSTA
-     * --------------------------------------------------
-     *
-     * Omogućava poređenje:
-     *
-     * Mirjana
-     * Mirjanu
-     * MIRJANA
-     * Mirjana Poštić
-     *
-     * bez obzira na velika/mala slova i dijakritiku.
-     */
-    function normalizeText(value: string) {
-      return value
-        .toLocaleLowerCase("sr-Latn")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/đ/g, "d")
-        .replace(/[^a-z0-9\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    /*
-     * --------------------------------------------------
-     * PREPOZNAVANJE PITANJA ZA SVE TRANSAKCIJE
+     * PREPOZNAVANJE PITANJA
      * --------------------------------------------------
      */
 
     const normalizedQuestion =
       normalizeText(question);
+
+    /*
+     * Da li korisnik traži SVE transakcije?
+     */
 
     const traziSveTransakcije =
       normalizedQuestion.includes(
@@ -270,17 +294,16 @@ export async function POST(request: Request) {
 
     /*
      * --------------------------------------------------
-     * PRONALAŽENJE KRITERIJUMA
+     * PREPOZNAVANJE "TRANSAKCIJE ZA ..."
      * --------------------------------------------------
      *
      * Primer:
      *
-     * "Prikaži mi sve transakcije za Mirjanu"
+     * Prikaži mi sve transakcije za Mirjanu
      *
-     * izdvaja:
-     *
-     * "mirjanu"
+     * searchTerm = "mirjanu"
      */
+
     let searchTerm = "";
 
     const zaMatch =
@@ -296,21 +319,30 @@ export async function POST(request: Request) {
 
     /*
      * --------------------------------------------------
-     * FILTRIRANE TRANSAKCIJE
+     * DIREKTNA PRETRAGA SVIH TRANSAKCIJA
      * --------------------------------------------------
+     *
+     * OVAJ DEO NE KORISTI AI.
+     *
+     * Time sprečavamo:
+     *
+     * - dupliranje
+     * - izmišljanje transakcija
+     * - preskakanje transakcija
+     * - nepotrebnu potrošnju Groq tokena
      */
-
-    let transakcijeZaAI = transakcije;
 
     if (
       traziSveTransakcije &&
       searchTerm
     ) {
       const searchWords =
-        searchTerm.split(/\s+/).filter(
-          (word: string) =>
-            word.length >= 3
-        );
+        searchTerm
+          .split(/\s+/)
+          .filter(
+            (word: string) =>
+              word.length >= 3
+          );
 
       const filtrirane =
         transakcije.filter(
@@ -335,8 +367,12 @@ export async function POST(request: Request) {
               `${title} ${body}`;
 
             /*
-             * Direktno podudaranje.
+             * Prvo pokušavamo direktno
+             * podudaranje.
+             *
+             * Mirjana -> mirjana
              */
+
             if (
               searchWords.some(
                 (word: string) =>
@@ -347,14 +383,14 @@ export async function POST(request: Request) {
             }
 
             /*
-             * Podudaranje po početku reči.
+             * Zatim pokušavamo da prepoznamo
+             * padež.
              *
-             * Omogućava:
+             * Mirjanu -> Mirjana
              *
-             * Mirjanu → Mirjana
-             * Marku → Marko
-             * itd.
+             * Koristimo prvih 5 karaktera.
              */
+
             const tekstReci =
               tekst.split(/\s+/);
 
@@ -381,9 +417,10 @@ export async function POST(request: Request) {
         );
 
       /*
-       * Ponovo deduplikujemo rezultat.
+       * Ponovna deduplikacija.
        */
-      transakcijeZaAI =
+
+      const jedinstvene =
         Array.from(
           new Map(
             filtrirane.map(
@@ -396,24 +433,107 @@ export async function POST(request: Request) {
         );
 
       console.log(
-        `AI: pretraga "${searchTerm}" pronašla ${transakcijeZaAI.length} transakcija.`
+        `AI: pretraga "${searchTerm}" pronašla ${jedinstvene.length} transakcija.`
       );
+
+      /*
+       * ------------------------------------------------
+       * DIREKTNO FORMIRANJE ODGOVORA
+       * ------------------------------------------------
+       */
+
+      if (jedinstvene.length === 0) {
+        return NextResponse.json({
+          answer:
+            `Nema pronađenih transakcija za "${searchTerm}".`,
+        });
+      }
+
+      const brojTransakcija =
+        jedinstvene.length;
+
+      const lista =
+        jedinstvene.map(
+          (t: any) => {
+            const datum =
+              t.created
+                ? new Intl.DateTimeFormat(
+                    "sr-RS",
+                    {
+                      dateStyle:
+                        "short",
+                    }
+                  ).format(
+                    new Date(
+                      t.created
+                    )
+                  )
+                : "";
+
+            const iznos =
+              new Intl.NumberFormat(
+                "sr-RS",
+                {
+                  style:
+                    "currency",
+                  currency: "RSD",
+                  maximumFractionDigits: 2,
+                }
+              ).format(
+                Number(t.amount) || 0
+              );
+
+            const tip =
+              t.type === "uplata"
+                ? "Uplata"
+                : t.type ===
+                    "isplata"
+                  ? "Isplata"
+                  : t.type || "";
+
+            const opis =
+              t.body
+                ? ` — ${t.body}`
+                : "";
+
+            return `- ${datum} — ${t.title} — ${tip} — ${iznos}${opis}`;
+          }
+        );
+
+      const odgovor = [
+        `Pronađeno je ${brojTransakcija} ${
+          brojTransakcija === 1
+            ? "transakcija"
+            : "transakcija"
+        } za "${searchTerm}":`,
+        "",
+        ...lista,
+      ].join("\n");
+
+      return NextResponse.json({
+        answer: odgovor,
+      });
     }
 
     /*
      * --------------------------------------------------
-     * PODACI ZA AI
+     * ZA OSTALA PITANJA KORISTIMO AI
      * --------------------------------------------------
      */
 
+    /*
+     * Za AI šaljemo podatke o transakcijama
+     * i prostorima.
+     */
     const podaciZgrade = {
-      transakcije: transakcijeZaAI,
+      transakcije,
       prostori,
     };
 
-    const kontekst = JSON.stringify(
-      podaciZgrade
-    );
+    const kontekst =
+      JSON.stringify(
+        podaciZgrade
+      );
 
     /*
      * --------------------------------------------------
@@ -437,43 +557,42 @@ export async function POST(request: Request) {
             content: `
 Ti si AI pomoćnik aplikacije Komšija.
 
-Odgovaraj na srpskom jeziku, kratko, jasno i prirodno.
+Odgovaraj na srpskom jeziku,
+kratko, jasno i prirodno.
 
-Koristi isključivo podatke koji su ti prosleđeni.
+Koristi isključivo podatke koji su
+ti prosleđeni.
+
 Ne izmišljaj podatke.
 
-Ako potreban podatak nije dostupan, jasno reci
-da taj podatak trenutno nemaš.
+Ako potreban podatak nije dostupan,
+jasno reci da taj podatak trenutno nemaš.
 
 Novčane iznose prikazuj u RSD.
 
-Kada je potrebno računanje, izračunaj rezultat
-na osnovu dostupnih podataka.
+Kada je potrebno računanje,
+izračunaj rezultat na osnovu dostupnih
+podataka.
 
 FINANSIJE:
 
-Ako korisnik pita koliko novca trenutno ima
-zgrada, koristi podatke o transakcijama.
+Ako korisnik pita koliko novca trenutno
+ima zgrada, koristi podatke o transakcijama.
 
-Ako korisnik pita za prihode, rashode ili
-transakcije, koristi dostavljene transakcije.
+Ako korisnik pita za prihode, rashode
+ili transakcije, koristi dostavljene
+transakcije.
 
-Ako korisnik traži ukupan iznos za određeni
-period, izračunaj ga na osnovu dostavljenih
-transakcija.
+Ako korisnik traži ukupan iznos za
+određeni period, izračunaj ga na osnovu
+dostavljenih transakcija.
 
-Ako korisnik traži najveći ili najmanji rashod,
-pretraži sve dostavljene transakcije.
+Ako korisnik traži najveći ili najmanji
+rashod, pretraži sve dostavljene transakcije.
 
 Ako korisnik traži transakcije za određeni
-mesec, godinu, tip, naziv ili opis, koristi
-samo transakcije koje su ti prosleđene.
-
-VAŽNO:
-
-Ako korisnik traži "sve transakcije", prikaži
-sve odgovarajuće transakcije koje su ti
-prosleđene.
+mesec, godinu, tip, naziv ili opis,
+koristi dostavljene transakcije.
 
 Ne izmišljaj dodatne transakcije.
 
@@ -481,27 +600,15 @@ Ne prikazuj istu transakciju više puta.
 
 Svaka transakcija ima jedinstveni ID.
 
-Jedan ID sme biti prikazan samo jednom.
-
-Ako je lista transakcija već filtrirana,
-ne pokušavaj da dodaješ druge transakcije.
-
-Za svaku transakciju prikaži:
-- datum
-- naziv
-- tip transakcije
-- iznos
-- opis, ako postoji
-
 PROSTORI:
 
 Ako korisnik pita koliko zgrada ima prostora,
 stanova ili drugih prostora, koristi podatke
 iz sekcije prostori.
 
-Ako korisnik pita za konkretan broj stana ili
-prostora, pronađi odgovarajući prostor u
-dostavljenim podacima.
+Ako korisnik pita za konkretan broj stana
+ili prostora, pronađi odgovarajući prostor
+u dostavljenim podacima.
 
 Ako korisnik pita ko je povezan sa određenim
 prostorom, koristi samo podatke koji su
@@ -511,11 +618,11 @@ Ne pretpostavljaj da su svi prostori stanovi.
 
 Koristi tip prostora ako je dostavljen.
 
-Ako podatak o prostorima nije dostupan, reci
-da trenutno nemaš podatke o prostorima.
+Ako podatak o prostorima nije dostupan,
+reci da trenutno nemaš podatke o prostorima.
 
-Ne pominji Drupal, API, JSON, Groq ili tehničku
-implementaciju.
+Ne pominji Drupal, API, JSON, Groq
+ili tehničku implementaciju.
 
 PODACI ZGRADE:
 
@@ -535,7 +642,8 @@ ${kontekst}
     if (!answer) {
       return NextResponse.json(
         {
-          error: "AI nije vratio odgovor.",
+          error:
+            "AI nije vratio odgovor.",
         },
         {
           status: 500,
@@ -547,7 +655,10 @@ ${kontekst}
       answer,
     });
   } catch (error: any) {
-    console.error("AI greška:", error);
+    console.error(
+      "AI greška:",
+      error
+    );
 
     /*
      * Groq 413
@@ -565,13 +676,13 @@ ${kontekst}
     }
 
     /*
-     * Groq rate limit
+     * Groq 429
      */
     if (error?.status === 429) {
       return NextResponse.json(
         {
           error:
-            "AI pomoćnik je trenutno zauzet. Pokušajte ponovo za nekoliko sekundi.",
+            "AI pomoćnik je trenutno zauzet ili je dostignut limit tokena. Pokušajte ponovo kasnije.",
         },
         {
           status: 429,
