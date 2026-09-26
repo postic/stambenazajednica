@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { FormEvent, useState } from "react";
 import {
   Loader2,
@@ -8,6 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 export default function AiPage() {
@@ -86,22 +86,20 @@ export default function AiPage() {
 
       <form onSubmit={handleSubmit}>
         <div className="rounded-2xl border bg-white p-4 shadow-sm">
-          <Input
+          <Textarea
             value={question}
             onChange={(event) =>
-            setQuestion(event.target.value)
+              setQuestion(event.target.value)
             }
             placeholder="Na primer: Koliko trenutno imamo na računu?"
             disabled={loading}
-            className="h-11 rounded-xl"
+            className="min-h-[90px] resize-none rounded-xl"
           />
 
           <div className="mt-4 flex justify-end">
             <Button
               type="submit"
-              disabled={
-                loading || !question.trim()
-              }
+              disabled={loading || !question.trim()}
               className="rounded-xl"
             >
               {loading ? (

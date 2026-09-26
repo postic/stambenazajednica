@@ -37,14 +37,17 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Cookie prijavljenog korisnika.
+     * --------------------------------------------------
+     * COOKIE PRIJAVLJENOG KORISNIKA
+     * --------------------------------------------------
      */
+
     const cookie =
       request.headers.get("cookie") || "";
 
     /*
      * --------------------------------------------------
-     * POMOĆNA FUNKCIJA ZA UČITAVANJE API PODATAKA
+     * POMOĆNA FUNKCIJA ZA API
      * --------------------------------------------------
      */
 
@@ -85,15 +88,6 @@ export async function POST(request: Request) {
      * --------------------------------------------------
      * NORMALIZACIJA TEKSTA
      * --------------------------------------------------
-     *
-     * Omogućava poređenje:
-     *
-     * Mirjana
-     * Mirjanu
-     * MIRJANA
-     * Mirjana Poštić
-     *
-     * bez obzira na velika/mala slova i dijakritiku.
      */
 
     function normalizeText(value: string) {
@@ -107,10 +101,123 @@ export async function POST(request: Request) {
         .trim();
     }
 
+    const normalizedQuestion =
+      normalizeText(question);
+
     /*
      * --------------------------------------------------
-     * UČITAVANJE SVIH TRANSAKCIJA
+     * PREPOZNAVANJE TIPA PITANJA
      * --------------------------------------------------
+     */
+
+    const financeKeywords = [
+      "novca",
+      "novac",
+      "stanje",
+      "racun",
+      "racuna",
+      "uplata",
+      "uplate",
+      "uplaceno",
+      "isplata",
+      "isplate",
+      "rashod",
+      "rashodi",
+      "prihod",
+      "prihodi",
+      "transakcija",
+      "transakcije",
+      "transakciju",
+      "iznos",
+      "iznosa",
+      "placeno",
+      "placanja",
+      "placanje",
+      "dug",
+      "dugovi",
+      "saldo",
+      "finansije",
+      "finansijska",
+      "novcano",
+    ];
+
+    const spaceKeywords = [
+      "stan",
+      "stana",
+      "stanu",
+      "stanovi",
+      "stanova",
+      "prostor",
+      "prostora",
+      "prostori",
+      "prostoru",
+      "sprat",
+      "sprata",
+      "spratu",
+      "stanar",
+      "stanari",
+      "stanara",
+      "stanaru",
+      "vlasnik",
+      "vlasnika",
+      "vlasniku",
+      "ko zivi",
+      "ko živi",
+      "koliko stanova",
+      "koliko prostora",
+      "broj stana",
+    ];
+
+    const hasFinanceQuestion =
+      financeKeywords.some((keyword) =>
+        normalizedQuestion.includes(keyword)
+      );
+
+    const hasSpaceQuestion =
+      spaceKeywords.some((keyword) =>
+        normalizedQuestion.includes(keyword)
+      );
+
+    /*
+     * Ako pitanje eksplicitno traži transakcije
+     * i određenu osobu/naziv, prvo pokušavamo
+     * direktnu pretragu bez AI-ja.
+     */
+
+    const traziSveTransakcije =
+      normalizedQuestion.includes(
+        "sve transakcije"
+      ) ||
+      normalizedQuestion.includes(
+        "svih transakcija"
+      ) ||
+      normalizedQuestion.includes(
+        "sve uplate"
+      ) ||
+      normalizedQuestion.includes(
+        "sve isplate"
+      );
+
+    let searchTerm = "";
+
+    const zaMatch =
+      normalizedQuestion.match(
+        /transakcije\s+za\s+(.+)$/
+      );
+
+    if (zaMatch?.[1]) {
+      searchTerm = zaMatch[1]
+        .replace(/[?.!,]+$/g, "")
+        .trim();
+    }
+
+    /*
+     * --------------------------------------------------
+     * UČITAVANJE TRANSAKCIJA
+     * --------------------------------------------------
+     *
+     * Sve transakcije učitavamo samo kada su
+     * stvarno potrebne.
      */
 
     async function fetchAllTransakcije() {
@@ -125,6 +232,7 @@ export async function POST(request: Request) {
       /*
        * Ako API direktno vraća niz.
        */
+
       if (Array.isArray(firstPage)) {
         return firstPage;
       }
@@ -132,6 +240,7 @@ export async function POST(request: Request) {
       /*
        * Ako nema data niza.
        */
+
       if (!Array.isArray(firstPage.data)) {
         return firstPage;
       }
@@ -139,33 +248,33 @@ export async function POST(request: Request) {
       /*
        * Prva stranica.
        */
+
       const sveTransakcije = [
         ...firstPage.data,
       ];
 
-      /*
-       * Broj ukupnih stranica.
-       */
       const totalPages =
         typeof firstPage.totalPages === "number"
           ? firstPage.totalPages
           : 1;
 
       /*
-       * Učitavamo sve ostale stranice.
+       * Učitavanje ostalih stranica.
        */
+
       if (totalPages > 1) {
-        const remainingPages = await Promise.all(
-          Array.from(
-            {
-              length: totalPages - 1,
-            },
-            (_, index) =>
-              fetchApi(
-                `/api/transakcije?page=${index + 2}`
-              )
-          )
-        );
+        const remainingPages =
+          await Promise.all(
+            Array.from(
+              {
+                length: totalPages - 1,
+              },
+              (_, index) =>
+                fetchApi(
+                  `/api/transakcije?page=${index + 2}`
+                )
+            )
+          );
 
         for (const page of remainingPages) {
           if (
@@ -180,9 +289,7 @@ export async function POST(request: Request) {
       }
 
       /*
-       * ------------------------------------------------
-       * DEDUPLIKACIJA PO ID-U
-       * ------------------------------------------------
+       * Deduplikacija po ID-u.
        */
 
       const jedinstveneTransakcije =
@@ -210,132 +317,31 @@ export async function POST(request: Request) {
 
     /*
      * --------------------------------------------------
-     * UČITAVANJE TRANSAKCIJA I PROSTORA
-     * --------------------------------------------------
-     */
-
-    const [
-      transakcije,
-      prostoriData,
-    ] = await Promise.all([
-      fetchAllTransakcije(),
-      fetchApi("/api/prostori"),
-    ]);
-
-    /*
-     * Finansijski podaci su obavezni.
-     */
-    if (!transakcije) {
-      return NextResponse.json(
-        {
-          error:
-            "Nije moguće učitati finansijske podatke zgrade.",
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    /*
-     * --------------------------------------------------
-     * PODACI O PROSTORIMA
-     * --------------------------------------------------
-     */
-
-    let prostori = prostoriData;
-
-    if (Array.isArray(prostoriData)) {
-      prostori = prostoriData;
-    } else if (
-      prostoriData &&
-      Array.isArray(
-        prostoriData.prostori
-      )
-    ) {
-      prostori =
-        prostoriData.prostori;
-    } else if (
-      prostoriData &&
-      Array.isArray(
-        prostoriData.data
-      )
-    ) {
-      prostori =
-        prostoriData.data;
-    }
-
-    /*
-     * --------------------------------------------------
-     * PREPOZNAVANJE PITANJA
-     * --------------------------------------------------
-     */
-
-    const normalizedQuestion =
-      normalizeText(question);
-
-    /*
-     * Da li korisnik traži SVE transakcije?
-     */
-
-    const traziSveTransakcije =
-      normalizedQuestion.includes(
-        "sve transakcije"
-      ) ||
-      normalizedQuestion.includes(
-        "svih transakcija"
-      ) ||
-      normalizedQuestion.includes(
-        "sve uplate"
-      ) ||
-      normalizedQuestion.includes(
-        "sve isplate"
-      );
-
-    /*
-     * --------------------------------------------------
-     * PREPOZNAVANJE "TRANSAKCIJE ZA ..."
+     * DIREKTNA PRETRAGA TRANSAKCIJA
      * --------------------------------------------------
      *
-     * Primer:
-     *
-     * Prikaži mi sve transakcije za Mirjanu
-     *
-     * searchTerm = "mirjanu"
-     */
-
-    let searchTerm = "";
-
-    const zaMatch =
-      normalizedQuestion.match(
-        /transakcije\s+za\s+(.+)$/
-      );
-
-    if (zaMatch?.[1]) {
-      searchTerm = zaMatch[1]
-        .replace(/[?.!,]+$/g, "")
-        .trim();
-    }
-
-    /*
-     * --------------------------------------------------
-     * DIREKTNA PRETRAGA SVIH TRANSAKCIJA
-     * --------------------------------------------------
-     *
-     * OVAJ DEO NE KORISTI AI.
-     *
-     * Time sprečavamo:
-     *
-     * - dupliranje
-     * - izmišljanje transakcija
-     * - preskakanje transakcija
-     * - nepotrebnu potrošnju Groq tokena
+     * Ovo ne koristi AI.
      */
 
     if (
       traziSveTransakcije &&
       searchTerm
     ) {
+      const transakcije =
+        await fetchAllTransakcije();
+
+      if (!transakcije) {
+        return NextResponse.json(
+          {
+            error:
+              "Nije moguće učitati transakcije.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+
       const searchWords =
         searchTerm
           .split(/\s+/)
@@ -367,10 +373,7 @@ export async function POST(request: Request) {
               `${title} ${body}`;
 
             /*
-             * Prvo pokušavamo direktno
-             * podudaranje.
-             *
-             * Mirjana -> mirjana
+             * Direktno podudaranje.
              */
 
             if (
@@ -383,12 +386,9 @@ export async function POST(request: Request) {
             }
 
             /*
-             * Zatim pokušavamo da prepoznamo
-             * padež.
+             * Pokušaj prepoznavanja padeža.
              *
              * Mirjanu -> Mirjana
-             *
-             * Koristimo prvih 5 karaktera.
              */
 
             const tekstReci =
@@ -417,7 +417,7 @@ export async function POST(request: Request) {
         );
 
       /*
-       * Ponovna deduplikacija.
+       * Deduplikacija.
        */
 
       const jedinstvene =
@@ -436,21 +436,12 @@ export async function POST(request: Request) {
         `AI: pretraga "${searchTerm}" pronašla ${jedinstvene.length} transakcija.`
       );
 
-      /*
-       * ------------------------------------------------
-       * DIREKTNO FORMIRANJE ODGOVORA
-       * ------------------------------------------------
-       */
-
       if (jedinstvene.length === 0) {
         return NextResponse.json({
           answer:
             `Nema pronađenih transakcija za "${searchTerm}".`,
         });
       }
-
-      const brojTransakcija =
-        jedinstvene.length;
 
       const lista =
         jedinstvene.map(
@@ -460,13 +451,10 @@ export async function POST(request: Request) {
                 ? new Intl.DateTimeFormat(
                     "sr-RS",
                     {
-                      dateStyle:
-                        "short",
+                      dateStyle: "short",
                     }
                   ).format(
-                    new Date(
-                      t.created
-                    )
+                    new Date(t.created)
                   )
                 : "";
 
@@ -474,8 +462,7 @@ export async function POST(request: Request) {
               new Intl.NumberFormat(
                 "sr-RS",
                 {
-                  style:
-                    "currency",
+                  style: "currency",
                   currency: "RSD",
                   maximumFractionDigits: 2,
                 }
@@ -486,8 +473,7 @@ export async function POST(request: Request) {
             const tip =
               t.type === "uplata"
                 ? "Uplata"
-                : t.type ===
-                    "isplata"
+                : t.type === "isplata"
                   ? "Isplata"
                   : t.type || "";
 
@@ -499,6 +485,9 @@ export async function POST(request: Request) {
             return `- ${datum} — ${t.title} — ${tip} — ${iznos}${opis}`;
           }
         );
+
+      const brojTransakcija =
+        jedinstvene.length;
 
       const odgovor = [
         `Pronađeno je ${brojTransakcija} ${
@@ -517,23 +506,113 @@ export async function POST(request: Request) {
 
     /*
      * --------------------------------------------------
-     * ZA OSTALA PITANJA KORISTIMO AI
+     * UČITAVANJE PODATAKA ZA AI
      * --------------------------------------------------
+     *
+     * OVDE JE GLAVNA PROMENA.
+     *
+     * Ne učitavamo sve podatke za svako pitanje.
      */
 
+    let transakcije: any = null;
+    let prostori: any = null;
+
     /*
-     * Za AI šaljemo podatke o transakcijama
-     * i prostorima.
+     * Ako je finansijsko pitanje,
+     * učitavamo transakcije.
      */
-    const podaciZgrade = {
-      transakcije,
-      prostori,
-    };
+
+    if (hasFinanceQuestion) {
+      transakcije =
+        await fetchAllTransakcije();
+
+      if (!transakcije) {
+        return NextResponse.json(
+          {
+            error:
+              "Nije moguće učitati finansijske podatke zgrade.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+    }
+
+    /*
+     * Ako je pitanje o prostorima,
+     * učitavamo samo prostore.
+     */
+
+    if (hasSpaceQuestion) {
+      const prostoriData =
+        await fetchApi("/api/prostori");
+
+      if (
+        Array.isArray(prostoriData)
+      ) {
+        prostori = prostoriData;
+      } else if (
+        prostoriData &&
+        Array.isArray(
+          prostoriData.prostori
+        )
+      ) {
+        prostori =
+          prostoriData.prostori;
+      } else if (
+        prostoriData &&
+        Array.isArray(
+          prostoriData.data
+        )
+      ) {
+        prostori =
+          prostoriData.data;
+      } else {
+        prostori = prostoriData;
+      }
+    }
+
+    /*
+     * Ako pitanje nije prepoznato kao finansijsko
+     * ili pitanje o prostorima, ne šaljemo ogromne
+     * podatke AI-ju.
+     */
+
+    const podaciZgrade: {
+      transakcije?: any;
+      prostori?: any;
+    } = {};
+
+    if (hasFinanceQuestion) {
+      podaciZgrade.transakcije =
+        transakcije;
+    }
+
+    if (hasSpaceQuestion) {
+      podaciZgrade.prostori =
+        prostori;
+    }
 
     const kontekst =
       JSON.stringify(
         podaciZgrade
       );
+
+    console.log(
+      "AI pitanje:",
+      question
+    );
+
+    console.log(
+      "AI podaci:",
+      {
+        finansije: hasFinanceQuestion,
+        prostori: hasSpaceQuestion,
+        duzinaKonteksta:
+          kontekst.length,
+      }
+    );
 
     /*
      * --------------------------------------------------
@@ -576,39 +655,33 @@ podataka.
 
 FINANSIJE:
 
-Ako korisnik pita koliko novca trenutno
-ima zgrada, koristi podatke o transakcijama.
+Ako postoje podaci o transakcijama,
+koristi ih za pitanja o novcu,
+stanju računa, prihodima, rashodima
+i transakcijama.
 
-Ako korisnik pita za prihode, rashode
-ili transakcije, koristi dostavljene
-transakcije.
-
-Ako korisnik traži ukupan iznos za
-određeni period, izračunaj ga na osnovu
-dostavljenih transakcija.
+Ako korisnik traži ukupan iznos,
+izračunaj ga na osnovu dostavljenih
+transakcija.
 
 Ako korisnik traži najveći ili najmanji
-rashod, pretraži sve dostavljene transakcije.
-
-Ako korisnik traži transakcije za određeni
-mesec, godinu, tip, naziv ili opis,
-koristi dostavljene transakcije.
+rashod, pretraži dostavljene transakcije.
 
 Ne izmišljaj dodatne transakcije.
 
 Ne prikazuj istu transakciju više puta.
 
-Svaka transakcija ima jedinstveni ID.
-
 PROSTORI:
 
-Ako korisnik pita koliko zgrada ima prostora,
-stanova ili drugih prostora, koristi podatke
-iz sekcije prostori.
+Ako postoje podaci o prostorima,
+koristi ih za pitanja o stanovima,
+prostorima, spratovima i stanarima.
+
+Ako korisnik pita koliko ima stanova
+ili prostora, prebroj dostavljene podatke.
 
 Ako korisnik pita za konkretan broj stana
-ili prostora, pronađi odgovarajući prostor
-u dostavljenim podacima.
+ili prostora, pronađi odgovarajući prostor.
 
 Ako korisnik pita ko je povezan sa određenim
 prostorom, koristi samo podatke koji su
@@ -618,13 +691,13 @@ Ne pretpostavljaj da su svi prostori stanovi.
 
 Koristi tip prostora ako je dostavljen.
 
-Ako podatak o prostorima nije dostupan,
-reci da trenutno nemaš podatke o prostorima.
+Ako traženi podatak nije u dostavljenim
+podacima, reci da ga trenutno nemaš.
 
 Ne pominji Drupal, API, JSON, Groq
 ili tehničku implementaciju.
 
-PODACI ZGRADE:
+PODACI:
 
 ${kontekst}
             `.trim(),
@@ -642,8 +715,7 @@ ${kontekst}
     if (!answer) {
       return NextResponse.json(
         {
-          error:
-            "AI nije vratio odgovor.",
+          error: "AI nije vratio odgovor.",
         },
         {
           status: 500,
@@ -661,8 +733,11 @@ ${kontekst}
     );
 
     /*
-     * Groq 413
+     * --------------------------------------------------
+     * GROQ 413
+     * --------------------------------------------------
      */
+
     if (error?.status === 413) {
       return NextResponse.json(
         {
@@ -676,8 +751,11 @@ ${kontekst}
     }
 
     /*
-     * Groq 429
+     * --------------------------------------------------
+     * GROQ 429
+     * --------------------------------------------------
      */
+
     if (error?.status === 429) {
       return NextResponse.json(
         {
@@ -689,6 +767,12 @@ ${kontekst}
         }
       );
     }
+
+    /*
+     * --------------------------------------------------
+     * OSTALA GREŠKA
+     * --------------------------------------------------
+     */
 
     return NextResponse.json(
       {
