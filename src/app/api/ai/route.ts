@@ -79,13 +79,19 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Trenutno učitavamo samo finansijske podatke.
-     *
-     * Ostale podatke ćemo dodavati kasnije samo kada
-     * budu potrebni za određeno pitanje.
+     * Učitavamo podatke o transakcijama i prostorima.
      */
-    const transakcijeData = await fetchApi("/api/transakcije");
+    const [
+      transakcijeData,
+      prostoriData,
+    ] = await Promise.all([
+      fetchApi("/api/transakcije"),
+      fetchApi("/api/prostori"),
+    ]);
 
+    /*
+     * Finansijski podaci su trenutno obavezni.
+     */
     if (!transakcijeData) {
       return NextResponse.json(
         {
@@ -99,9 +105,8 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Uzimamo samo poslednjih 100 transakcija.
-     *
-     * Cilj je da AI ne dobije nepotrebno veliki prompt.
+     * Uzimamo samo poslednjih 100 transakcija
+     * kako prompt ne bi postao prevelik.
      */
     let transakcije = transakcijeData;
 
@@ -112,18 +117,35 @@ export async function POST(request: Request) {
     ) {
       transakcije = {
         ...transakcijeData,
-        transakcije: transakcijeData.transakcije.slice(
-          0,
-          100
-        ),
+        transakcije:
+          transakcijeData.transakcije.slice(0, 100),
       };
     }
 
     /*
-     * Objedinjujemo podatke koje AI trenutno sme da koristi.
+     * Podaci o prostorima.
+     *
+     * Ako API vrati niz, šaljemo ga direktno.
+     * Ako API nije dostupan, AI i dalje može da radi
+     * sa finansijskim podacima.
+     */
+    let prostori = prostoriData;
+
+    if (Array.isArray(prostoriData)) {
+      prostori = prostoriData;
+    } else if (
+      prostoriData &&
+      Array.isArray(prostoriData.prostori)
+    ) {
+      prostori = prostoriData.prostori;
+    }
+
+    /*
+     * Objedinjeni podaci koje AI sme da koristi.
      */
     const podaciZgrade = {
       transakcije,
+      prostori,
     };
 
     const kontekst = JSON.stringify(podaciZgrade);
@@ -152,27 +174,47 @@ Odgovaraj na srpskom jeziku, kratko, jasno i prirodno.
 Koristi isključivo podatke koji su ti prosleđeni.
 Ne izmišljaj podatke.
 
-Ako potreban podatak nije dostupan, reci da taj
-podatak trenutno nemaš.
+Ako potreban podatak nije dostupan, jasno reci
+da taj podatak trenutno nemaš.
 
 Novčane iznose prikazuj u RSD.
 
 Kada je potrebno računanje, izračunaj rezultat
 na osnovu dostupnih podataka.
 
-Ako korisnik pita koliko novca trenutno ima zgrada,
-koristi trenutno stanje iz finansijskih podataka.
+FINANSIJE:
 
-Ako pita za prihode, rashode ili transakcije,
-koristi samo dostavljene transakcije.
+Ako korisnik pita koliko novca trenutno ima
+zgrada, koristi podatke o transakcijama.
 
-Ako pitanje nije povezano sa podacima koje imaš,
-reci da taj podatak trenutno nemaš.
+Ako korisnik pita za prihode, rashode ili
+transakcije, koristi samo dostavljene podatke.
+
+PROSTORI:
+
+Ako korisnik pita koliko zgrada ima prostora,
+stanova ili drugih prostora, koristi podatke
+iz sekcije prostori.
+
+Ako korisnik pita za konkretan broj stana ili
+prostora, pronađi odgovarajući prostor u
+dostavljenim podacima.
+
+Ako korisnik pita ko je povezan sa određenim
+prostorom, koristi samo podatke koji su
+dostavljeni za taj prostor.
+
+Ne pretpostavljaj da su svi prostori stanovi.
+Koristi tip prostora ako je dostavljen.
+
+Ako podatak o prostorima nije dostupan, reci
+da trenutno nemaš podatke o prostorima.
 
 Ne pominji Drupal, API, JSON, Groq ili tehničku
 implementaciju.
 
 PODACI ZGRADE:
+
 ${kontekst}
             `.trim(),
           },
