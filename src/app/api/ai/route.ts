@@ -66,7 +66,59 @@ export async function POST(request: Request) {
     console.log("AI: Drupal URL =", DRUPAL_BASE_URL);
 
     // --------------------------------------------------
-    // 3. Učitavanje transakcija iz Drupala
+    // 3. Da li pitanje zahteva konkretne transakcije?
+    // --------------------------------------------------
+
+    const transactionKeywords = [
+      "transakcij",
+      "uplatu",
+      "uplate",
+      "uplata",
+      "rashod",
+      "rashode",
+      "rashoda",
+      "prihod",
+      "prihode",
+      "prihoda",
+      "trošak",
+      "troška",
+      "troškove",
+      "plaćanj",
+      "plaćanje",
+      "plaćanja",
+      "isplat",
+      "isplata",
+      "isplate",
+      "potroš",
+      "potrošnja",
+      "račun",
+      "računa",
+      "kupovin",
+      "servis",
+      "majstor",
+      "poslednj",
+      "najveć",
+      "najmanj",
+      "koliko puta",
+      "kada je",
+      "kog datuma",
+    ];
+
+    const normalizedQuestion =
+      safeQuestion.toLowerCase();
+
+    const needsTransactions =
+      transactionKeywords.some((keyword) =>
+        normalizedQuestion.includes(keyword)
+      );
+
+    console.log(
+      "AI: potrebno slati transakcije =",
+      needsTransactions
+    );
+
+    // --------------------------------------------------
+    // 4. Učitavanje transakcija iz Drupala
     // --------------------------------------------------
 
     const transakcijeUrl =
@@ -138,7 +190,7 @@ export async function POST(request: Request) {
     );
 
     // --------------------------------------------------
-    // 4. Pretvaranje Drupal podataka
+    // 5. Pretvaranje Drupal podataka
     // --------------------------------------------------
 
     const transactions: Transaction[] =
@@ -167,7 +219,7 @@ export async function POST(request: Request) {
       );
 
     // --------------------------------------------------
-    // 5. Uklanjanje duplikata
+    // 6. Uklanjanje duplikata
     // --------------------------------------------------
 
     const uniqueTransactions: Transaction[] =
@@ -187,7 +239,7 @@ export async function POST(request: Request) {
     );
 
     // --------------------------------------------------
-    // 6. Računanje finansija
+    // 7. Računanje finansija
     // --------------------------------------------------
 
     let stanje = 0;
@@ -231,7 +283,7 @@ export async function POST(request: Request) {
     );
 
     // --------------------------------------------------
-    // 7. Formatiranje transakcija
+    // 8. Formatiranje transakcija
     // --------------------------------------------------
 
     const formattedTransactions =
@@ -250,7 +302,20 @@ export async function POST(request: Request) {
       );
 
     // --------------------------------------------------
-    // 8. Finansijski kontekst
+    // 9. Ograničavanje transakcija koje šaljemo AI-ju
+    // --------------------------------------------------
+
+    const transactionsForAI =
+      needsTransactions
+        ? formattedTransactions.slice(0, 150)
+        : [];
+
+    console.log(
+      `AI: transakcija poslato modelu = ${transactionsForAI.length}`
+    );
+
+    // --------------------------------------------------
+    // 10. Finansijski kontekst
     // --------------------------------------------------
 
     const financialContext = {
@@ -266,12 +331,16 @@ export async function POST(request: Request) {
       broj_transakcija:
         formattedTransactions.length,
 
-      transakcije:
-        formattedTransactions,
+      ...(needsTransactions
+        ? {
+            transakcije:
+              transactionsForAI,
+          }
+        : {}),
     };
 
     // --------------------------------------------------
-    // 9. Prompt
+    // 11. Prompt
     // --------------------------------------------------
 
     const systemPrompt = `
@@ -292,7 +361,10 @@ PRAVILA:
 - Ako korisnik pita za trenutno stanje, koristi trenutno_stanje.
 - Ako pita za prihode, koristi ukupne_prihode.
 - Ako pita za rashode, koristi ukupne_rashode.
-- Ako pita za konkretnu transakciju, pretraži listu transakcija.
+- Ako pita za broj transakcija, koristi broj_transakcija.
+- Ako su transakcije dostupne u kontekstu, možeš ih koristiti za odgovor na konkretna pitanja.
+- Ako transakcije nisu dostupne u kontekstu, nemoj izmišljati pojedinačne transakcije.
+- Ako pitanje traži konkretnu transakciju koju ne možeš pronaći, reci da nemaš dovoljno podataka.
 - Ako pita koliko trenutno ima novca na računu, odgovori direktno.
 - Ne prikazuj interne tehničke podatke.
 - Ne spominji Groq, API, Drupal, model ili tokene.
@@ -303,10 +375,16 @@ FINANSIJSKI PODACI:
 ${JSON.stringify(financialContext)}
 `.trim();
 
+    console.log(
+      "AI: veličina finansijskog konteksta =",
+      systemPrompt.length,
+      "karaktera"
+    );
+
     console.log("AI: pozivam Groq...");
 
     // --------------------------------------------------
-    // 10. Groq
+    // 12. Groq
     // --------------------------------------------------
 
     let completion;
@@ -361,7 +439,9 @@ ${JSON.stringify(financialContext)}
         error
       );
 
+      // --------------------------------------------------
       // 429 - rate limit
+      // --------------------------------------------------
 
       if (
         error?.status === 429 ||
@@ -370,10 +450,36 @@ ${JSON.stringify(financialContext)}
           error?.message || ""
         ).includes("429")
       ) {
+        const retryAfter =
+          error?.headers?.get?.(
+            "retry-after"
+          );
+
+        let retryMessage =
+          "Pokušajte ponovo za nekoliko minuta.";
+
+        if (retryAfter) {
+          const seconds =
+            Number(retryAfter);
+
+          if (
+            Number.isFinite(seconds) &&
+            seconds > 0
+          ) {
+            const minutes =
+              Math.ceil(seconds / 60);
+
+            retryMessage =
+              minutes === 1
+                ? "Pokušajte ponovo za oko 1 minut."
+                : `Pokušajte ponovo za oko ${minutes} minuta.`;
+          }
+        }
+
         return NextResponse.json(
           {
             error:
-              "AI pomoćnik je trenutno zauzet zbog velikog broja zahteva. Pokušajte ponovo za nekoliko minuta.",
+              `AI pomoćnik je trenutno ograničen zbog velikog broja zahteva. ${retryMessage}`,
           },
           {
             status: 429,
@@ -381,7 +487,9 @@ ${JSON.stringify(financialContext)}
         );
       }
 
+      // --------------------------------------------------
       // 401 / 403 - API ključ
+      // --------------------------------------------------
 
       if (
         error?.status === 401 ||
@@ -398,7 +506,9 @@ ${JSON.stringify(financialContext)}
         );
       }
 
+      // --------------------------------------------------
       // 404 - model
+      // --------------------------------------------------
 
       if (error?.status === 404) {
         return NextResponse.json(
@@ -412,7 +522,9 @@ ${JSON.stringify(financialContext)}
         );
       }
 
+      // --------------------------------------------------
       // Ostale Groq greške
+      // --------------------------------------------------
 
       return NextResponse.json(
         {
@@ -426,7 +538,7 @@ ${JSON.stringify(financialContext)}
     }
 
     // --------------------------------------------------
-    // 11. Čitanje odgovora
+    // 13. Čitanje odgovora
     // --------------------------------------------------
 
     const answer =
@@ -459,7 +571,7 @@ ${JSON.stringify(financialContext)}
     );
 
     // --------------------------------------------------
-    // 12. Uspešan odgovor
+    // 14. Uspešan odgovor
     // --------------------------------------------------
 
     return NextResponse.json({
@@ -467,7 +579,7 @@ ${JSON.stringify(financialContext)}
     });
   } catch (error: any) {
     // --------------------------------------------------
-    // 13. Neočekivana greška
+    // 15. Neočekivana greška
     // --------------------------------------------------
 
     console.error(
