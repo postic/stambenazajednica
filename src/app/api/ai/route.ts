@@ -13,6 +13,12 @@ const MODEL =
   process.env.GROQ_MODEL ||
   "llama-3.1-8b-instant";
 
+type Transaction = {
+  datum: string;
+  tip: string;
+  iznos: number;
+};
+
 export async function POST(request: Request) {
   try {
     // --------------------------------------------------
@@ -135,18 +141,22 @@ export async function POST(request: Request) {
     // 4. Pretvaranje Drupal podataka
     // --------------------------------------------------
 
-    const transactions =
+    const transactions: Transaction[] =
       rawTransactions.map(
-        (item: any) => {
+        (item: any): Transaction => {
           const attributes =
             item?.attributes || {};
 
           return {
             datum:
-              attributes?.created ?? "",
+              String(
+                attributes?.created ?? ""
+              ),
 
             tip:
-              attributes?.field_tip ?? "",
+              String(
+                attributes?.field_tip ?? ""
+              ),
 
             iznos:
               Number(
@@ -160,11 +170,11 @@ export async function POST(request: Request) {
     // 5. Uklanjanje duplikata
     // --------------------------------------------------
 
-    const uniqueTransactions =
+    const uniqueTransactions: Transaction[] =
       Array.from(
-        new Map(
+        new Map<string, Transaction>(
           transactions.map(
-            (transaction) => [
+            (transaction: Transaction) => [
               `${transaction.datum}|${transaction.tip}|${transaction.iznos}`,
               transaction,
             ]
@@ -226,7 +236,7 @@ export async function POST(request: Request) {
 
     const formattedTransactions =
       uniqueTransactions.map(
-        (transaction) => ({
+        (transaction: Transaction) => ({
           datum: transaction.datum
             ? String(
                 transaction.datum
