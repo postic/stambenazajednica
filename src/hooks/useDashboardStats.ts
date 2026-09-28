@@ -12,6 +12,7 @@ type Stats = {
   transakcije: number;
   dokumenti: number;
   forum_topic: number;
+  projekti: number;
 };
 
 export function useDashboardStats() {
@@ -25,6 +26,7 @@ export function useDashboardStats() {
     transakcije: 0,
     dokumenti: 0,
     forum_topic: 0,
+    projekti: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -52,6 +54,7 @@ export function useDashboardStats() {
           transakcije: data.transakcije ?? 0,
           dokumenti: data.dokumenti ?? 0,
           forum_topic: data.forum_topic ?? 0,
+          projekti: data.projekti ?? 0,
         });
       } catch (e) {
         console.error("Dashboard stats error:", e);

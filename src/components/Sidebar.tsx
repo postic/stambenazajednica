@@ -23,6 +23,7 @@ import {
   Banknote,
   HandCoins,
   Sparkles,
+  HardHat,
 } from "lucide-react";
 
 // =========================================================
@@ -60,6 +61,7 @@ const iconMap: Record<string, any> = {
   'Kontakt': Mail,
   'Komšijske teme': MessagesSquare,
   'AI': Sparkles,
+  'Projekti': HardHat
 };
 
 // =========================================================

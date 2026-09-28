@@ -13,7 +13,8 @@ import {
   CalendarCheck,
   Grid,
   Phone,
-  MessagesSquare
+  MessagesSquare,
+  HardHat,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +30,13 @@ export default function DashboardPage() {
       icon: Wallet,
       iconColor: "text-green-600",
       href: "/transakcije",
+    },
+    {
+      title: "Projekti",
+      value: stats.projekti,
+      icon: HardHat,
+      iconColor: "text-yellow-600",
+      href: "/projekti",
     },
     {
       title: "Prostori",

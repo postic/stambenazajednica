@@ -13,6 +13,7 @@ export async function GET() {
       telefoni,
       dokumenti,
       forum_topic,
+      projekti,
     ] = await Promise.all([
       fetch(`${base}/jsonapi/node/obavestenje`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/anketa`).then((r) => r.json()),
@@ -22,6 +23,7 @@ export async function GET() {
       fetch(`${base}/jsonapi/node/telefon`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/dokument`).then((r) => r.json()),
       fetch(`${base}/jsonapi/node/forum_topic`).then((r) => r.json()),
+      fetch(`${base}/jsonapi/node/projekat`).then((r) => r.json()),
     ]);
 
     return NextResponse.json({
@@ -33,6 +35,7 @@ export async function GET() {
       telefoni: telefoni?.data?.length ?? 0,
       dokumenti: dokumenti?.data?.length ?? 0,
       forum_topic: forum_topic?.data?.length ?? 0,
+      projekti: projekti?.data?.length ?? 0,
     });
   } catch (error) {
     return NextResponse.json(
