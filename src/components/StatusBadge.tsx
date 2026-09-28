@@ -24,6 +24,14 @@ type Status =
   | "stanar"
   | "podstanar"
   | "clan_domacinstva"
+
+  | "planirano"
+  | "u_toku"
+  | "zavrseno"
+  | "prikupljanje_ponuda"
+  | "odlucivanje"
+  | "odobreno"
+
   | "archived";
 
 type Prioritet = "nizak" | "srednji" | "visok" | "hitno";
@@ -70,6 +78,15 @@ const statusStyles: Record<Status, string> = {
   stanar: "bg-blue-50 text-blue-800 border-blue-200",
   podstanar: "bg-amber-50 text-amber-800 border-amber-200",
   clan_domacinstva: "bg-indigo-50 text-indigo-800 border-indigo-200",
+
+  planirano: "bg-slate-50 text-slate-700 border-slate-200",
+  u_toku: "bg-blue-50 text-blue-800 border-blue-200",
+  zavrseno: "bg-green-50 text-green-800 border-green-200",
+
+  prikupljanje_ponuda: "bg-purple-50 text-purple-800 border-purple-200",
+  odlucivanje: "bg-yellow-50 text-yellow-800 border-yellow-200",
+  odobreno: "bg-red-50 text-red-800 border-red-200",
+
 };
 
 const statusLabels: Record<Status, string> = {
@@ -102,6 +119,13 @@ const statusLabels: Record<Status, string> = {
   stanar: "stanar",
   podstanar: "podstanar",
   clan_domacinstva: "član domaćinstva",
+
+  planirano: "planirano",
+  prikupljanje_ponuda: "prikupljanje ponuda",
+  odlucivanje: "odlučivanje",
+  odobreno: "odobreno",
+  u_toku: "u toku",
+  zavrseno: "završeno",
 };
 
 const prioritetStyles: Record<Prioritet, string> = {
