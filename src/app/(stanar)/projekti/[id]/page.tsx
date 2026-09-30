@@ -481,22 +481,8 @@ export default async function ProjekatPage({
 
                     <div className="min-w-0">
 
-                      <div className="flex items-center gap-2 flex-wrap">
-
-                        <span className="font-medium text-gray-700">
-                          {ponuda.title}
-                        </span>
-
-                        {ponuda.izabrana && (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
-
-                            <CheckCircle2 className="h-4 w-4" />
-
-                            Izabrana
-
-                          </span>
-                        )}
-
+                      <div className="font-medium text-gray-700 truncate">
+                        {ponuda.title}
                       </div>
 
                       <div className="text-xs text-gray-500 mt-1">
@@ -507,14 +493,25 @@ export default async function ProjekatPage({
 
                     </div>
 
-                    {ponuda.amount > 0 && (
-                      <div className="shrink-0 font-medium text-gray-700">
-                        {formatAmount(
-                          ponuda.amount
-                        )}{" "}
-                        RSD
-                      </div>
-                    )}
+                    <div className="shrink-0 flex flex-col items-end gap-1 text-sm">
+
+                      {ponuda.izabrana && (
+                        <span className="inline-flex items-center gap-1 font-medium text-green-700">
+                          <CheckCircle2 className="h-4 w-4" />
+                          Izabrana
+                        </span>
+                      )}
+
+                      {ponuda.amount > 0 && (
+                        <span className="font-medium text-gray-700">
+                          {formatAmount(
+                            ponuda.amount
+                          )}{" "}
+                          RSD
+                        </span>
+                      )}
+
+                    </div>
 
                   </div>
 
