@@ -1,19 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  CalendarDays,
-  CalendarCheck2,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Receipt,
-} from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { isEmptyHtml } from "@/lib/text";
 import StatusBadge from "@/components/StatusBadge";
 
 import type { ProjekatDetalj } from "@/types/projekat";
 
-const NEXT_PUBLIC_DRUPAL_BASE_URL =
+const BASE_URL =
   process.env.NEXT_PUBLIC_DRUPAL_BASE_URL ||
   "http://localhost:8888";
 
@@ -26,17 +20,31 @@ type ProjekatTransakcija = {
   amount: number;
 };
 
+type ProjekatPonuda = {
+  id: string;
+  title: string;
+  created: string;
+  amount: number;
+  body: string;
+  izabrana: boolean;
+};
+
 type ProjekatData = {
   projekat: ProjekatDetalj;
   transakcije: ProjekatTransakcija[];
+  ponude: ProjekatPonuda[];
 };
 
 async function getProjekat(
   id: string
 ): Promise<ProjekatData | null> {
   try {
+    /*
+     * PROJEKAT
+     */
+
     const res = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/projekat/${id}?include=field_projekat_transakcija`,
+      `${BASE_URL}/jsonapi/node/projekat/${id}?include=field_projekat_transakcija`,
       {
         headers: {
           Accept: "application/vnd.api+json",
@@ -50,12 +58,15 @@ async function getProjekat(
     }
 
     const data = await res.json();
-
     const item = data?.data;
 
     if (!item) {
       return null;
     }
+
+    /*
+     * TRANSAKCIJE
+     */
 
     const relationshipData =
       item?.relationships
@@ -70,45 +81,33 @@ async function getProjekat(
       relationshipData &&
       typeof relationshipData === "object"
     ) {
-      relationshipList = [
-        relationshipData,
-      ];
+      relationshipList = [relationshipData];
     }
 
-    const included = Array.isArray(
-      data?.included
-    )
+    const included = Array.isArray(data?.included)
       ? data.included
       : [];
 
-    const transakcije: ProjekatTransakcija[] =
-      [];
+    const transakcije: ProjekatTransakcija[] = [];
 
-    for (
-      const relation of relationshipList
-    ) {
+    for (const relation of relationshipList) {
       if (!relation?.id) {
         continue;
       }
 
-      const transaction =
-        included.find(
-          (includedItem: any) =>
-            includedItem?.type ===
-              "node--transakcija" &&
-            includedItem?.id ===
-              relation.id
-        );
+      const transaction = included.find(
+        (includedItem: any) =>
+          includedItem?.type === "node--transakcija" &&
+          includedItem?.id === relation.id
+      );
 
       if (!transaction) {
         continue;
       }
 
-      const attributes =
-        transaction.attributes ?? {};
+      const attributes = transaction.attributes ?? {};
 
-      const rawType =
-        attributes.field_tip;
+      const rawType = attributes.field_tip;
 
       const type =
         typeof rawType === "string"
@@ -121,47 +120,106 @@ async function getProjekat(
 
       transakcije.push({
         id: transaction.id,
-
-        title:
-          attributes.title ?? "",
-
-        body:
-          attributes.body?.value ?? "",
-
-        created:
-          attributes.created ?? "",
-
+        title: attributes.title ?? "",
+        body: attributes.body?.value ?? "",
+        created: attributes.created ?? "",
         type,
-
         amount: Number.isNaN(amount)
           ? 0
           : amount,
       });
     }
 
+    /*
+     * PONUDE
+     */
+
+    let ponude: ProjekatPonuda[] = [];
+
+    try {
+      const ponudeRes = await fetch(
+        `${BASE_URL}/jsonapi/node/ponuda?filter[field_ponuda_projekat.id]=${encodeURIComponent(
+          id
+        )}&sort=created&page[limit]=100`,
+        {
+          headers: {
+            Accept: "application/vnd.api+json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      if (ponudeRes.ok) {
+        const ponudeData =
+          await ponudeRes.json();
+
+        const ponudeItems =
+          Array.isArray(ponudeData?.data)
+            ? ponudeData.data
+            : [];
+
+        ponude = ponudeItems.map(
+          (ponuda: any) => {
+            const attributes =
+              ponuda.attributes ?? {};
+
+            const amount = Number(
+              attributes.field_iznos ?? 0
+            );
+
+            const rawIzabrana =
+              attributes.field_ponuda_izabrana;
+
+            const izabrana =
+              rawIzabrana === true ||
+              rawIzabrana === 1 ||
+              rawIzabrana === "1" ||
+              rawIzabrana === "true";
+
+            return {
+              id: ponuda.id,
+              title:
+                attributes.title ?? "",
+              created:
+                attributes.created ?? "",
+              amount:
+                Number.isNaN(amount)
+                  ? 0
+                  : amount,
+              body:
+                attributes.body?.value ?? "",
+              izabrana,
+            };
+          }
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Greška pri učitavanju ponuda:",
+        error
+      );
+    }
+
+    /*
+     * PROJEKAT
+     */
+
     const projekat: ProjekatDetalj = {
       id: item.id,
-
       title:
         item.attributes?.title ?? "",
-
       body:
         item.attributes?.body?.value ?? "",
-
       created:
         item.attributes?.created ?? "",
-
       changed:
         item.attributes?.changed ?? "",
-
       status:
         item.attributes
           ?.field_projekat_status ?? "",
-
       datumPocetka:
         item.attributes
           ?.field_projekat_datum_pocetka ?? "",
-
       datumZavrsetka:
         item.attributes
           ?.field_projekat_datum_zavrsetka ?? "",
@@ -170,6 +228,7 @@ async function getProjekat(
     return {
       projekat,
       transakcije,
+      ponude,
     };
   } catch (error) {
     console.error(
@@ -271,15 +330,13 @@ function getTransactionTypeLabel(
   }
 
   if (
-    normalized ===
-    "income"
+    normalized === "income"
   ) {
     return "Prihod";
   }
 
   if (
-    normalized ===
-    "expense"
+    normalized === "expense"
   ) {
     return "Rashod";
   }
@@ -310,102 +367,159 @@ export default async function ProjekatPage({
   const {
     projekat,
     transakcije,
+    ponude,
   } = data;
 
   return (
     <div className="max-w-4xl">
 
-      {/* NASLOV */}
+      {/* HEADER */}
 
       <div className="mb-6">
 
         <div className="flex items-start justify-between gap-4">
 
-          <div>
+          <div className="min-w-0">
 
             <h1 className="text-xl font-semibold">
               {projekat.title}
             </h1>
 
-            <p className="text-sm text-gray-400 mt-1">
-              {projekat.created &&
-                formatDate(
+            {projekat.created && (
+              <p className="text-sm text-gray-400 mt-1">
+                {formatDate(
                   projekat.created
                 )}
+              </p>
+            )}
+
+          </div>
+
+          {projekat.status && (
+            <StatusBadge
+              status={
+                projekat.status
+              }
+            />
+          )}
+
+        </div>
+
+      </div>
+
+      {/* DATUMI */}
+
+      <div className="border border-gray-300 bg-gray-50 p-3 mb-6">
+
+        <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
+          Datumi projekta
+        </h3>
+
+        <div className="text-sm">
+
+          <div className="border-b border-gray-200 py-2">
+
+            <p className="text-xs text-gray-500">
+              Datum početka
+            </p>
+
+            <p className="leading-7">
+              {projekat.datumPocetka
+                ? formatDate(
+                    projekat.datumPocetka
+                  )
+                : "-"}
             </p>
 
           </div>
 
-          <div>
-            {projekat.status && (
-              <StatusBadge
-                status={
-                  projekat.status
-                }
-              />
-            )}
+          <div className="py-2">
+
+            <p className="text-xs text-gray-500">
+              Datum završetka
+            </p>
+
+            <p className="leading-7">
+              {projekat.datumZavrsetka
+                ? formatDate(
+                    projekat.datumZavrsetka
+                  )
+                : "-"}
+            </p>
+
           </div>
 
         </div>
 
       </div>
 
-      {/* DATUMI PROJEKTA */}
+      {/* PONUDE */}
 
-      {(
-        projekat.datumPocetka ||
-        projekat.datumZavrsetka
-      ) && (
-        <div className="border border-gray-300 bg-slate-50 p-4 mb-6">
+      {ponude.length > 0 && (
+        <div className="border border-gray-300 bg-gray-50 p-3 mb-6">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
+            Ponude
+            <span className="font-normal text-gray-400 ml-1">
+              ({ponude.length})
+            </span>
+          </h3>
 
-            {projekat.datumPocetka && (
-              <div className="flex items-center gap-3">
+          <div className="text-sm">
 
-                <CalendarDays
-                  className="h-5 w-5 shrink-0 text-gray-400"
-                />
+            {ponude.map(
+              (ponuda) => (
+                <Link
+                  key={
+                    ponuda.id
+                  }
+                  href={`/ponude/${ponuda.id}`}
+                  className="block border-b last:border-b-0 border-gray-200 py-3 hover:bg-white transition"
+                >
 
-                <div>
+                  <div className="flex items-center justify-between gap-4">
 
-                  <div className="text-xs text-gray-400 mb-1">
-                    Datum početka
-                  </div>
+                    <div className="min-w-0">
 
-                  <div className="text-sm font-medium text-gray-700">
-                    {formatDate(
-                      projekat.datumPocetka
+                      <div className="flex items-center gap-2 flex-wrap">
+
+                        <span className="font-medium text-gray-700">
+                          {ponuda.title}
+                        </span>
+
+                        {ponuda.izabrana && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+
+                            <CheckCircle2 className="h-4 w-4" />
+
+                            Izabrana
+
+                          </span>
+                        )}
+
+                      </div>
+
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatDate(
+                          ponuda.created
+                        )}
+                      </div>
+
+                    </div>
+
+                    {ponuda.amount > 0 && (
+                      <div className="shrink-0 font-medium text-gray-700">
+                        {formatAmount(
+                          ponuda.amount
+                        )}{" "}
+                        RSD
+                      </div>
                     )}
+
                   </div>
 
-                </div>
-
-              </div>
-            )}
-
-            {projekat.datumZavrsetka && (
-              <div className="flex items-center gap-3">
-
-                <CalendarCheck2
-                  className="h-5 w-5 shrink-0 text-gray-400"
-                />
-
-                <div>
-
-                  <div className="text-xs text-gray-400 mb-1">
-                    Datum završetka
-                  </div>
-
-                  <div className="text-sm font-medium text-gray-700">
-                    {formatDate(
-                      projekat.datumZavrsetka
-                    )}
-                  </div>
-
-                </div>
-
-              </div>
+                </Link>
+              )
             )}
 
           </div>
@@ -413,18 +527,22 @@ export default async function ProjekatPage({
         </div>
       )}
 
-      {/* TRANSAKCIJE PROJEKTA */}
+      {/* TRANSAKCIJE */}
 
       {transakcije.length > 0 && (
-        <div className="mb-6">
+        <div className="border border-gray-300 bg-gray-50 p-3 mb-6">
 
-          <div className="border border-gray-300 bg-slate-50 mb-6">
+          <h3 className="text-sm font-semibold mb-2 border-b border-gray-300 pb-1">
+            Transakcije
+            <span className="font-normal text-gray-400 ml-1">
+              ({transakcije.length})
+            </span>
+          </h3>
+
+          <div className="text-sm">
 
             {transakcije.map(
-              (
-                transakcija,
-                index
-              ) => {
+              (transakcija) => {
 
                 const income =
                   isIncome(
@@ -437,62 +555,30 @@ export default async function ProjekatPage({
                       transakcija.id
                     }
                     href={`/transakcije/${transakcija.id}`}
-                    className={
-                      `block p-4 hover:bg-slate-50 transition ${
-                        index > 0
-                          ? "border-t border-gray-200"
-                          : ""
-                      }`
-                    }
+                    className="block border-b last:border-b-0 border-gray-200 py-3 hover:bg-white transition"
                   >
 
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center justify-between gap-4">
 
-                      <div className="flex items-start gap-3 min-w-0">
+                      <div className="min-w-0">
 
-                        {income ? (
-                          <ArrowUpCircle
-                            className="h-5 w-5 shrink-0 text-gray-500 mt-0.5"
-                          />
-                        ) : (
-                          <ArrowDownCircle
-                            className="h-5 w-5 shrink-0 text-gray-500 mt-0.5"
-                          />
-                        )}
+                        <div className="font-medium text-gray-700 truncate">
+                          {transakcija.title}
+                        </div>
 
-                        <div className="min-w-0">
+                        <div className="text-xs text-gray-500 mt-1">
 
-                          <div className="text-sm font-medium text-gray-700">
-                            {transakcija.title}
-                          </div>
+                          {formatDate(
+                            transakcija.created
+                          )}
 
-                          <div className="text-xs text-gray-400 mt-1">
-
-                            {formatDate(
-                              transakcija.created
-                            )}
-
-                            {transakcija.type && (
-                              <>
-                                {" · "}
-                                {getTransactionTypeLabel(
-                                  transakcija.type
-                                )}
-                              </>
-                            )}
-
-                          </div>
-
-                          {!isEmptyHtml(
-                            transakcija.body
-                          ) && (
-                            <div
-                              className="text-sm text-gray-600 mt-2 leading-relaxed"
-                              dangerouslySetInnerHTML={{
-                                __html:
-                                  transakcija.body,
-                              }}
-                            />
+                          {transakcija.type && (
+                            <>
+                              {" · "}
+                              {getTransactionTypeLabel(
+                                transakcija.type
+                              )}
+                            </>
                           )}
 
                         </div>
@@ -500,13 +586,11 @@ export default async function ProjekatPage({
                       </div>
 
                       <div
-                        className={
-                          `shrink-0 text-sm font-medium ${
-                            income
-                              ? "text-green-700"
-                              : "text-red-700"
-                          }`
-                        }
+                        className={`shrink-0 font-medium ${
+                          income
+                            ? "text-green-700"
+                            : "text-red-700"
+                        }`}
                       >
                         {income
                           ? "+"
@@ -529,15 +613,18 @@ export default async function ProjekatPage({
         </div>
       )}
 
-      {/* OPIS PROJEKTA */}
+      {/* OPIS */}
 
       {!isEmptyHtml(
         projekat.body
       ) && (
-        <div className="border border-gray-300 bg-slate-50 p-4 mb-6">
+        <div className="border border-gray-300 bg-white p-4 text-sm leading-relaxed">
+
+          <h3 className="text-sm font-semibold mb-3 border-b border-gray-300 pb-1">
+            Opis projekta
+          </h3>
 
           <div
-            className="text-sm text-gray-700 leading-relaxed"
             dangerouslySetInnerHTML={{
               __html:
                 projekat.body,
