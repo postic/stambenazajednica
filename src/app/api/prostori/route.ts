@@ -146,6 +146,10 @@ export async function GET(req: Request) {
           item.attributes
             ?.field_prostor_broj_stanara ?? null,
 
+        stanari:
+          item.attributes
+            ?.field_prostor_stanar ?? [],
+
         vlasnik:
           item.attributes
             ?.field_prostor_vlasnik ?? null,

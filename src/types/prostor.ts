@@ -16,4 +16,5 @@ export interface Prostor {
   redniBroj?: number | string | null;
   prostor_stan?: number | string | null;
   prostor_rbr?: number | string | null;
+  stanari?: string[];
 }
