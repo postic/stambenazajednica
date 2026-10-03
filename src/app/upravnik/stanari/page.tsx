@@ -153,7 +153,9 @@ export default function StanariPage() {
       ) : (
         <div className="space-y-4">
           {prostori.map((prostor) => {
-            const stanari = prostor.stanari ?? [];
+            const stanari = Array.isArray(prostor.stanari)
+              ? prostor.stanari
+              : [];
 
             return (
               <div

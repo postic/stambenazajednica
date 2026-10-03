@@ -3,18 +3,23 @@ export interface Prostor {
   title: string;
   body: string;
   created: string;
+
   sprat?: number | string | null;
   kvadratura?: number | string | null;
   tip?: string | null;
+
   vlasnik?: string | null;
   korisnik?: string | null;
+
   broj_stanara?: number | string | null;
+
   telefon?: string;
   email?: string;
-  stanari?: string;
+
+  stanari?: string[];
+
   broj_prostora?: number | string | null;
   redniBroj?: number | string | null;
   prostor_stan?: number | string | null;
   prostor_rbr?: number | string | null;
-  stanari?: string[];
 }
