@@ -17,6 +17,7 @@ export interface Prostor {
   email?: string;
 
   stanari?: string[];
+  pin?: string;
 
   broj_prostora?: number | string | null;
   redniBroj?: number | string | null;
