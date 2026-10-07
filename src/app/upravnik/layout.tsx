@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 
@@ -39,7 +40,6 @@ export default function UpravnikLayout({
 
   useEffect(() => {
     async function checkAuth() {
-      // Login stranica ne zahteva autentikaciju
       if (isLoginPage) {
         setAuthorized(true);
         setLoading(false);
@@ -135,6 +135,11 @@ export default function UpravnikLayout({
       href: "/upravnik/pinovi",
       label: "PIN-ovi",
       icon: KeyRound,
+    },
+    {
+      href: "/upravnik/finansije",
+      label: "Finansije",
+      icon: Wallet,
     },
   ];
 
