@@ -31,6 +31,14 @@ export const projektiColumns: Column<Projekat>[] = [
         : "-",
   },
   {
+    key: "izvodjac",
+    header: "Izvođač",
+    render: (s) =>
+      s.izvodjac
+        ? s.izvodjac
+        : "-",
+  },
+  {
     key: "status",
     header: "Status",
     render: (s) =>

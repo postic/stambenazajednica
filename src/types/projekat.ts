@@ -7,6 +7,7 @@ export type Projekat = {
   status: string;
   datumPocetka: string;
   datumZavrsetka: string;
+  izvodjac: string;
 };
 
 export type ProjekatDokument = {

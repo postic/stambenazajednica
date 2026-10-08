@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || "http://localhost:8888";
 
     const response = await fetch(
-      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/projekat`
+      `${NEXT_PUBLIC_DRUPAL_BASE_URL}/jsonapi/node/projekat?sort=-created`
     );
 
     if (!response.ok) {
@@ -50,6 +50,8 @@ export async function GET(req: Request) {
 
         // STATUS PROJEKTA
         status: item.attributes.field_projekat_status ?? "",
+        // IZVODJAC PROJEKTA
+        izvodjac: item.attributes.field_projekat_izvodac ?? "",
       };
     });
 
